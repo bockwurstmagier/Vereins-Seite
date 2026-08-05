@@ -1,0 +1,1 @@
+import TextAssistant from "./TextAssistant";export default function Page(){return <div className="mx-auto max-w-6xl"><p className="club-eyebrow">Social Media</p><h1 className="club-heading mt-2">Text-Assistent</h1><p className="mt-3 text-zinc-400">Erstellt sofort einen Vereinsbeitrag aus Ergebnis, Gegner und Torschützen.</p><div className="mt-8"><TextAssistant/></div></div>}

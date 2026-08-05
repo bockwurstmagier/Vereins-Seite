@@ -1,0 +1,33 @@
+name: Funktion vorschlagen
+description: Eine neue Funktion für den Vereinsmanager vorschlagen
+title: "Funktion: "
+labels:
+  - enhancement
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Welches Problem soll gelöst werden?
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Gewünschte Lösung
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Bereich
+      options:
+        - Öffentliche Website
+        - Adminbereich
+        - Spiele und Match-Center
+        - News und Social Media
+        - Mannschaft
+        - Sponsoren
+        - Datenbank und Sicherheit
+        - PWA und Benachrichtigungen

@@ -1,33 +1,32 @@
 import Hero from "../components/home/Hero";
-import NextMatchCard from "../components/home/NextMatchCard";
+import CountdownFromSupabase from "../components/home/CountdownFromSupabase";
+import LastMatchFromSupabase from "../components/home/LastMatchFromSupabase";
+import LeagueTable from "../components/home/LeagueTable";
+import NewsFromSupabase from "../components/home/NewsFromSupabase";
+import GallerySection from "../components/home/GallerySection";
+import SponsorFromSupabase from "../components/home/SponsorFromSupabase";
+import TeamFromSupabase from "../components/home/TeamFromSupabase";
+import NextMatchFromSupabase from "../components/home/NextMatchFromSupabase";
+import FeaturedMatchCenter from "../components/match-center/FeaturedMatchCenter";
 import BottomNavigation from "../components/home/layout/BottomNavigation";
+import QuickLinks from "../components/home/QuickLinks";
 
 export default function Home() {
   return (
     <main className="min-h-screen bg-black pb-24">
       <Hero />
-      <NextMatchCard />
+      <FeaturedMatchCenter />
+      <CountdownFromSupabase />
+      <NextMatchFromSupabase />
+      <LastMatchFromSupabase />
+      <LeagueTable />
+      <NewsFromSupabase />
+      <GallerySection />
+      <TeamFromSupabase />
+      <SponsorFromSupabase />
 
-      <section id="news" className="scroll-mt-20 bg-black px-5 py-16 text-white">
-        <h2 className="text-3xl font-black uppercase">News</h2>
-        <p className="mt-3 text-zinc-400">
-          Hier erscheinen später die neuesten Vereinsmeldungen.
-        </p>
-      </section>
 
-      <section id="team" className="scroll-mt-20 bg-zinc-950 px-5 py-16 text-white">
-        <h2 className="text-3xl font-black uppercase">Mannschaft</h2>
-        <p className="mt-3 text-zinc-400">
-          Hier erscheinen später Spieler, Trainer und Betreuer.
-        </p>
-      </section>
-
-      <section id="more" className="scroll-mt-20 bg-black px-5 py-16 text-white">
-        <h2 className="text-3xl font-black uppercase">Mehr</h2>
-        <p className="mt-3 text-zinc-400">
-          Sponsoren, Galerie, Verein, Kontakt und Impressum.
-        </p>
-      </section>
+      <QuickLinks />
 
       <BottomNavigation />
     </main>

@@ -1,127 +1,204 @@
-const nextMatch = {
-  competition: "Kreisliga",
-  matchday: "1. Spieltag",
-  homeTeam: "SpVgg Middelich-Resse",
-  awayTeam: "Gegner folgt",
-  date: "Sonntag, 16. August 2026",
-  time: "15:00 Uhr",
-  location: "Kanzlerstraße 44, 45883 Gelsenkirchen",
+"use client";
+
+import Image from "next/image";
+import { motion } from "framer-motion";
+import {
+  CalendarDays,
+  Clock3,
+  MapPin,
+  Navigation,
+  Trophy,
+} from "lucide-react";
+
+import vereinsLogo from "@/app/logo.png";
+import type { DatabaseMatch } from "../../lib/matches";
+
+type NextMatchCardProps = {
+  match: DatabaseMatch | null;
 };
 
-export default function NextMatchCard() {
-  return (
-    <section
-      id="next-match"
-      className="relative scroll-mt-6 bg-black px-4 pb-14 pt-8 text-white"
-    >
-      <div className="mx-auto max-w-md">
-        <div className="mb-5 flex items-end justify-between">
-          <div>
-            <p className="text-xs font-bold uppercase tracking-[0.3em] text-red-500">
-              Spieltag
-            </p>
+const dateFormatter = new Intl.DateTimeFormat("de-DE", {
+  weekday: "long",
+  day: "2-digit",
+  month: "long",
+  year: "numeric",
+  timeZone: "Europe/Berlin",
+});
 
-            <h2 className="mt-1 text-3xl font-black uppercase">
-              Nächstes Spiel
-            </h2>
+const timeFormatter = new Intl.DateTimeFormat("de-DE", {
+  hour: "2-digit",
+  minute: "2-digit",
+  timeZone: "Europe/Berlin",
+});
+
+export default function NextMatchCard({ match }: NextMatchCardProps) {
+  if (!match) {
+    return (
+      <section id="next-match" className="club-section scroll-mt-20 pb-20">
+        <div className="club-container">
+          <div className="club-card px-6 py-10 text-center">
+            <p className="club-eyebrow">Spieltag</p>
+            <h2 className="club-heading mt-2">Nächstes Spiel</h2>
+            <p className="mt-4 text-sm leading-6 text-zinc-400">
+              Aktuell ist kein kommendes Spiel eingetragen.
+            </p>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  const matchDate = new Date(match.match_date);
+  const mapsQuery = match.maps_query || match.location || "";
+  const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+    mapsQuery,
+  )}`;
+
+  return (
+    <section id="next-match" className="club-section scroll-mt-20 pb-20">
+      <div className="pointer-events-none absolute left-1/2 top-24 h-72 w-72 -translate-x-1/2 rounded-full bg-club-red/15 blur-3xl" />
+
+      <div className="club-container">
+        <div className="mb-6 flex items-end justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-2">
+              <Trophy
+                size={16}
+                strokeWidth={2.5}
+                className="text-club-light-red"
+                aria-hidden="true"
+              />
+              <p className="club-eyebrow">Spieltag</p>
+            </div>
+
+            <h2 className="club-heading mt-2">Nächstes Spiel</h2>
           </div>
 
-          <span className="rounded-full border border-red-600/40 bg-red-950/40 px-3 py-1 text-xs font-bold text-red-400">
-            {nextMatch.competition}
+          <span className="shrink-0 rounded-full border border-club-light-red/30 bg-club-burgundy/40 px-3 py-1.5 text-[10px] font-black uppercase tracking-wider text-club-light-red backdrop-blur-xl">
+            {match.competition}
           </span>
         </div>
 
-        <article className="overflow-hidden rounded-3xl border border-red-600/30 bg-gradient-to-b from-[#240606] to-[#0d0d0d] shadow-[0_20px_60px_rgba(185,28,28,0.18)]">
-          <div className="border-b border-white/10 px-5 py-4 text-center">
-            <p className="text-sm font-semibold uppercase tracking-widest text-zinc-400">
-              {nextMatch.matchday}
+        <motion.article
+          initial={{ opacity: 0, y: 45 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.2 }}
+          transition={{ duration: 0.55, ease: "easeOut" }}
+          className="club-card overflow-hidden"
+        >
+          <div className="border-b border-white/10 bg-gradient-to-r from-club-burgundy/60 via-club-dark-red/25 to-transparent px-5 py-4 text-center">
+            <p className="text-xs font-bold uppercase tracking-[0.25em] text-zinc-300">
+              {match.matchday || "Spieltag"}
             </p>
           </div>
 
-          <div className="px-5 py-8">
-            <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3 text-center">
-              <div>
-                <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-2xl border border-red-500/30 bg-black/50 text-3xl font-black text-red-500">
-                  MR
-                </div>
+          <div className="px-5 pb-6 pt-8">
+            <div className="grid grid-cols-[1fr_auto_1fr] items-start gap-3 text-center">
+              <TeamBlock name={match.home_team} label="Heim" showClubLogo />
 
-                <p className="mt-3 text-sm font-extrabold leading-tight">
-                  {nextMatch.homeTeam}
-                </p>
-              </div>
-
-              <div>
-                <span className="text-3xl font-black italic text-red-600">
+              <div className="flex h-24 items-center justify-center">
+                <div className="flex h-14 w-14 items-center justify-center rounded-full border border-club-light-red/30 bg-club-red/10 text-xl font-black italic text-club-light-red shadow-[0_0_30px_rgba(193,18,31,0.22)]">
                   VS
-                </span>
-              </div>
-
-              <div>
-                <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-2xl border border-white/10 bg-black/50 text-3xl font-black text-zinc-500">
-                  ?
                 </div>
-
-                <p className="mt-3 text-sm font-extrabold leading-tight">
-                  {nextMatch.awayTeam}
-                </p>
               </div>
+
+              <TeamBlock name={match.away_team} label="Gast" />
             </div>
 
-            <div className="mt-8 space-y-3 rounded-2xl border border-white/10 bg-black/35 p-4">
-              <div className="flex gap-3">
-                <span aria-hidden="true">📅</span>
-
-                <div>
-                  <p className="text-xs uppercase tracking-wider text-zinc-500">
-                    Datum
-                  </p>
-                  <p className="font-semibold">{nextMatch.date}</p>
-                </div>
-              </div>
-
-              <div className="flex gap-3">
-                <span aria-hidden="true">⏰</span>
-
-                <div>
-                  <p className="text-xs uppercase tracking-wider text-zinc-500">
-                    Anstoß
-                  </p>
-                  <p className="font-semibold">{nextMatch.time}</p>
-                </div>
-              </div>
-
-              <div className="flex gap-3">
-                <span aria-hidden="true">📍</span>
-
-                <div>
-                  <p className="text-xs uppercase tracking-wider text-zinc-500">
-                    Spielort
-                  </p>
-                  <p className="font-semibold">{nextMatch.location}</p>
-                </div>
-              </div>
+            <div className="club-card-inner mt-8 space-y-1 p-2">
+              <InfoRow
+                icon={<CalendarDays size={19} aria-hidden="true" />}
+                label="Datum"
+                value={dateFormatter.format(matchDate)}
+              />
+              <InfoRow
+                icon={<Clock3 size={19} aria-hidden="true" />}
+                label="Anstoß"
+                value={`${timeFormatter.format(matchDate)} Uhr`}
+              />
+              <InfoRow
+                icon={<MapPin size={19} aria-hidden="true" />}
+                label="Spielort"
+                value={match.location || "Spielort folgt"}
+              />
             </div>
 
             <div className="mt-5 grid grid-cols-2 gap-3">
               <a
-                href="https://www.google.com/maps/search/?api=1&query=Kanzlerstraße+44+45883+Gelsenkirchen"
+                href={mapsUrl}
                 target="_blank"
                 rel="noreferrer"
-                className="flex min-h-13 items-center justify-center rounded-xl border border-white/15 bg-white/5 px-3 text-sm font-bold uppercase transition active:scale-95"
+                className="club-button-secondary"
               >
+                <Navigation size={17} aria-hidden="true" />
                 Route
               </a>
 
-              <button
-                type="button"
-                className="min-h-13 rounded-xl bg-red-600 px-3 text-sm font-black uppercase shadow-[0_0_25px_rgba(220,38,38,0.3)] transition active:scale-95"
-              >
-                Alle Spiele
-              </button>
+              <a href="#spiele" className="club-button-primary">
+                <CalendarDays size={17} aria-hidden="true" />
+                Spielplan
+              </a>
             </div>
           </div>
-        </article>
+        </motion.article>
       </div>
     </section>
+  );
+}
+
+type TeamBlockProps = {
+  name: string;
+  label: string;
+  showClubLogo?: boolean;
+};
+
+function TeamBlock({ name, label, showClubLogo = false }: TeamBlockProps) {
+  return (
+    <div className="min-w-0">
+      <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-3xl border border-white/10 bg-black/40 p-3">
+        {showClubLogo ? (
+          <Image
+            src={vereinsLogo}
+            alt="Logo der SpVgg Middelich-Resse"
+            priority
+            className="h-auto max-h-full w-auto max-w-full object-contain"
+          />
+        ) : (
+          <span className="text-4xl font-black text-zinc-600">?</span>
+        )}
+      </div>
+
+      <p className="mt-4 text-sm font-black leading-tight text-club-white">
+        {name}
+      </p>
+
+      <p className="mt-1 text-[10px] font-bold uppercase tracking-wider text-zinc-500">
+        {label}
+      </p>
+    </div>
+  );
+}
+
+type InfoRowProps = {
+  icon: React.ReactNode;
+  label: string;
+  value: string;
+};
+
+function InfoRow({ icon, label, value }: InfoRowProps) {
+  return (
+    <div className="flex items-center gap-4 rounded-2xl px-3 py-3 transition hover:bg-white/[0.04]">
+      <div className="club-icon-box">{icon}</div>
+
+      <div className="min-w-0 text-left">
+        <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-500">
+          {label}
+        </p>
+
+        <p className="mt-0.5 text-sm font-semibold leading-snug text-zinc-100">
+          {value}
+        </p>
+      </div>
+    </div>
   );
 }

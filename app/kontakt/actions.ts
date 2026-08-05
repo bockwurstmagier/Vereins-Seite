@@ -1,0 +1,2 @@
+"use server";import {redirect} from "next/navigation";import {createClient} from "../../lib/supabase/server";
+export async function sendContact(f:FormData){const s=await createClient();const val=(k:string)=>String(f.get(k)??"").trim();const {error}=await s.from("contact_requests").insert({request_type:val("request_type")||"Kontakt",name:val("name"),email:val("email"),phone:val("phone")||null,message:val("message")});if(error)throw new Error(error.message);redirect("/kontakt?sent=1")}

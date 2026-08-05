@@ -1,0 +1,43 @@
+name: Fehler melden
+description: Einen reproduzierbaren Fehler im Vereinsmanager melden
+title: "Fehler: "
+labels:
+  - bug
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: Beschreibung
+      description: Was ist passiert?
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Schritte zum Nachstellen
+      placeholder: |
+        1. Admin öffnen
+        2. ...
+        3. Fehler erscheint
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Erwartetes Verhalten
+    validations:
+      required: true
+
+  - type: input
+    id: route
+    attributes:
+      label: Betroffene Seite
+      placeholder: /admin/spiele
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Fehlermeldung oder Screenshot
+      render: shell
