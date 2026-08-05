@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Bell, Goal, RefreshCcw, ShieldAlert } from "lucide-react";
+import { Goal, RefreshCcw, ShieldAlert } from "lucide-react";
 
+import PushNotificationControl from "./PushNotificationControl";
 import type { MatchCenterEvent, MatchCenterPlayer } from "../../lib/match-center";
 
 type Props = {
@@ -13,12 +14,24 @@ type Props = {
   score: string;
 };
 
-export default function LiveEventOverlay({ events, players, homeTeam, awayTeam, score }: Props) {
-  const [visibleEvent, setVisibleEvent] = useState<MatchCenterEvent | null>(null);
-  const [notificationsEnabled, setNotificationsEnabled] = useState(false);
+export default function LiveEventOverlay({
+  events,
+  players,
+  homeTeam,
+  awayTeam,
+  score,
+}: Props) {
+  const [visibleEvent, setVisibleEvent] =
+    useState<MatchCenterEvent | null>(null);
   const previousId = useRef(events[0]?.id ?? null);
   const playerMap = useMemo(
-    () => new Map(players.map((player) => [player.id, `${player.first_name} ${player.last_name}`])),
+    () =>
+      new Map(
+        players.map((player) => [
+          player.id,
+          `${player.first_name} ${player.last_name}`,
+        ]),
+      ),
     [players],
   );
 
@@ -30,32 +43,23 @@ export default function LiveEventOverlay({ events, players, homeTeam, awayTeam, 
     setVisibleEvent(latest);
     const timer = window.setTimeout(() => setVisibleEvent(null), 4200);
 
-    if (notificationsEnabled && "Notification" in window && Notification.permission === "granted") {
-      const player = latest.player_id ? playerMap.get(latest.player_id) : null;
-      new Notification(eventTitle(latest.event_type), {
-        body: `${latest.minute}' · ${player || latest.description || `${homeTeam} ${score} ${awayTeam}`}`,
-        icon: "/icons/icon-192.png",
+    if (
+      latest.event_type === "goal" &&
+      window.localStorage.getItem("huja-live-sound") === "true"
+    ) {
+      const audio = new Audio("/sounds/goal.wav");
+      audio.volume = 0.85;
+      void audio.play().catch(() => {
+        // Manche Geräte blockieren Ton, bis der Nutzer die Soundtaste benutzt hat.
       });
     }
 
     return () => window.clearTimeout(timer);
-  }, [events, homeTeam, notificationsEnabled, playerMap, score, awayTeam]);
-
-  async function enableNotifications() {
-    if (!("Notification" in window)) return;
-    const permission = await Notification.requestPermission();
-    setNotificationsEnabled(permission === "granted");
-  }
+  }, [events]);
 
   return (
     <>
-      <button
-        type="button"
-        onClick={() => void enableNotifications()}
-        className="fixed bottom-5 right-5 z-40 inline-flex items-center gap-2 rounded-full border border-white/10 bg-black/80 px-4 py-3 text-[10px] font-black uppercase tracking-wider text-white shadow-2xl backdrop-blur-xl"
-      >
-        <Bell size={15} /> {notificationsEnabled ? "Live-Hinweise aktiv" : "Live-Hinweise aktivieren"}
-      </button>
+      <PushNotificationControl />
 
       {visibleEvent && (
         <div className="pointer-events-none fixed inset-x-4 top-20 z-[70] mx-auto max-w-md animate-[liveEventIn_.35s_ease-out] rounded-[2rem] border border-club-light-red/30 bg-black/90 p-5 text-center shadow-[0_0_60px_rgba(220,38,38,.45)] backdrop-blur-2xl">
@@ -68,7 +72,8 @@ export default function LiveEventOverlay({ events, players, homeTeam, awayTeam, 
           <p className="mt-2 text-2xl font-black text-white">
             {visibleEvent.player_id
               ? playerMap.get(visibleEvent.player_id)
-              : visibleEvent.description || `${homeTeam} ${score} ${awayTeam}`}
+              : visibleEvent.description ||
+                `${homeTeam} ${score} ${awayTeam}`}
           </p>
         </div>
       )}
@@ -86,6 +91,8 @@ function eventTitle(type: MatchCenterEvent["event_type"]) {
 
 function eventIcon(type: MatchCenterEvent["event_type"]) {
   if (type === "goal") return <Goal size={28} />;
-  if (type === "yellow_card" || type === "red_card") return <ShieldAlert size={28} />;
+  if (type === "yellow_card" || type === "red_card") {
+    return <ShieldAlert size={28} />;
+  }
   return <RefreshCcw size={28} />;
 }

@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 
 import { requireRole } from "../../../lib/auth/roles";
 import { calculateLiveMinute } from "../../../lib/live-clock";
+import { sendLivePush } from "../../../lib/push/server";
 import { createClient } from "../../../lib/supabase/server";
 
 const ALLOWED_ROLES = ["administrator", "trainer", "betreuer"] as const;
@@ -303,6 +304,18 @@ export async function addGoal(formData: FormData) {
   });
 
   if (eventError) throw new Error(`Tor konnte nicht gespeichert werden: ${eventError.message}`);
+
+  await sendLivePush({
+    matchId,
+    eventType: "goal",
+    minute,
+    playerId,
+    secondaryPlayerId: assistId,
+    description,
+    homeScore: scores.home_score,
+    awayScore: scores.away_score,
+  });
+
   refresh(matchId);
   redirect(`/admin/live/${matchId}?goal=1`);
 }
@@ -331,6 +344,14 @@ export async function addCard(formData: FormData) {
     .update({ current_minute: minute, status: "live", updated_at: new Date().toISOString() })
     .eq("id", matchId);
 
+  await sendLivePush({
+    matchId,
+    eventType: eventType,
+    minute,
+    playerId,
+    description,
+  });
+
   refresh(matchId);
   redirect(`/admin/live/${matchId}?card=1`);
 }
@@ -358,6 +379,14 @@ export async function addSubstitution(formData: FormData) {
     .from("matches")
     .update({ current_minute: minute, status: "live", updated_at: new Date().toISOString() })
     .eq("id", matchId);
+
+  await sendLivePush({
+    matchId,
+    eventType: "substitution",
+    minute,
+    playerId: playerIn,
+    secondaryPlayerId: playerOut,
+  });
 
   refresh(matchId);
   redirect(`/admin/live/${matchId}?substitution=1`);
