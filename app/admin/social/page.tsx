@@ -6,7 +6,7 @@ import SocialStudio from "../../../components/social/SocialStudio";
 
 export default async function SocialStudioPage() {
   await requireRole(["administrator", "vorstand", "social_media"]);
-  const { matches, news } = await getSocialStudioData();
+  const { matches, news, players, sponsors } = await getSocialStudioData();
 
   return (
     <div className="mx-auto max-w-7xl">
@@ -15,21 +15,23 @@ export default async function SocialStudioPage() {
           <Sparkles size={19} aria-hidden="true" />
         </div>
         <div>
-          <p className="club-eyebrow">Version 5.0</p>
-          <h1 className="club-heading mt-1">Social Media Studio</h1>
+          <p className="club-eyebrow">Version 6.2</p>
+          <h1 className="club-heading mt-1">Social Media Studio 2.0</h1>
         </div>
       </div>
 
       <p className="mt-4 max-w-3xl text-sm leading-6 text-zinc-400">
-        Erstelle Matchday-, Ergebnis- und News-Grafiken direkt aus euren
-        Vereinsdaten. Die Vorschau kann als PNG für Feed, Story oder Quadrat
-        exportiert werden.
+        Erstelle Matchday-, Ergebnis-, News-, Spieler- und Sponsorengrafiken
+        direkt aus euren Vereinsdaten. Passe Texte, Farben und Hintergründe an
+        und exportiere die fertige Grafik als PNG.
       </p>
 
       <div className="mt-8">
         <SocialStudio
           matches={matches}
           news={news}
+          players={players}
+          sponsors={sponsors}
           logoSrc={vereinsLogo.src}
         />
       </div>

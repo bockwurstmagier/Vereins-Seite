@@ -152,3 +152,57 @@ export async function saveMatchSquad(formData: FormData) {
   refresh(matchId);
   redirect(`/admin/match-center/${matchId}?squad=1`);
 }
+
+export async function quickLiveAction(formData: FormData) {
+  const { supabase, user } = await authenticatedClient();
+  const matchId = required(formData, "match_id");
+  const action = required(formData, "live_action");
+
+  const presets: Record<
+    string,
+    { status: "live" | "finished"; minute: number; description: string }
+  > = {
+    kickoff: { status: "live", minute: 1, description: "Anpfiff" },
+    halftime: { status: "live", minute: 45, description: "Halbzeit" },
+    second_half: {
+      status: "live",
+      minute: 46,
+      description: "Anpfiff zur zweiten Halbzeit",
+    },
+    fulltime: { status: "finished", minute: 90, description: "Abpfiff" },
+  };
+
+  const preset = presets[action];
+
+  if (!preset) {
+    throw new Error("Unbekannte Live-Aktion.");
+  }
+
+  const { error: matchError } = await supabase
+    .from("matches")
+    .update({
+      status: preset.status,
+      current_minute: preset.minute,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", matchId);
+
+  if (matchError) {
+    throw new Error(`Spielstatus konnte nicht geändert werden: ${matchError.message}`);
+  }
+
+  const { error: eventError } = await supabase.from("match_events").insert({
+    match_id: matchId,
+    event_type: "note",
+    minute: preset.minute,
+    description: preset.description,
+    created_by: user.id,
+  });
+
+  if (eventError) {
+    throw new Error(`Ticker-Eintrag konnte nicht gespeichert werden: ${eventError.message}`);
+  }
+
+  refresh(matchId);
+  redirect(`/admin/match-center/${matchId}?quick=1`);
+}

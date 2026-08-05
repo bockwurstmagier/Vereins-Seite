@@ -2,6 +2,9 @@ import { notFound } from "next/navigation";
 import {
   ArrowLeft,
   Circle,
+  Flag,
+  Pause,
+  Play,
   Radio,
   Save,
   Trash2,
@@ -11,13 +14,14 @@ import { getPublicMatchCenterMatch } from "../../../../lib/match-center";
 import {
   addMatchEvent,
   deleteMatchEvent,
+  quickLiveAction,
   saveMatchSquad,
   updateMatchCenter,
 } from "../actions";
 
 type PageProps = {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ saved?: string; event?: string; deleted?: string; squad?: string }>;
+  searchParams: Promise<{ saved?: string; event?: string; deleted?: string; squad?: string; quick?: string }>;
 };
 
 export default async function AdminMatchCenterDetailPage({ params, searchParams }: PageProps) {
@@ -46,11 +50,60 @@ export default async function AdminMatchCenterDetailPage({ params, searchParams 
         </h1>
       </div>
 
-      {(notices.saved || notices.event || notices.deleted || notices.squad) && (
+      {(notices.saved || notices.event || notices.deleted || notices.squad || notices.quick) && (
         <div className="mt-6 rounded-2xl border border-emerald-500/25 bg-emerald-950/30 px-4 py-3 text-sm text-emerald-300">
           Änderungen wurden erfolgreich gespeichert.
         </div>
       )}
+
+      <section className="club-card mt-8 p-5 sm:p-6">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="club-eyebrow">Handy-Steuerung</p>
+            <h2 className="mt-1 text-xl font-black uppercase">Schnellaktionen</h2>
+            <p className="mt-2 text-sm text-zinc-500">
+              Start, Halbzeit und Abpfiff werden sofort im öffentlichen LiveCenter angezeigt.
+            </p>
+          </div>
+          <a
+            href={`/match-center/${match.id}`}
+            target="_blank"
+            rel="noreferrer"
+            className="club-button-secondary"
+          >
+            <Radio size={17} aria-hidden="true" />
+            Liveansicht öffnen
+          </a>
+        </div>
+
+        <div className="mt-5 grid grid-cols-2 gap-3 lg:grid-cols-4">
+          <QuickAction
+            matchId={match.id}
+            action="kickoff"
+            label="Anpfiff"
+            icon={<Play size={17} aria-hidden="true" />}
+          />
+          <QuickAction
+            matchId={match.id}
+            action="halftime"
+            label="Halbzeit"
+            icon={<Pause size={17} aria-hidden="true" />}
+          />
+          <QuickAction
+            matchId={match.id}
+            action="second_half"
+            label="2. Halbzeit"
+            icon={<Play size={17} aria-hidden="true" />}
+          />
+          <QuickAction
+            matchId={match.id}
+            action="fulltime"
+            label="Abpfiff"
+            icon={<Flag size={17} aria-hidden="true" />}
+            danger
+          />
+        </div>
+      </section>
 
       <div className="mt-8 grid gap-6 xl:grid-cols-2">
         <section className="club-card p-5 sm:p-6">
@@ -181,6 +234,34 @@ export default async function AdminMatchCenterDetailPage({ params, searchParams 
         </form>
       </section>
     </div>
+  );
+}
+
+function QuickAction({
+  matchId,
+  action,
+  label,
+  icon,
+  danger = false,
+}: {
+  matchId: string;
+  action: string;
+  label: string;
+  icon: React.ReactNode;
+  danger?: boolean;
+}) {
+  return (
+    <form action={quickLiveAction}>
+      <input type="hidden" name="match_id" value={matchId} />
+      <input type="hidden" name="live_action" value={action} />
+      <button
+        type="submit"
+        className={danger ? "club-button-secondary w-full border-red-500/25 text-red-300" : "club-button-secondary w-full"}
+      >
+        {icon}
+        {label}
+      </button>
+    </form>
   );
 }
 

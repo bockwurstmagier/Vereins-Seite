@@ -1,5 +1,5 @@
 export type SocialFormat = "feed" | "story" | "square";
-export type SocialTemplate = "matchday" | "result" | "news";
+export type SocialTemplate = "matchday" | "result" | "news" | "player" | "sponsor";
 
 export type SocialMatch = {
   id: string;
@@ -19,4 +19,23 @@ export type SocialNews = {
   category: string;
   excerpt: string | null;
   image_url: string | null;
+};
+
+export type SocialPlayer = {
+  id: string;
+  first_name: string;
+  last_name: string;
+  squad: string;
+  shirt_number: number | null;
+  position: string;
+  image_url: string | null;
+};
+
+export type SocialSponsor = {
+  id: string;
+  name: string;
+  category: string;
+  description: string | null;
+  logo_url: string | null;
+  website_url: string | null;
 };

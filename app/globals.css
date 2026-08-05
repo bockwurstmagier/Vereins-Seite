@@ -108,3 +108,21 @@ a {
     @apply block w-full cursor-pointer rounded-2xl border border-dashed border-white/15 bg-black/35 px-4 py-4 text-sm text-zinc-400 outline-none transition file:mr-4 file:rounded-xl file:border-0 file:bg-club-red file:px-4 file:py-2 file:text-xs file:font-black file:uppercase file:tracking-wider file:text-white hover:border-club-light-red/35;
   }
 }
+
+/* Admin 2.0 */
+@layer components {
+  .admin-input {
+    @apply min-h-14 w-full rounded-2xl border border-white/10 bg-black/35 px-4 text-sm text-white outline-none transition placeholder:text-zinc-600 focus:border-club-light-red/40 focus:ring-2 focus:ring-club-red/15;
+  }
+}
+
+@keyframes liveEventIn {
+  from {
+    opacity: 0;
+    transform: translateY(-24px) scale(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}

@@ -12,6 +12,17 @@ export type MatchCenterMatch = {
   away_score: number | null;
   status: "scheduled" | "live" | "finished";
   current_minute: number;
+  clock_phase:
+    | "stopped"
+    | "first_half"
+    | "halftime"
+    | "second_half"
+    | "paused"
+    | "finished"
+    | null;
+  clock_started_at: string | null;
+  clock_base_minute: number | null;
+  clock_resume_phase: "first_half" | "second_half" | null;
   report: string | null;
   player_of_match_id: string | null;
 };
@@ -50,7 +61,7 @@ export async function getMatchCenterOverview() {
   const { data, error } = await supabase
     .from("matches")
     .select(
-      "id, competition, matchday, home_team, away_team, match_date, location, home_score, away_score, status, current_minute, report, player_of_match_id",
+      "id, competition, matchday, home_team, away_team, match_date, location, home_score, away_score, status, current_minute, clock_phase, clock_started_at, clock_base_minute, clock_resume_phase, report, player_of_match_id",
     )
     .order("match_date", { ascending: false })
     .limit(30);
@@ -71,7 +82,7 @@ export async function getPublicMatchCenterMatch(id: string) {
       supabase
         .from("matches")
         .select(
-          "id, competition, matchday, home_team, away_team, match_date, location, home_score, away_score, status, current_minute, report, player_of_match_id",
+          "id, competition, matchday, home_team, away_team, match_date, location, home_score, away_score, status, current_minute, clock_phase, clock_started_at, clock_base_minute, clock_resume_phase, report, player_of_match_id",
         )
         .eq("id", id)
         .maybeSingle(),
