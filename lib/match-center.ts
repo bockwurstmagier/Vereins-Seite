@@ -25,6 +25,7 @@ export type MatchCenterMatch = {
   clock_resume_phase: "first_half" | "second_half" | null;
   report: string | null;
   player_of_match_id: string | null;
+  formation: string | null;
 };
 
 export type MatchCenterPlayer = {
@@ -53,6 +54,9 @@ export type MatchSquadEntry = {
   player_id: string;
   role: "starter" | "bench";
   sort_order: number;
+  pitch_x: number | null;
+  pitch_y: number | null;
+  position_label: string | null;
 };
 
 export async function getMatchCenterOverview() {
@@ -61,7 +65,7 @@ export async function getMatchCenterOverview() {
   const { data, error } = await supabase
     .from("matches")
     .select(
-      "id, competition, matchday, home_team, away_team, match_date, location, home_score, away_score, status, current_minute, clock_phase, clock_started_at, clock_base_minute, clock_resume_phase, report, player_of_match_id",
+      "id, competition, matchday, home_team, away_team, match_date, location, home_score, away_score, status, current_minute, clock_phase, clock_started_at, clock_base_minute, clock_resume_phase, report, player_of_match_id, formation",
     )
     .order("match_date", { ascending: false })
     .limit(30);
@@ -82,7 +86,7 @@ export async function getPublicMatchCenterMatch(id: string) {
       supabase
         .from("matches")
         .select(
-          "id, competition, matchday, home_team, away_team, match_date, location, home_score, away_score, status, current_minute, clock_phase, clock_started_at, clock_base_minute, clock_resume_phase, report, player_of_match_id",
+          "id, competition, matchday, home_team, away_team, match_date, location, home_score, away_score, status, current_minute, clock_phase, clock_started_at, clock_base_minute, clock_resume_phase, report, player_of_match_id, formation",
         )
         .eq("id", id)
         .maybeSingle(),
@@ -100,7 +104,7 @@ export async function getPublicMatchCenterMatch(id: string) {
         .order("created_at", { ascending: false }),
       supabase
         .from("match_squad")
-        .select("id, match_id, player_id, role, sort_order")
+        .select("id, match_id, player_id, role, sort_order, pitch_x, pitch_y, position_label")
         .eq("match_id", id)
         .order("role", { ascending: true })
         .order("sort_order", { ascending: true }),

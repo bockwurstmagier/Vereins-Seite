@@ -206,3 +206,56 @@ export async function quickLiveAction(formData: FormData) {
   refresh(matchId);
   redirect(`/admin/match-center/${matchId}?quick=1`);
 }
+
+export async function saveTacticalLineup(formData: FormData) {
+  const { supabase } = await authenticatedClient();
+  const matchId = required(formData, "match_id");
+  const formation = text(formData, "formation") || "4-4-2";
+  const raw = required(formData, "lineup_json");
+
+  let lineup: Array<{
+    playerId: string;
+    role: "starter" | "bench";
+    x: number | null;
+    y: number | null;
+    positionLabel: string | null;
+    sortOrder: number;
+  }>;
+
+  try {
+    lineup = JSON.parse(raw);
+  } catch {
+    throw new Error("Die Aufstellung konnte nicht gelesen werden.");
+  }
+
+  const unique = new Map(lineup.map((entry) => [entry.playerId, entry]));
+  const entries = [...unique.values()];
+  const starters = entries.filter((entry) => entry.role === "starter");
+  if (starters.length > 11) throw new Error("Die Startelf darf maximal 11 Spieler enthalten.");
+
+  const { error: matchError } = await supabase
+    .from("matches")
+    .update({ formation, updated_at: new Date().toISOString() })
+    .eq("id", matchId);
+  if (matchError) throw new Error(`Formation konnte nicht gespeichert werden: ${matchError.message}`);
+
+  const { error: deleteError } = await supabase.from("match_squad").delete().eq("match_id", matchId);
+  if (deleteError) throw new Error(`Alte Aufstellung konnte nicht ersetzt werden: ${deleteError.message}`);
+
+  if (entries.length) {
+    const rows = entries.map((entry, index) => ({
+      match_id: matchId,
+      player_id: entry.playerId,
+      role: entry.role,
+      sort_order: Number.isFinite(entry.sortOrder) ? entry.sortOrder : index,
+      pitch_x: entry.role === "starter" ? Math.min(95, Math.max(5, Number(entry.x) || 50)) : null,
+      pitch_y: entry.role === "starter" ? Math.min(95, Math.max(5, Number(entry.y) || 50)) : null,
+      position_label: entry.role === "starter" ? entry.positionLabel || null : null,
+    }));
+    const { error } = await supabase.from("match_squad").insert(rows);
+    if (error) throw new Error(`Aufstellung konnte nicht gespeichert werden: ${error.message}`);
+  }
+
+  refresh(matchId);
+  redirect(`/admin/match-center/${matchId}?tactics=1`);
+}

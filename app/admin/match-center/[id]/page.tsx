@@ -11,17 +11,17 @@ import {
   Users,
 } from "lucide-react";
 import { getPublicMatchCenterMatch } from "../../../../lib/match-center";
+import FormationEditor from "../../../../components/match-center/FormationEditor";
 import {
   addMatchEvent,
   deleteMatchEvent,
   quickLiveAction,
-  saveMatchSquad,
   updateMatchCenter,
 } from "../actions";
 
 type PageProps = {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ saved?: string; event?: string; deleted?: string; squad?: string; quick?: string }>;
+  searchParams: Promise<{ saved?: string; event?: string; deleted?: string; squad?: string; quick?: string; tactics?: string }>;
 };
 
 export default async function AdminMatchCenterDetailPage({ params, searchParams }: PageProps) {
@@ -50,7 +50,7 @@ export default async function AdminMatchCenterDetailPage({ params, searchParams 
         </h1>
       </div>
 
-      {(notices.saved || notices.event || notices.deleted || notices.squad || notices.quick) && (
+      {(notices.saved || notices.event || notices.deleted || notices.squad || notices.quick || notices.tactics) && (
         <div className="mt-6 rounded-2xl border border-emerald-500/25 bg-emerald-950/30 px-4 py-3 text-sm text-emerald-300">
           Änderungen wurden erfolgreich gespeichert.
         </div>
@@ -210,29 +210,12 @@ export default async function AdminMatchCenterDetailPage({ params, searchParams 
         </section>
       </div>
 
-      <section className="club-card mt-6 p-5 sm:p-6">
-        <div className="flex items-center gap-3">
-          <div className="club-icon-box"><Users size={19} aria-hidden="true" /></div>
-          <div><p className="club-eyebrow">Kader</p><h2 className="mt-1 text-xl font-black uppercase">Aufstellung & Bank</h2></div>
-        </div>
-
-        <form action={saveMatchSquad} className="mt-6">
-          <input type="hidden" name="match_id" value={match.id} />
-          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-            {players.map((player) => (
-              <article key={player.id} className="rounded-3xl border border-white/[0.08] bg-black/25 p-4">
-                <p className="font-black text-white">{player.shirt_number !== null ? `#${player.shirt_number} ` : ""}{player.first_name} {player.last_name}</p>
-                <p className="mt-1 text-xs text-zinc-500">{player.position}</p>
-                <div className="mt-4 grid grid-cols-2 gap-2">
-                  <label className="flex items-center gap-2 rounded-xl border border-white/10 px-3 py-2 text-xs font-bold text-zinc-300"><input type="checkbox" name="starters" value={player.id} defaultChecked={starters.has(player.id)} className="accent-red-600" /> Startelf</label>
-                  <label className="flex items-center gap-2 rounded-xl border border-white/10 px-3 py-2 text-xs font-bold text-zinc-300"><input type="checkbox" name="bench" value={player.id} defaultChecked={bench.has(player.id)} className="accent-red-600" /> Bank</label>
-                </div>
-              </article>
-            ))}
-          </div>
-          <button type="submit" className="club-button-primary mt-5 w-full"><Save size={18} aria-hidden="true" /> Aufstellung speichern</button>
-        </form>
-      </section>
+      <FormationEditor
+        matchId={match.id}
+        players={players}
+        initialSquad={squad}
+        initialFormation={match.formation ?? "4-4-2"}
+      />
     </div>
   );
 }

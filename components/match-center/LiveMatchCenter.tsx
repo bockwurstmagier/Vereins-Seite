@@ -15,6 +15,7 @@ import {
 
 import LiveClock from "./LiveClock";
 import LiveEventOverlay from "./LiveEventOverlay";
+import FormationDisplay from "./FormationDisplay";
 
 import type {
   MatchCenterEvent,
@@ -63,7 +64,7 @@ export default function LiveMatchCenter({
     const { data } = await supabase
       .from("matches")
       .select(
-        "id, competition, matchday, home_team, away_team, match_date, location, home_score, away_score, status, current_minute, clock_phase, clock_started_at, clock_base_minute, clock_resume_phase, report, player_of_match_id",
+        "id, competition, matchday, home_team, away_team, match_date, location, home_score, away_score, status, current_minute, clock_phase, clock_started_at, clock_base_minute, clock_resume_phase, report, player_of_match_id, formation",
       )
       .eq("id", initialMatch.id)
       .maybeSingle();
@@ -87,7 +88,7 @@ export default function LiveMatchCenter({
   const refreshSquad = useCallback(async () => {
     const { data } = await supabase
       .from("match_squad")
-      .select("id, match_id, player_id, role, sort_order")
+      .select("id, match_id, player_id, role, sort_order, pitch_x, pitch_y, position_label")
       .eq("match_id", initialMatch.id)
       .order("role", { ascending: true })
       .order("sort_order", { ascending: true });
@@ -324,6 +325,7 @@ export default function LiveMatchCenter({
           </section>
 
           <div className="space-y-6">
+            <FormationDisplay entries={squad} players={players} formation={match.formation} />
             <SquadCard
               title="Startelf"
               entries={starters}
