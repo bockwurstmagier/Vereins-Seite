@@ -82,27 +82,26 @@ export default function LastMatchCard() {
               </div>
 
               <div className="space-y-2">
-{(lastMatch.scorers ?? []).length > 0 ? (
-  (lastMatch.scorers ?? []).map((scorer: string) => (
-    <div
-      key={scorer}
-      className="flex items-center gap-3 rounded-2xl bg-white/[0.035] px-3 py-3"
-    >
-      <span
-        className="h-2 w-2 rounded-full bg-club-light-red shadow-[0_0_14px_rgba(239,51,64,0.75)]"
-        aria-hidden="true"
-      />
-
-      <p className="text-sm font-semibold text-zinc-100">
-        {scorer}
-      </p>
-    </div>
-  ))
-) : (
-  <p className="text-sm text-zinc-500">
-    Noch keine Torschützen eingetragen.
-  </p>
-)}
+                {(lastMatch.scorers ?? []).length > 0 ? (
+                  lastMatch.scorers?.map((scorer: string) => (
+                    <div
+                      key={scorer}
+                      className="flex items-center gap-3 rounded-2xl bg-white/[0.035] px-3 py-3"
+                    >
+                      <span
+                        className="h-2 w-2 rounded-full bg-club-light-red shadow-[0_0_14px_rgba(239,51,64,0.75)]"
+                        aria-hidden="true"
+                      />
+                      <p className="text-sm font-semibold text-zinc-100">
+                        {scorer}
+                      </p>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-sm text-zinc-500">
+                    Noch keine Torschützen eingetragen.
+                  </p>
+                )}
               </div>
             </div>
           </div>

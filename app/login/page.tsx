@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import vereinsLogo from "../logo.png";
 import LoginForm from "./LoginForm";
@@ -19,6 +20,9 @@ export default async function LoginPage() {
       <div className="pointer-events-none absolute left-1/2 top-1/3 h-80 w-80 -translate-x-1/2 rounded-full bg-club-red/20 blur-3xl" />
 
       <section className="club-card relative w-full max-w-md p-6 sm:p-8">
+        <Link href="/" className="mb-5 inline-flex text-[10px] font-black uppercase tracking-[0.18em] text-club-light-red">
+          ← Zurück zur App
+        </Link>
         <Image
           src={vereinsLogo}
           alt="Logo der SpVgg Middelich-Resse"

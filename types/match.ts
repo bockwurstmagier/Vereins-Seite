@@ -1,5 +1,3 @@
-export type MatchStatus = "scheduled" | "live" | "finished";
-
 export type Match = {
   id: string;
   competition: string;
@@ -11,8 +9,8 @@ export type Match = {
   dateTime: string;
   location: string;
   mapsQuery: string;
-  status: MatchStatus;
   homeScore?: number;
   awayScore?: number;
+  status: "scheduled" | "live" | "finished";
   scorers?: string[];
 };
