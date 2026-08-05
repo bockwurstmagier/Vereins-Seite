@@ -45,6 +45,7 @@ export default function MobileBottomNavigation({
 }: MobileBottomNavigationProps) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  const haptic = () => navigator.vibrate?.(12);
 
   useEffect(() => {
     setOpen(false);
@@ -73,6 +74,7 @@ export default function MobileBottomNavigation({
               <Link
                 key={item.label}
                 href={item.href}
+                onClick={haptic}
                 aria-label={item.label}
                 className={`group flex min-h-14 flex-col items-center justify-center rounded-2xl transition duration-200 active:scale-90 ${
                   active
@@ -94,7 +96,7 @@ export default function MobileBottomNavigation({
 
           <button
             type="button"
-            onClick={() => setOpen(true)}
+            onClick={() => { haptic(); setOpen(true); }}
             aria-label="Mehr öffnen"
             aria-expanded={open}
             className={`group flex min-h-14 flex-col items-center justify-center rounded-2xl transition duration-200 active:scale-90 ${
@@ -138,7 +140,7 @@ export default function MobileBottomNavigation({
 
               <button
                 type="button"
-                onClick={() => setOpen(false)}
+                onClick={() => { haptic(); setOpen(false); }}
                 className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.04] text-zinc-400"
                 aria-label="Menü schließen"
               >
@@ -227,6 +229,7 @@ function MenuLink({
   return (
     <Link
       href={href}
+      onClick={() => navigator.vibrate?.(12)}
       className={`flex min-h-14 items-center gap-3 rounded-2xl border px-4 transition active:scale-[0.98] ${
         emphasized
           ? "border-club-light-red/25 bg-club-red/15 text-white"

@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 
 import LiveClock from "../../../../components/match-center/LiveClock";
+import MatchdayDeviceControls from "../../../../components/match-center/MatchdayDeviceControls";
 import { requireRole } from "../../../../lib/auth/roles";
 import { getPublicMatchCenterMatch } from "../../../../lib/match-center";
 import {
@@ -53,6 +54,8 @@ export default async function MobileLiveControlPage({ params, searchParams }: Pa
       <a href="/admin/live" className="inline-flex items-center gap-2 text-xs font-black uppercase tracking-wider text-club-light-red">
         <ArrowLeft size={16} aria-hidden="true" /> Spiele auswählen
       </a>
+
+      <MatchdayDeviceControls />
 
       {(notices.goal || notices.card || notices.substitution || notices.undone || notices.paused || notices.resumed || notices.minute) && (
         <div className="mt-5 rounded-2xl border border-emerald-500/20 bg-emerald-950/30 px-4 py-3 text-sm text-emerald-300">
