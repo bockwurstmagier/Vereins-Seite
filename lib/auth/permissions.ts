@@ -3,6 +3,7 @@ import type { AppRole } from "./roles";
 export type AdminArea =
   | "dashboard"
   | "spiele"
+  | "saisonimport"
   | "match_center"
   | "live_admin"
   | "trainer_cockpit"
@@ -24,6 +25,7 @@ const permissions: Record<AppRole, AdminArea[]> = {
   administrator: [
     "dashboard",
     "spiele",
+    "saisonimport",
     "match_center",
     "live_admin",
     "trainer_cockpit",
@@ -44,6 +46,7 @@ const permissions: Record<AppRole, AdminArea[]> = {
   vorstand: [
     "dashboard",
     "spiele",
+    "saisonimport",
     "tabelle",
     "news",
     "sponsoren",

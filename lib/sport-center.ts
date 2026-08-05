@@ -22,6 +22,7 @@ export type StandingRow = {
 export type SportMatch = {
   id: string;
   competition: string;
+  season?: string | null;
   matchday: string | null;
   home_team: string;
   away_team: string;
@@ -82,7 +83,7 @@ export async function getMatches(): Promise<SportMatch[]> {
   const { data, error } = await supabase
     .from("matches")
     .select(
-      "id, competition, matchday, home_team, away_team, match_date, location, home_score, away_score, status",
+      "id, competition, season, matchday, home_team, away_team, match_date, location, home_score, away_score, status",
     )
     .order("match_date", { ascending: true });
 

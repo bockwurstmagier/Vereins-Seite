@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import {
   CalendarClock,
   CalendarDays,
+  FileSpreadsheet,
   FolderOpen,
   Handshake,
   History,
@@ -43,6 +44,7 @@ const sections: Array<{
     title: "Sport",
     items: [
       { label: "Spiele", href: "/admin/spiele", icon: CalendarDays, area: "spiele" },
+      { label: "Saisonimport", href: "/admin/saisonimport", icon: FileSpreadsheet, area: "saisonimport" },
       { label: "Match-Center", href: "/admin/match-center", icon: Radio, area: "match_center" },
       { label: "Live-Steuerung", href: "/admin/live", icon: Smartphone, area: "live_admin" },
       { label: "Trainercockpit", href: "/admin/trainer", icon: ClipboardList, area: "trainer_cockpit" },
