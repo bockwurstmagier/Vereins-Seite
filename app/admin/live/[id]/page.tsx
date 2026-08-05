@@ -15,6 +15,7 @@ import {
   ShieldAlert,
   Undo2,
   UsersRound,
+  Sparkles,
 } from "lucide-react";
 
 import LiveClock from "../../../../components/match-center/LiveClock";
@@ -32,6 +33,7 @@ import {
   setLivePhase,
   undoLastEvent,
 } from "../actions";
+import { finalizeMatchDay } from "../../match-center/finalize-actions";
 
 type PageProps = {
   params: Promise<{ id: string }>;
@@ -114,6 +116,13 @@ export default async function MobileLiveControlPage({ params, searchParams }: Pa
         <PhaseButton matchId={match.id} phase="second_half" label="2. Halbzeit" icon={<Redo2 size={19} />} />
         <PhaseButton matchId={match.id} phase="fulltime" label="Abpfiff" icon={<Flag size={19} />} danger />
       </section>
+
+      <form action={finalizeMatchDay} className="mt-3">
+        <input type="hidden" name="match_id" value={match.id} />
+        <button type="submit" className="club-button-primary min-h-20 w-full text-sm">
+          <Sparkles size={21} /> Spiel beenden & alles automatisch erstellen
+        </button>
+      </form>
 
       <section className="mt-3 grid grid-cols-2 gap-3">
         <form action={pauseLiveClock}>

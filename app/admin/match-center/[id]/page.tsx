@@ -3,6 +3,7 @@ import {
   ArrowLeft,
   Circle,
   Flag,
+  Sparkles,
   Pause,
   Play,
   Radio,
@@ -18,6 +19,7 @@ import {
   quickLiveAction,
   updateMatchCenter,
 } from "../actions";
+import { finalizeMatchDay } from "../finalize-actions";
 
 type PageProps = {
   params: Promise<{ id: string }>;
@@ -102,6 +104,24 @@ export default async function AdminMatchCenterDetailPage({ params, searchParams 
             icon={<Flag size={17} aria-hidden="true" />}
             danger
           />
+        </div>
+      </section>
+
+      <section className="mt-6 overflow-hidden rounded-[2rem] border border-club-light-red/25 bg-gradient-to-r from-club-burgundy/80 via-club-dark-red/45 to-black p-5 shadow-[0_0_45px_rgba(193,18,31,0.18)] sm:p-6">
+        <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="club-eyebrow">Automatisierung</p>
+            <h2 className="mt-2 text-2xl font-black uppercase text-white">Ein-Klick-Spieltag</h2>
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-zinc-300">
+              Beendet das Spiel, aktualisiert Statistiken, versendet den Abpfiff-Push und erstellt Spielbericht, Social-Texte, News-Entwurf und Ergebnisgrafik.
+            </p>
+          </div>
+          <form action={finalizeMatchDay}>
+            <input type="hidden" name="match_id" value={match.id} />
+            <button type="submit" className="club-button-primary min-h-16 w-full px-7 sm:w-auto">
+              <Sparkles size={20} /> Spiel beenden & alles erstellen
+            </button>
+          </form>
         </div>
       </section>
 

@@ -186,3 +186,63 @@ export async function sendLivePush(input: SendLivePushInput) {
     console.error("Web-Push wurde übersprungen:", error);
   }
 }
+
+
+export async function sendFulltimePush(matchId: string) {
+  try {
+    configureWebPush();
+    const supabase = getAdminClient();
+    const { data: match } = await supabase
+      .from("matches")
+      .select("home_team, away_team, home_score, away_score")
+      .eq("id", matchId)
+      .maybeSingle();
+
+    if (!match) return;
+
+    const { data: subscriptions } = await supabase
+      .from("push_subscriptions")
+      .select("id, endpoint, p256dh, auth")
+      .eq("active", true);
+
+    if (!subscriptions?.length) return;
+
+    const payload = JSON.stringify({
+      title: "🏁 ABPFIFF",
+      body: `${match.home_team} ${match.home_score ?? 0}:${match.away_score ?? 0} ${match.away_team}`,
+      icon: "/icons/icon-192.png",
+      badge: "/icons/icon-192.png",
+      url: `/match-center/${matchId}`,
+      tag: `match-${matchId}-fulltime`,
+      eventType: "fulltime",
+      vibrate: [250, 100, 250],
+    });
+
+    const failedIds: string[] = [];
+    await Promise.allSettled(
+      (subscriptions as PushSubscriptionRow[]).map(async (row) => {
+        try {
+          await webpush.sendNotification(
+            { endpoint: row.endpoint, keys: { p256dh: row.p256dh, auth: row.auth } },
+            payload,
+            { TTL: 60 * 60, urgency: "high" },
+          );
+        } catch (error) {
+          const statusCode = typeof error === "object" && error !== null && "statusCode" in error
+            ? Number(error.statusCode)
+            : 0;
+          if (statusCode === 404 || statusCode === 410) failedIds.push(row.id);
+        }
+      }),
+    );
+
+    if (failedIds.length) {
+      await supabase
+        .from("push_subscriptions")
+        .update({ active: false, updated_at: new Date().toISOString() })
+        .in("id", failedIds);
+    }
+  } catch (error) {
+    console.error("Abpfiff-Push wurde übersprungen:", error);
+  }
+}
