@@ -1,4 +1,5 @@
 import { createClient } from "./supabase/server";
+import { getClubIdentityMap } from "./clubs";
 
 export const CLUB_NAME = "SpVgg Middelich-Resse";
 
@@ -17,6 +18,7 @@ export type StandingRow = {
   points: number;
   form: string[];
   is_club: boolean;
+  logo_url?: string | null;
 };
 
 export type SportMatch = {
@@ -30,6 +32,8 @@ export type SportMatch = {
   home_score: number | null;
   away_score: number | null;
   status: "scheduled" | "live" | "finished";
+  home_logo_url?: string | null;
+  away_logo_url?: string | null;
 };
 
 export type SeasonStats = {
@@ -74,7 +78,16 @@ export async function getStandings(
     return [];
   }
 
-  return (data ?? []) as StandingRow[];
+  const rows = (data ?? []) as StandingRow[];
+  const clubMap = await getClubIdentityMap(
+    supabase,
+    rows.map((row) => row.team_name),
+  );
+
+  return rows.map((row) => ({
+    ...row,
+    logo_url: clubMap.get(row.team_name)?.logo_url ?? null,
+  }));
 }
 
 export async function getMatches(): Promise<SportMatch[]> {
@@ -92,7 +105,17 @@ export async function getMatches(): Promise<SportMatch[]> {
     return [];
   }
 
-  return (data ?? []) as SportMatch[];
+  const matches = (data ?? []) as SportMatch[];
+  const clubMap = await getClubIdentityMap(
+    supabase,
+    matches.flatMap((match) => [match.home_team, match.away_team]),
+  );
+
+  return matches.map((match) => ({
+    ...match,
+    home_logo_url: clubMap.get(match.home_team)?.logo_url ?? null,
+    away_logo_url: clubMap.get(match.away_team)?.logo_url ?? null,
+  }));
 }
 
 export async function getSeasonStats(): Promise<SeasonStats> {

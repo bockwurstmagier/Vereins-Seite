@@ -1,4 +1,5 @@
 import { createClient } from "./supabase/server";
+import { getClubIdentityMap } from "./clubs";
 
 export type MatchCenterMatch = {
   id: string;
@@ -26,6 +27,8 @@ export type MatchCenterMatch = {
   report: string | null;
   player_of_match_id: string | null;
   formation: string | null;
+  home_logo_url?: string | null;
+  away_logo_url?: string | null;
 };
 
 export type MatchCenterPlayer = {
@@ -76,7 +79,17 @@ export async function getMatchCenterOverview() {
     return [] as MatchCenterMatch[];
   }
 
-  return (data ?? []) as MatchCenterMatch[];
+  const matches = (data ?? []) as MatchCenterMatch[];
+  const clubMap = await getClubIdentityMap(
+    supabase,
+    matches.flatMap((match) => [match.home_team, match.away_team]),
+  );
+
+  return matches.map((match) => ({
+    ...match,
+    home_logo_url: clubMap.get(match.home_team)?.logo_url ?? null,
+    away_logo_url: clubMap.get(match.away_team)?.logo_url ?? null,
+  }));
 }
 
 export async function getPublicMatchCenterMatch(id: string) {

@@ -16,6 +16,7 @@ import {
   Palette,
   Radio,
   Settings,
+  Shield,
   Smartphone,
   ClipboardList,
   Sparkles,
@@ -67,6 +68,7 @@ const sections: Array<{
     title: "Verein",
     items: [
       { label: "Sponsoren", href: "/admin/sponsoren", icon: Handshake, area: "sponsoren" },
+      { label: "Vereine & Logos", href: "/admin/vereine", icon: Shield, area: "vereine" },
       { label: "Anfragen", href: "/admin/anfragen", icon: Inbox, area: "anfragen" },
       { label: "Benutzer", href: "/admin/benutzer", icon: UserCog, area: "benutzer" },
       { label: "Aktivitäten", href: "/admin/aktivitaeten", icon: History, area: "aktivitaeten" },

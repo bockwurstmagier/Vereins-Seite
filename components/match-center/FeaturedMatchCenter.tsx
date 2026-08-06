@@ -40,13 +40,13 @@ export default async function FeaturedMatchCenter() {
 
           <div className="px-5 py-7">
             <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3 text-center">
-              <p className="text-sm font-black leading-tight text-white">{match.home_team}</p>
+              <TeamLogoName name={match.home_team} logoUrl={match.home_logo_url} />
               <p className="text-4xl font-black tabular-nums text-white">
                 {match.home_score ?? 0}
                 <span className="mx-2 text-club-light-red">:</span>
                 {match.away_score ?? 0}
               </p>
-              <p className="text-sm font-black leading-tight text-white">{match.away_team}</p>
+              <TeamLogoName name={match.away_team} logoUrl={match.away_logo_url} />
             </div>
 
             <p className="mt-5 text-center text-[10px] font-bold uppercase tracking-[0.16em] text-zinc-500">
@@ -58,5 +58,33 @@ export default async function FeaturedMatchCenter() {
         </a>
       </div>
     </section>
+  );
+}
+
+
+function TeamLogoName({
+  name,
+  logoUrl,
+}: {
+  name: string;
+  logoUrl?: string | null;
+}) {
+  return (
+    <div className="min-w-0">
+      <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl border border-white/10 bg-white p-2">
+        {logoUrl ? (
+          <img
+            src={logoUrl}
+            alt={`Logo von ${name}`}
+            className="max-h-full max-w-full object-contain"
+          />
+        ) : (
+          <span className="text-[9px] font-black text-zinc-500">
+            {name.slice(0, 2).toUpperCase()}
+          </span>
+        )}
+      </div>
+      <p className="mt-2 text-sm font-black leading-tight text-white">{name}</p>
+    </div>
   );
 }

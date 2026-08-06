@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { requireRole } from "../../../lib/auth/roles";
+import { ensureClubsFromTeamNames } from "../../../lib/clubs";
 import type { ImportedMatch } from "../../../lib/dfbnet/csv-parser";
 import { rebuildStandings } from "../../../lib/dfbnet/standings";
 import { createClient } from "../../../lib/supabase/server";
@@ -67,6 +68,11 @@ export async function importDfbnetSeason(formData: FormData) {
     throw new Error(`Spielplan konnte nicht importiert werden: ${error.message}`);
   }
 
+  await ensureClubsFromTeamNames(
+    supabase,
+    payload.matches.flatMap((match) => [match.homeTeam, match.awayTeam]),
+  );
+
   const competitions = [...new Set(payload.matches.map((match) => match.competition))];
   let tableTeams = 0;
 
@@ -95,6 +101,7 @@ export async function importDfbnetSeason(formData: FormData) {
   revalidatePath("/admin/spiele");
   revalidatePath("/admin/tabelle");
   revalidatePath("/admin/saisonimport");
+  revalidatePath("/admin/vereine");
 
   redirect(
     `/admin/saisonimport?success=1&matches=${payload.matches.length}&teams=${tableTeams}`,

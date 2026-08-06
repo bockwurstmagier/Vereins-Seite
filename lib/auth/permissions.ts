@@ -12,6 +12,7 @@ export type AdminArea =
   | "galerie"
   | "team"
   | "sponsoren"
+  | "vereine"
   | "termine"
   | "anfragen"
   | "medien"
@@ -34,6 +35,7 @@ const permissions: Record<AppRole, AdminArea[]> = {
     "galerie",
     "team",
     "sponsoren",
+    "vereine",
     "termine",
     "anfragen",
     "medien",
@@ -50,6 +52,7 @@ const permissions: Record<AppRole, AdminArea[]> = {
     "tabelle",
     "news",
     "sponsoren",
+    "vereine",
     "termine",
     "anfragen",
     "medien",

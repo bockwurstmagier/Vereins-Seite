@@ -94,7 +94,7 @@ export default function NextMatchCard({ match }: NextMatchCardProps) {
 
           <div className="px-5 pb-6 pt-8">
             <div className="grid grid-cols-[1fr_auto_1fr] items-start gap-3 text-center">
-              <TeamBlock name={match.home_team} label="Heim" showClubLogo />
+              <TeamBlock name={match.home_team} label="Heim" logoUrl={match.home_logo_url} />
 
               <div className="flex h-24 items-center justify-center">
                 <div className="flex h-14 w-14 items-center justify-center rounded-full border border-club-light-red/30 bg-club-red/10 text-xl font-black italic text-club-light-red shadow-[0_0_30px_rgba(193,18,31,0.22)]">
@@ -102,7 +102,7 @@ export default function NextMatchCard({ match }: NextMatchCardProps) {
                 </div>
               </div>
 
-              <TeamBlock name={match.away_team} label="Gast" />
+              <TeamBlock name={match.away_team} label="Gast" logoUrl={match.away_logo_url} />
             </div>
 
             <div className="club-card-inner mt-8 space-y-1 p-2">
@@ -149,14 +149,21 @@ export default function NextMatchCard({ match }: NextMatchCardProps) {
 type TeamBlockProps = {
   name: string;
   label: string;
-  showClubLogo?: boolean;
+  logoUrl?: string | null;
 };
 
-function TeamBlock({ name, label, showClubLogo = false }: TeamBlockProps) {
+function TeamBlock({ name, label, logoUrl }: TeamBlockProps) {
+  const ours = name.toLowerCase().includes("middelich-resse");
   return (
     <div className="min-w-0">
       <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-3xl border border-white/10 bg-black/40 p-3">
-        {showClubLogo ? (
+        {logoUrl ? (
+          <img
+            src={logoUrl}
+            alt={`Logo von ${name}`}
+            className="h-auto max-h-full w-auto max-w-full object-contain"
+          />
+        ) : ours ? (
           <Image
             src={vereinsLogo}
             alt="Logo der SpVgg Middelich-Resse"

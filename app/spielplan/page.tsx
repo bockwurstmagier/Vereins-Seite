@@ -108,9 +108,10 @@ export default async function SchedulePage({
                   </div>
 
                   <div className="mt-5 grid grid-cols-[1fr_auto_1fr] items-center gap-3 text-center">
-                    <p className="text-sm font-black leading-tight sm:text-base">
-                      {match.home_team}
-                    </p>
+                    <TeamName
+                      name={match.home_team}
+                      logoUrl={match.home_logo_url}
+                    />
                     <div className="rounded-2xl border border-white/10 bg-black/35 px-4 py-3">
                       <p className="text-2xl font-black tabular-nums">
                         {finished
@@ -118,9 +119,10 @@ export default async function SchedulePage({
                           : "VS"}
                       </p>
                     </div>
-                    <p className="text-sm font-black leading-tight sm:text-base">
-                      {match.away_team}
-                    </p>
+                    <TeamName
+                      name={match.away_team}
+                      logoUrl={match.away_logo_url}
+                    />
                   </div>
 
                   <div className="mt-5 grid gap-2 text-xs text-zinc-400 sm:grid-cols-3">
@@ -152,6 +154,36 @@ function Info({ icon, text }: { icon: React.ReactNode; text: string }) {
     <div className="flex items-center justify-center gap-2 rounded-2xl bg-black/25 px-3 py-3 sm:justify-start">
       <span className="text-club-light-red">{icon}</span>
       <span className="truncate">{text}</span>
+    </div>
+  );
+}
+
+
+function TeamName({
+  name,
+  logoUrl,
+}: {
+  name: string;
+  logoUrl?: string | null;
+}) {
+  return (
+    <div className="min-w-0 text-center">
+      <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl border border-white/10 bg-white p-2">
+        {logoUrl ? (
+          <img
+            src={logoUrl}
+            alt={`Logo von ${name}`}
+            className="max-h-full max-w-full object-contain"
+          />
+        ) : (
+          <span className="text-[9px] font-black text-zinc-500">
+            {name.slice(0, 2).toUpperCase()}
+          </span>
+        )}
+      </div>
+      <p className="mt-2 text-sm font-black leading-tight sm:text-base">
+        {name}
+      </p>
     </div>
   );
 }

@@ -63,7 +63,21 @@ export default function StandingsTable({
               </span>
             </div>
 
-            <div className="min-w-0 pr-2">
+            <div className="flex min-w-0 items-center gap-3 pr-2">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white p-1.5">
+                {row.logo_url ? (
+                  <img
+                    src={row.logo_url}
+                    alt={`Logo von ${row.team_name}`}
+                    className="max-h-full max-w-full object-contain"
+                  />
+                ) : (
+                  <span className="text-[9px] font-black text-zinc-500">
+                    {row.team_name.slice(0, 2).toUpperCase()}
+                  </span>
+                )}
+              </div>
+              <div className="min-w-0">
               <p className="truncate text-sm font-black text-zinc-100">
                 {row.team_name}
               </p>
@@ -91,6 +105,7 @@ export default function StandingsTable({
                     ))}
                   </div>
                 )}
+              </div>
               </div>
             </div>
 
