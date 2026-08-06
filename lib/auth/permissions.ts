@@ -7,6 +7,7 @@ export type AdminArea =
   | "match_center"
   | "live_admin"
   | "trainer_cockpit"
+  | "statistiken"
   | "tabelle"
   | "news"
   | "galerie"
@@ -46,6 +47,7 @@ const permissions: Record<AppRole, AdminArea[]> = {
     "aktivitaeten",
     "einstellungen",
     "vereinsassistent",
+  "statistiken",
 ],
   vorstand: [
     "dashboard",
@@ -61,8 +63,10 @@ const permissions: Record<AppRole, AdminArea[]> = {
     "social_studio",
     "aktivitaeten",
     "vereinsassistent",
+  "statistiken",
 ],
   trainer: ["dashboard", "spiele", "match_center", "live_admin", "trainer_cockpit", "tabelle", "team", "termine", "vereinsassistent",
+  "statistiken",
 ],
   social_media: [
     "dashboard",
@@ -74,6 +78,7 @@ const permissions: Record<AppRole, AdminArea[]> = {
     "vereinsassistent",
 ],
   betreuer: ["dashboard", "spiele", "match_center", "live_admin", "trainer_cockpit", "team", "termine", "vereinsassistent",
+  "statistiken",
 ],
 };
 

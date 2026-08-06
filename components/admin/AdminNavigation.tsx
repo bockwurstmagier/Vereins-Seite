@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
+  BarChart3,
   Bot,
   CalendarClock,
   CalendarDays,
@@ -50,6 +51,7 @@ const sections: Array<{
       { label: "Match-Center", href: "/admin/match-center", icon: Radio, area: "match_center" },
       { label: "Live-Steuerung", href: "/admin/live", icon: Smartphone, area: "live_admin" },
       { label: "Trainercockpit", href: "/admin/trainer", icon: ClipboardList, area: "trainer_cockpit" },
+      { label: "Statistiken", href: "/admin/statistiken", icon: BarChart3, area: "statistiken" },
       { label: "Tabelle", href: "/admin/tabelle", icon: Table2, area: "tabelle" },
       { label: "Team", href: "/admin/team", icon: Users, area: "team" },
       { label: "Termine", href: "/admin/termine", icon: CalendarClock, area: "termine" },
