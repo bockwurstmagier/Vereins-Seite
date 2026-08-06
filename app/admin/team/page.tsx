@@ -41,8 +41,8 @@ export default async function TeamAdminPage({
           <p className="club-eyebrow">Vereinsmanager</p>
           <h1 className="club-heading mt-2">Mannschaft verwalten</h1>
           <p className="mt-3 max-w-2xl text-sm leading-6 text-zinc-400">
-            Lege Spielerprofile an, lade Fotos hoch und ordne die Spieler einer
-            Mannschaft zu.
+            Lege Spieler- und Staffprofile an. Die öffentliche Teamseite sortiert
+            automatisch nach Mannschaft, Position, Trainerteam und Betreuern.
           </p>
         </div>
 
@@ -98,6 +98,7 @@ export default async function TeamAdminPage({
               <option>Mittelfeld</option>
               <option>Sturm</option>
               <option>Trainer</option>
+              <option>Cheftrainer</option>
               <option>Co-Trainer</option>
               <option>Betreuer</option>
               <option>Vereinsleitung</option>

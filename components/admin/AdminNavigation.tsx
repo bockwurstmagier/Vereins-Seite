@@ -10,6 +10,7 @@ import {
   CalendarClock,
   CalendarDays,
   FileSpreadsheet,
+  FileText,
   FolderOpen,
   Handshake,
   History,
@@ -89,6 +90,7 @@ const sections: Array<{
       { label: "Benutzer", href: "/admin/benutzer", icon: UserCog, area: "benutzer" },
       { label: "Aktivitäten", href: "/admin/aktivitaeten", icon: History, area: "aktivitaeten" },
       { label: "Einstellungen", href: "/admin/einstellungen", icon: Settings, area: "einstellungen" },
+      { label: "Impressum", href: "/admin/impressum", icon: FileText, area: "impressum" },
     ],
   },
 ];

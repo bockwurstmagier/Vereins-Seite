@@ -94,6 +94,7 @@ export default async function EditPlayerPage({ params }: PageProps) {
             <option>Mittelfeld</option>
             <option>Sturm</option>
             <option>Trainer</option>
+              <option>Cheftrainer</option>
             <option>Co-Trainer</option>
             <option>Betreuer</option>
             <option>Vereinsleitung</option>

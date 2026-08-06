@@ -103,6 +103,7 @@ export default async function AdminDashboard() {
     "benutzer",
     "aktivitaeten",
     "einstellungen",
+    "impressum",
   ];
 
   const displayName =

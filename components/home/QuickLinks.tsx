@@ -1,4 +1,4 @@
-import { BarChart3, CalendarDays, Mail, Radio, BadgeCheck, Table2 } from "lucide-react";
+import { BarChart3, CalendarDays, FileText, Mail, Radio, BadgeCheck, Table2 } from "lucide-react";
 
 const links = [
   { t: "Offizielle Spiele", h: "/fussball", i: BadgeCheck },
@@ -7,6 +7,7 @@ const links = [
   { t: "Match-Center", h: "/match-center", i: Radio },
   { t: "Statistiken", h: "/statistiken", i: BarChart3 },
   { t: "Kontakt", h: "/kontakt", i: Mail },
+  { t: "Impressum", h: "/impressum", i: FileText },
 ];
 
 export default function QuickLinks() {
