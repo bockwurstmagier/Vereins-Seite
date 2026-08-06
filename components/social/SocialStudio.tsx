@@ -17,6 +17,9 @@ import {
   Shirt,
   Trophy,
   Handshake,
+  ListOrdered,
+  Medal,
+  Star,
 } from "lucide-react";
 import type {
   SocialFormat,
@@ -24,6 +27,8 @@ import type {
   SocialNews,
   SocialPlayer,
   SocialSponsor,
+  SocialStanding,
+  SocialGoal,
   SocialTemplate,
 } from "../../lib/social/types";
 
@@ -32,6 +37,8 @@ type Props = {
   news: SocialNews[];
   players: SocialPlayer[];
   sponsors: SocialSponsor[];
+  standings: SocialStanding[];
+  goals: SocialGoal[];
   logoSrc: string;
 };
 
@@ -67,6 +74,9 @@ const DEFAULT_HEADLINES: Record<SocialTemplate, string> = {
   news: "NEUES AUS DEM VEREIN",
   player: "EIN TEAM. EIN VEREIN.",
   sponsor: "GEMEINSAM STARK",
+  table: "UNSERE LIGA. UNSER WEG.",
+  scorers: "DIE TORE FÜR MIDDELICH",
+  motm: "SPIELER DES SPIELS",
 };
 
 export default function SocialStudio({
@@ -74,6 +84,8 @@ export default function SocialStudio({
   news,
   players,
   sponsors,
+  standings,
+  goals,
   logoSrc,
 }: Props) {
   const svgRef = useRef<SVGSVGElement>(null);
@@ -135,6 +147,30 @@ export default function SocialStudio({
       } · ${selectedPlayer?.squad ?? "SpVgg Middelich-Resse"}\n\nEin Team. Ein Verein. Eine Leidenschaft.\n\n#HUJA #MiddelichResse #Mannschaft`;
     }
 
+    if (template === "table") {
+      const ourRow = standings.find((row) => row.is_club);
+      return `AKTUELLE TABELLE 📊\n\n${
+        ourRow
+          ? `SpVgg Middelich-Resse steht aktuell auf Platz ${ourRow.position} mit ${ourRow.points} Punkten.`
+          : "Hier ist der aktuelle Tabellenstand unserer Liga."
+      }\n\nGemeinsam weiter! 🔴⚫\n\n#HUJA #MiddelichResse #Tabelle`;
+    }
+
+    if (template === "scorers") {
+      const matchGoals = goals.filter((goal) => goal.match_id === selectedMatch?.id);
+      const names = matchGoals
+        .map((goal) => `${goal.minute}' ${goal.player_name ?? goal.description ?? "Middelich-Resse"}`)
+        .join("\n");
+      return `UNSERE TORSCHÜTZEN ⚽\n\n${names || "Die Torschützen werden nachgetragen."}\n\n#HUJA #MiddelichResse #Torschützen`;
+    }
+
+    if (template === "motm") {
+      const name = selectedPlayer
+        ? `${selectedPlayer.first_name} ${selectedPlayer.last_name}`
+        : "Unser Spieler des Spiels";
+      return `SPIELER DES SPIELS ⭐\n\n${name}\n\nStarker Auftritt für Middelich-Resse! 🔴⚫\n\n#HUJA #MiddelichResse #ManOfTheMatch`;
+    }
+
     if (template === "sponsor") {
       return `DANKE FÜR EURE UNTERSTÜTZUNG! 🤝\n\n${
         selectedSponsor?.name ?? "Unser Partner"
@@ -150,7 +186,7 @@ export default function SocialStudio({
 
     const date = new Date(selectedMatch.match_date);
     return `MATCHDAY! ⚽\n\n${selectedMatch.home_team} gegen ${selectedMatch.away_team}\n📅 ${dateFormatter.format(date)}\n⏰ ${timeFormatter.format(date)} Uhr\n📍 ${selectedMatch.location ?? "Spielort folgt"}\n\nKommt vorbei und unterstützt unsere Jungs!\n\n#HUJA #MiddelichResse #Matchday`;
-  }, [selectedMatch, selectedNews, selectedPlayer, selectedSponsor, template]);
+  }, [selectedMatch, selectedNews, selectedPlayer, selectedSponsor, standings, goals, template]);
 
   async function exportPng() {
     const svg = svgRef.current;
@@ -251,6 +287,24 @@ export default function SocialStudio({
                 label="Ergebnis"
               />
               <TemplateButton
+                active={template === "table"}
+                onClick={() => setTemplate("table")}
+                icon={<ListOrdered size={17} />}
+                label="Tabelle"
+              />
+              <TemplateButton
+                active={template === "scorers"}
+                onClick={() => setTemplate("scorers")}
+                icon={<Medal size={17} />}
+                label="Torschützen"
+              />
+              <TemplateButton
+                active={template === "motm"}
+                onClick={() => setTemplate("motm")}
+                icon={<Star size={17} />}
+                label="Spieler d. Spiels"
+              />
+              <TemplateButton
                 active={template === "news"}
                 onClick={() => setTemplate("news")}
                 icon={<Newspaper size={17} />}
@@ -285,7 +339,7 @@ export default function SocialStudio({
             </select>
           </Control>
 
-          {(template === "matchday" || template === "result") && (
+          {(template === "matchday" || template === "result" || template === "scorers") && (
             <Control label="Spiel auswählen">
               <select
                 value={matchId}
@@ -325,7 +379,7 @@ export default function SocialStudio({
             </Control>
           )}
 
-          {template === "player" && (
+          {(template === "player" || template === "motm") && (
             <Control label="Spieler auswählen">
               <select
                 value={playerId}
@@ -493,6 +547,8 @@ export default function SocialStudio({
               news={selectedNews}
               player={selectedPlayer}
               sponsor={selectedSponsor}
+              standings={standings}
+              goals={goals.filter((goal) => goal.match_id === selectedMatch?.id)}
               logoSrc={logoSrc}
               headline={headline}
               accent={accent}
@@ -613,6 +669,8 @@ type GraphicProps = {
   news: SocialNews | null;
   player: SocialPlayer | null;
   sponsor: SocialSponsor | null;
+  standings: SocialStanding[];
+  goals: SocialGoal[];
   logoSrc: string;
   headline: string;
   accent: string;
@@ -632,6 +690,8 @@ const SocialGraphic = forwardRef<SVGSVGElement, GraphicProps>(
       news,
       player,
       sponsor,
+      standings,
+      goals,
       logoSrc,
       headline,
       accent,
@@ -843,6 +903,201 @@ const SocialGraphic = forwardRef<SVGSVGElement, GraphicProps>(
               size={smallSize}
               color="#a1a1aa"
             />
+          </>
+        )}
+
+        {template === "table" && (
+          <>
+            <MainTitle center={center} y={380 * verticalScale} text="TABELLE" size={titleSize} />
+            <text
+              x={center}
+              y={445 * verticalScale}
+              textAnchor="middle"
+              fill={accent}
+              fontSize={smallSize}
+              fontWeight="900"
+              letterSpacing={5 * scale}
+            >
+              AKTUELLER STAND
+            </text>
+
+            {standings.slice(0, 10).map((row, index) => {
+              const y = (515 + index * 63) * verticalScale;
+              return (
+                <g key={row.id}>
+                  {row.is_club && (
+                    <rect
+                      x={75 * scale}
+                      y={y - 40 * verticalScale}
+                      width={width - 150 * scale}
+                      height={54 * verticalScale}
+                      rx={18 * contentScale}
+                      fill={accent}
+                      opacity="0.24"
+                    />
+                  )}
+                  <text
+                    x={100 * scale}
+                    y={y}
+                    fill={row.is_club ? accent : "#a1a1aa"}
+                    fontSize={Math.max(22, 27 * contentScale)}
+                    fontWeight="950"
+                  >
+                    {row.position}.
+                  </text>
+                  {row.logo_url && (
+                    <image
+                      href={row.logo_url}
+                      x={155 * scale}
+                      y={y - 37 * verticalScale}
+                      width={45 * scale}
+                      height={45 * verticalScale}
+                      preserveAspectRatio="xMidYMid meet"
+                    />
+                  )}
+                  <text
+                    x={(row.logo_url ? 220 : 165) * scale}
+                    y={y}
+                    fill="#ffffff"
+                    fontSize={Math.max(20, 25 * contentScale)}
+                    fontWeight={row.is_club ? "950" : "800"}
+                  >
+                    {truncate(row.team_name, 28).toUpperCase()}
+                  </text>
+                  <text
+                    x={width - 180 * scale}
+                    y={y}
+                    textAnchor="end"
+                    fill="#a1a1aa"
+                    fontSize={Math.max(19, 23 * contentScale)}
+                    fontWeight="800"
+                  >
+                    {row.played} SP
+                  </text>
+                  <text
+                    x={width - 90 * scale}
+                    y={y}
+                    textAnchor="end"
+                    fill={row.is_club ? accent : "#ffffff"}
+                    fontSize={Math.max(23, 29 * contentScale)}
+                    fontWeight="950"
+                  >
+                    {row.points} P
+                  </text>
+                </g>
+              );
+            })}
+          </>
+        )}
+
+        {template === "scorers" && match && (
+          <>
+            <MainTitle center={center} y={380 * verticalScale} text="TORSCHÜTZEN" size={titleSize} />
+            <TeamNames
+              match={match}
+              center={center}
+              scale={scale}
+              verticalScale={verticalScale}
+              accent={accent}
+              mediumSize={Math.max(30, 40 * contentScale)}
+            />
+            <text
+              x={center}
+              y={790 * verticalScale}
+              textAnchor="middle"
+              fill={accent}
+              fontSize={smallSize}
+              fontWeight="900"
+              letterSpacing={4 * scale}
+            >
+              UNSERE TORE
+            </text>
+            {(goals.length ? goals.slice(0, 6) : [{ id: "none", minute: 0, player_name: "NOCH KEINE TORSCHÜTZEN", description: null }]).map(
+              (goal, index) => (
+                <g key={goal.id}>
+                  <circle
+                    cx={170 * scale}
+                    cy={(865 + index * 82) * verticalScale}
+                    r={25 * contentScale}
+                    fill={accent}
+                  />
+                  <text
+                    x={170 * scale}
+                    y={(874 + index * 82) * verticalScale}
+                    textAnchor="middle"
+                    fill="#ffffff"
+                    fontSize={Math.max(17, 20 * contentScale)}
+                    fontWeight="950"
+                  >
+                    {goal.minute ? `${goal.minute}'` : "⚽"}
+                  </text>
+                  <text
+                    x={225 * scale}
+                    y={(874 + index * 82) * verticalScale}
+                    fill="#ffffff"
+                    fontSize={Math.max(25, 34 * contentScale)}
+                    fontWeight="900"
+                  >
+                    {truncate(goal.player_name ?? goal.description ?? "Middelich-Resse", 32).toUpperCase()}
+                  </text>
+                </g>
+              ),
+            )}
+          </>
+        )}
+
+        {template === "motm" && (
+          <>
+            <text
+              x={center}
+              y={390 * verticalScale}
+              textAnchor="middle"
+              fill={accent}
+              fontSize={smallSize}
+              fontWeight="900"
+              letterSpacing={7 * scale}
+            >
+              SPIELER DES SPIELS
+            </text>
+            {player?.image_url ? (
+              <image
+                href={player.image_url}
+                x={width * 0.08}
+                y={height * 0.28}
+                width={width * 0.84}
+                height={height * 0.53}
+                preserveAspectRatio="xMidYMin meet"
+                clipPath="url(#playerClip)"
+                filter="url(#shadow)"
+              />
+            ) : (
+              <g opacity="0.4">
+                <circle cx={center} cy={height * 0.5} r={150 * contentScale} fill={accent} />
+                <rect x={center - 190 * contentScale} y={height * 0.59} width={380 * contentScale} height={240 * contentScale} rx={100 * contentScale} fill={accent} />
+              </g>
+            )}
+            <text
+              x={center}
+              y={1030 * verticalScale}
+              textAnchor="middle"
+              fill="#ffffff"
+              fontSize={titleSize}
+              fontWeight="950"
+              filter="url(#redGlow)"
+            >
+              {truncate(playerName, 26).toUpperCase()}
+            </text>
+            <text
+              x={center}
+              y={1100 * verticalScale}
+              textAnchor="middle"
+              fill={accent}
+              fontSize={smallSize}
+              fontWeight="900"
+              letterSpacing={5 * scale}
+            >
+              STARKE LEISTUNG
+            </text>
           </>
         )}
 

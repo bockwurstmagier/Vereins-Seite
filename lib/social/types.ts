@@ -1,5 +1,14 @@
 export type SocialFormat = "feed" | "story" | "square";
-export type SocialTemplate = "matchday" | "result" | "news" | "player" | "sponsor";
+
+export type SocialTemplate =
+  | "matchday"
+  | "result"
+  | "table"
+  | "scorers"
+  | "motm"
+  | "news"
+  | "player"
+  | "sponsor";
 
 export type SocialMatch = {
   id: string;
@@ -40,4 +49,25 @@ export type SocialSponsor = {
   description: string | null;
   logo_url: string | null;
   website_url: string | null;
+};
+
+export type SocialStanding = {
+  id: string;
+  position: number;
+  team_name: string;
+  played: number;
+  goals_for: number;
+  goals_against: number;
+  points: number;
+  is_club: boolean;
+  logo_url?: string | null;
+};
+
+export type SocialGoal = {
+  id: string;
+  match_id: string;
+  minute: number;
+  player_id: string | null;
+  description: string | null;
+  player_name: string | null;
 };

@@ -6,7 +6,7 @@ import SocialStudio from "../../../components/social/SocialStudio";
 
 export default async function SocialStudioPage() {
   await requireRole(["administrator", "vorstand", "social_media"]);
-  const { matches, news, players, sponsors } = await getSocialStudioData();
+  const { matches, news, players, sponsors, standings, goals } = await getSocialStudioData();
 
   return (
     <div className="mx-auto max-w-7xl">
@@ -21,7 +21,7 @@ export default async function SocialStudioPage() {
       </div>
 
       <p className="mt-4 max-w-3xl text-sm leading-6 text-zinc-400">
-        Erstelle Matchday-, Ergebnis-, News-, Spieler- und Sponsorengrafiken
+        Erstelle Matchday-, Ergebnis-, Tabellen-, Torschützen-, Spieler-des-Spiels-, News-, Spieler- und Sponsorengrafiken
         direkt aus euren Vereinsdaten. Passe Texte, Farben und Hintergründe an
         und exportiere die fertige Grafik als PNG.
       </p>
@@ -32,6 +32,8 @@ export default async function SocialStudioPage() {
           news={news}
           players={players}
           sponsors={sponsors}
+          standings={standings}
+          goals={goals}
           logoSrc={vereinsLogo.src}
         />
       </div>
