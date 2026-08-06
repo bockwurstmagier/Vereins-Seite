@@ -25,6 +25,7 @@ import {
   Sparkles,
   Table2,
   UserCog,
+  UserRoundCog,
   Users,
 } from "lucide-react";
 
@@ -74,6 +75,7 @@ const sections: Array<{
     items: [
       { label: "Sponsoren", href: "/admin/sponsoren", icon: Handshake, area: "sponsoren" },
       { label: "Vereine & Logos", href: "/admin/vereine", icon: Shield, area: "vereine" },
+      { label: "Spielerportal", href: "/admin/spielerportal", icon: UserRoundCog, area: "spielerportal" },
       { label: "Anfragen", href: "/admin/anfragen", icon: Inbox, area: "anfragen" },
       { label: "Benutzer", href: "/admin/benutzer", icon: UserCog, area: "benutzer" },
       { label: "Aktivitäten", href: "/admin/aktivitaeten", icon: History, area: "aktivitaeten" },

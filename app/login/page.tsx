@@ -12,7 +12,13 @@ export default async function LoginPage() {
   } = await supabase.auth.getUser();
 
   if (user) {
-    redirect("/admin");
+    const { data: profile } = await supabase
+      .from("user_profiles")
+      .select("role")
+      .eq("id", user.id)
+      .maybeSingle();
+
+    redirect(profile?.role === "spieler" ? "/spielerportal" : "/admin");
   }
 
   return (
@@ -32,11 +38,10 @@ export default async function LoginPage() {
 
         <p className="club-eyebrow mt-6 text-center">Vereinsmanager</p>
         <h1 className="mt-2 text-center text-3xl font-black uppercase">
-          Admin-Login
+          Vereins-Login
         </h1>
         <p className="mt-3 text-center text-sm leading-6 text-zinc-400">
-          Melde dich an, um Spiele, News, Mannschaften und Sponsoren zu
-          verwalten.
+          Melde dich als Verantwortlicher oder Spieler an.
         </p>
 
         <LoginForm />

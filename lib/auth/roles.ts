@@ -7,6 +7,7 @@ export const APP_ROLES = [
   "trainer",
   "social_media",
   "betreuer",
+  "spieler",
 ] as const;
 
 export type AppRole = (typeof APP_ROLES)[number];
@@ -25,6 +26,7 @@ export const ROLE_LABELS: Record<AppRole, string> = {
   trainer: "Trainer",
   social_media: "Social Media",
   betreuer: "Betreuer",
+  spieler: "Spieler",
 };
 
 export async function getCurrentProfile(): Promise<UserProfile | null> {
