@@ -1,4 +1,5 @@
 import { createClient } from "./supabase/server";
+import { getClubIdentityMap } from "./clubs";
 
 export type PublicNewsItem = {
   id: string;
@@ -25,6 +26,8 @@ export type PublicMatch = {
   away_score: number | null;
   status: "scheduled" | "live" | "finished";
   scorers: string[] | null;
+  home_logo_url?: string | null;
+  away_logo_url?: string | null;
 };
 
 export async function getPublishedNews(limit = 3): Promise<PublicNewsItem[]> {
@@ -66,7 +69,19 @@ export async function getLastFinishedMatch(): Promise<PublicMatch | null> {
     return null;
   }
 
-  return data;
+  if (!data) return null;
+
+  const match = data as PublicMatch;
+  const clubMap = await getClubIdentityMap(supabase, [
+    match.home_team,
+    match.away_team,
+  ]);
+
+  return {
+    ...match,
+    home_logo_url: clubMap.get(match.home_team)?.logo_url ?? null,
+    away_logo_url: clubMap.get(match.away_team)?.logo_url ?? null,
+  };
 }
 
 export async function getUpcomingMatch(): Promise<PublicMatch | null> {
@@ -89,5 +104,17 @@ export async function getUpcomingMatch(): Promise<PublicMatch | null> {
     return null;
   }
 
-  return data;
+  if (!data) return null;
+
+  const match = data as PublicMatch;
+  const clubMap = await getClubIdentityMap(supabase, [
+    match.home_team,
+    match.away_team,
+  ]);
+
+  return {
+    ...match,
+    home_logo_url: clubMap.get(match.home_team)?.logo_url ?? null,
+    away_logo_url: clubMap.get(match.away_team)?.logo_url ?? null,
+  };
 }

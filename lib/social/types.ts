@@ -11,6 +11,8 @@ export type SocialMatch = {
   home_score: number | null;
   away_score: number | null;
   status: string;
+  home_logo_url?: string | null;
+  away_logo_url?: string | null;
 };
 
 export type SocialNews = {

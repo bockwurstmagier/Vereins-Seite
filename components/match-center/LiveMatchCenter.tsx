@@ -69,7 +69,13 @@ export default function LiveMatchCenter({
       .eq("id", initialMatch.id)
       .maybeSingle();
 
-    if (data) setMatch(data as MatchCenterMatch);
+    if (data) {
+      setMatch((current) => ({
+        ...(data as MatchCenterMatch),
+        home_logo_url: current.home_logo_url,
+        away_logo_url: current.away_logo_url,
+      }));
+    }
   }, [initialMatch.id, supabase]);
 
   const refreshEvents = useCallback(async () => {
@@ -114,7 +120,11 @@ export default function LiveMatchCenter({
           filter: `id=eq.${initialMatch.id}`,
         },
         (payload) => {
-          setMatch(payload.new as MatchCenterMatch);
+          setMatch((current) => ({
+            ...(payload.new as MatchCenterMatch),
+            home_logo_url: current.home_logo_url,
+            away_logo_url: current.away_logo_url,
+          }));
         },
       )
       .on(
@@ -213,9 +223,10 @@ export default function LiveMatchCenter({
             )}
 
             <div className="relative grid grid-cols-[1fr_auto_1fr] items-center gap-3 text-center">
-              <h1 className="text-lg font-black leading-tight sm:text-2xl">
-                {match.home_team}
-              </h1>
+              <LiveTeam
+                name={match.home_team}
+                logoUrl={match.home_logo_url}
+              />
               <div>
                 <p className="text-5xl font-black tabular-nums sm:text-6xl">
                   {match.home_score ?? 0}
@@ -237,9 +248,10 @@ export default function LiveMatchCenter({
                   </div>
                 )}
               </div>
-              <h1 className="text-lg font-black leading-tight sm:text-2xl">
-                {match.away_team}
-              </h1>
+              <LiveTeam
+                name={match.away_team}
+                logoUrl={match.away_logo_url}
+              />
             </div>
             <p className="relative mt-6 text-center text-xs font-bold uppercase tracking-wider text-zinc-500">
               {dateFormatter.format(new Date(match.match_date))} Uhr
@@ -369,6 +381,35 @@ export default function LiveMatchCenter({
         )}
       </div>
     </main>
+  );
+}
+
+function LiveTeam({
+  name,
+  logoUrl,
+}: {
+  name: string;
+  logoUrl?: string | null;
+}) {
+  return (
+    <div className="min-w-0">
+      <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-3xl border border-white/10 bg-white p-2.5 shadow-[0_15px_45px_rgba(0,0,0,.25)] sm:h-24 sm:w-24">
+        {logoUrl ? (
+          <img
+            src={logoUrl}
+            alt={`Logo von ${name}`}
+            className="max-h-full max-w-full object-contain"
+          />
+        ) : (
+          <span className="text-lg font-black text-zinc-500">
+            {name.slice(0, 2).toUpperCase()}
+          </span>
+        )}
+      </div>
+      <h1 className="mt-3 text-sm font-black leading-tight sm:text-xl">
+        {name}
+      </h1>
+    </div>
   );
 }
 

@@ -126,8 +126,18 @@ export async function getPublicMatchCenterMatch(id: string) {
 
   if (matchResult.error || !matchResult.data) return null;
 
+  const match = matchResult.data as MatchCenterMatch;
+  const clubMap = await getClubIdentityMap(supabase, [
+    match.home_team,
+    match.away_team,
+  ]);
+
   return {
-    match: matchResult.data as MatchCenterMatch,
+    match: {
+      ...match,
+      home_logo_url: clubMap.get(match.home_team)?.logo_url ?? null,
+      away_logo_url: clubMap.get(match.away_team)?.logo_url ?? null,
+    },
     players: (playersResult.data ?? []) as MatchCenterPlayer[],
     events: (eventsResult.data ?? []) as MatchCenterEvent[],
     squad: (squadResult.data ?? []) as MatchSquadEntry[],

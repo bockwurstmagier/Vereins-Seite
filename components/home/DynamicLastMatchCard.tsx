@@ -155,7 +155,13 @@ function Team({
   return (
     <div className="min-w-0">
       <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-3xl border border-white/10 bg-black/40 p-3">
-        {showClubLogo ? (
+        {logoUrl ? (
+          <img
+            src={logoUrl}
+            alt={`Logo von ${name}`}
+            className="h-auto max-h-full w-auto max-w-full object-contain"
+          />
+        ) : ours ? (
           <Image
             src={vereinsLogo}
             alt="Logo der SpVgg Middelich-Resse"

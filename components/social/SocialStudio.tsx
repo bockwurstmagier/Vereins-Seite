@@ -1113,8 +1113,19 @@ function TeamNames({
 }) {
   return (
     <>
+      {match.home_logo_url && (
+        <image
+          href={match.home_logo_url}
+          x={center - 250 * scale}
+          y={500 * verticalScale}
+          width={110 * scale}
+          height={110 * verticalScale}
+          preserveAspectRatio="xMidYMid meet"
+          filter="url(#shadow)"
+        />
+      )}
       <text
-        x={center}
+        x={center + (match.home_logo_url ? 45 * scale : 0)}
         y={575 * verticalScale}
         textAnchor="middle"
         fill="#ffffff"
@@ -1131,8 +1142,19 @@ function TeamNames({
         rx={3}
         fill={accent}
       />
+      {match.away_logo_url && (
+        <image
+          href={match.away_logo_url}
+          x={center - 250 * scale}
+          y={635 * verticalScale}
+          width={110 * scale}
+          height={110 * verticalScale}
+          preserveAspectRatio="xMidYMid meet"
+          filter="url(#shadow)"
+        />
+      )}
       <text
-        x={center}
+        x={center + (match.away_logo_url ? 45 * scale : 0)}
         y={710 * verticalScale}
         textAnchor="middle"
         fill="#ffffff"

@@ -1,4 +1,5 @@
 import { createClient } from "../supabase/server";
+import { getClubIdentityMap } from "../clubs";
 import type {
   SocialMatch,
   SocialNews,
@@ -16,6 +17,7 @@ export async function getSocialStudioData() {
         .select(
           "id, competition, home_team, away_team, match_date, location, home_score, away_score, status",
         )
+        .or("home_team.ilike.%Middelich-Resse%,away_team.ilike.%Middelich-Resse%")
         .order("match_date", { ascending: false })
         .limit(50),
       supabase
@@ -52,8 +54,18 @@ export async function getSocialStudioData() {
     console.error("Social Studio: Sponsoren konnten nicht geladen werden", sponsorsResult.error);
   }
 
+  const matches = (matchesResult.data ?? []) as SocialMatch[];
+  const clubMap = await getClubIdentityMap(
+    supabase,
+    matches.flatMap((match) => [match.home_team, match.away_team]),
+  );
+
   return {
-    matches: (matchesResult.data ?? []) as SocialMatch[],
+    matches: matches.map((match) => ({
+      ...match,
+      home_logo_url: clubMap.get(match.home_team)?.logo_url ?? null,
+      away_logo_url: clubMap.get(match.away_team)?.logo_url ?? null,
+    })),
     news: (newsResult.data ?? []) as SocialNews[],
     players: (playersResult.data ?? []) as SocialPlayer[],
     sponsors: (sponsorsResult.data ?? []) as SocialSponsor[],
