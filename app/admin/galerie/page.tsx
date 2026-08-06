@@ -55,11 +55,14 @@ export default async function GalleryAdminPage({ searchParams }: PageProps) {
   const params = await searchParams;
   const supabase = await createClient();
 
-  const [{ data: albums }, { data: matches }] = await Promise.all([
+  const [
+    { data: albums, error: albumsError },
+    { data: matches },
+  ] = await Promise.all([
     supabase
       .from("gallery_albums")
       .select(
-        "id,title,slug,description,category,season,match_id,cover_media_id,is_public,created_at,gallery_media(id,media_type,file_url,external_url,title)",
+        "id,title,slug,description,category,season,match_id,cover_media_id,is_public,created_at",
       )
       .order("created_at", { ascending: false }),
     supabase
@@ -69,6 +72,36 @@ export default async function GalleryAdminPage({ searchParams }: PageProps) {
       .order("match_date", { ascending: false })
       .limit(100),
   ]);
+
+  const albumIds = (albums ?? []).map((album) => album.id);
+
+  const { data: albumMedia, error: albumMediaError } = albumIds.length
+    ? await supabase
+        .from("gallery_media")
+        .select("id,album_id,media_type,file_url,external_url,title,sort_order")
+        .in("album_id", albumIds)
+        .order("sort_order")
+        .order("created_at")
+    : { data: [], error: null };
+
+  const mediaByAlbum = new Map<
+    string,
+    Array<{
+      id: string;
+      album_id: string;
+      media_type: string;
+      file_url: string | null;
+      external_url: string | null;
+      title: string | null;
+      sort_order: number;
+    }>
+  >();
+
+  for (const item of albumMedia ?? []) {
+    const current = mediaByAlbum.get(item.album_id) ?? [];
+    current.push(item);
+    mediaByAlbum.set(item.album_id, current);
+  }
 
   const selectedAlbumId = params.album ?? albums?.[0]?.id ?? null;
 
@@ -119,7 +152,7 @@ export default async function GalleryAdminPage({ searchParams }: PageProps) {
           <Camera size={21} />
         </div>
         <div>
-          <p className="club-eyebrow">Version 19.2</p>
+          <p className="club-eyebrow">Version 19.2.4</p>
           <h1 className="club-heading mt-2">HUJA Galerie Pro</h1>
           <p className="mt-3 max-w-3xl text-sm leading-6 text-zinc-400">
             Alben erstellen, mehrere Bilder gleichzeitig hochladen, Videos
@@ -133,6 +166,14 @@ export default async function GalleryAdminPage({ searchParams }: PageProps) {
         <div className="mt-6 flex items-center gap-2 rounded-2xl border border-emerald-500/20 bg-emerald-950/25 px-4 py-3 text-sm text-emerald-300">
           <CheckCircle2 size={17} />
           {notice}
+        </div>
+      )}
+
+      {(albumsError || albumMediaError) && (
+        <div className="mt-6 rounded-2xl border border-red-500/20 bg-red-950/25 px-4 py-3 text-sm leading-6 text-red-200">
+          Die Alben konnten nicht vollständig geladen werden:
+          {" "}
+          {albumsError?.message ?? albumMediaError?.message}
         </div>
       )}
 
@@ -206,12 +247,18 @@ export default async function GalleryAdminPage({ searchParams }: PageProps) {
             </div>
             <div className="divide-y divide-white/[0.07]">
               {(albums ?? []).map((album) => {
-                const albumMedia = Array.isArray(album.gallery_media)
-                  ? album.gallery_media
-                  : [];
+                const currentAlbumMedia = mediaByAlbum.get(album.id) ?? [];
                 const cover =
-                  albumMedia.find((item) => item.id === album.cover_media_id) ??
-                  albumMedia.find((item) => item.media_type === "image");
+                  currentAlbumMedia.find(
+                    (item) =>
+                      item.id === album.cover_media_id &&
+                      item.media_type === "image" &&
+                      item.file_url,
+                  ) ??
+                  currentAlbumMedia.find(
+                    (item) => item.media_type === "image" && item.file_url,
+                  ) ??
+                  currentAlbumMedia.find((item) => item.file_url);
 
                 return (
                   <Link
@@ -239,7 +286,7 @@ export default async function GalleryAdminPage({ searchParams }: PageProps) {
                         {album.title}
                       </p>
                       <p className="mt-1 text-[10px] uppercase tracking-wider text-zinc-600">
-                        {album.category} · {albumMedia.length} Medien
+                        {album.category} · {currentAlbumMedia.length} Medien
                       </p>
                       <div className="mt-2 flex items-center gap-1 text-[9px] font-black uppercase">
                         {album.is_public ? (
