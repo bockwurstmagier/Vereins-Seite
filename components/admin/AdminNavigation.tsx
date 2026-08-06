@@ -15,6 +15,7 @@ import {
   Images,
   Inbox,
   Newspaper,
+  PackageCheck,
   Palette,
   Radio,
   Settings,
