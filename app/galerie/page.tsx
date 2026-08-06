@@ -8,7 +8,24 @@ export const metadata = {
   title: "Galerie | SpVgg Middelich-Resse",
 };
 
-export const revalidate = 60;
+export const revalidate = 0;
+
+type AlbumRow = {
+  id: string;
+  title: string;
+  slug: string;
+  description: string | null;
+  category: string;
+  season: string | null;
+  cover_media_id: string | null;
+};
+
+type MediaRow = {
+  id: string;
+  album_id: string;
+  media_type: string;
+  file_url: string | null;
+};
 
 export default async function GalleryPage() {
   const supabase = await createClient();
@@ -16,11 +33,48 @@ export default async function GalleryPage() {
   const { data: albums } = await supabase
     .from("gallery_albums")
     .select(
-      "id,title,slug,description,category,season,cover_media_id,created_at,gallery_media(id,media_type,file_url,title)",
+      "id,title,slug,description,category,season,cover_media_id",
     )
     .eq("is_public", true)
     .order("sort_order")
     .order("created_at", { ascending: false });
+
+  const albumIds = (albums ?? []).map((album) => album.id);
+
+  const { data: media } = albumIds.length
+    ? await supabase
+        .from("gallery_media")
+        .select("id,album_id,media_type,file_url")
+        .in("album_id", albumIds)
+        .eq("is_public", true)
+        .order("sort_order")
+        .order("created_at")
+    : { data: [] };
+
+  const mediaByAlbum = new Map<string, MediaRow[]>();
+
+  for (const item of (media ?? []) as MediaRow[]) {
+    const current = mediaByAlbum.get(item.album_id) ?? [];
+    current.push(item);
+    mediaByAlbum.set(item.album_id, current);
+  }
+
+  const resolvedAlbums = ((albums ?? []) as AlbumRow[]).map((album) => {
+    const albumMedia = mediaByAlbum.get(album.id) ?? [];
+    const cover =
+      albumMedia.find(
+        (item) =>
+          item.id === album.cover_media_id &&
+          item.media_type === "image" &&
+          item.file_url,
+      ) ??
+      albumMedia.find(
+        (item) => item.media_type === "image" && item.file_url,
+      ) ??
+      albumMedia.find((item) => item.file_url);
+
+    return { ...album, media: albumMedia, cover };
+  });
 
   return (
     <main className="min-h-screen bg-black pb-28 text-white">
@@ -42,16 +96,10 @@ export default async function GalleryPage() {
       </section>
 
       <section className="mx-auto max-w-7xl px-4 py-8">
-        {(albums ?? []).length ? (
+        {resolvedAlbums.length ? (
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {(albums ?? []).map((album) => {
-              const media = Array.isArray(album.gallery_media)
-                ? album.gallery_media
-                : [];
-              const cover =
-                media.find((item) => item.id === album.cover_media_id) ??
-                media.find((item) => item.media_type === "image");
-              const videoCount = media.filter(
+            {resolvedAlbums.map((album) => {
+              const videoCount = album.media.filter(
                 (item) => item.media_type === "video",
               ).length;
 
@@ -62,9 +110,9 @@ export default async function GalleryPage() {
                   className="group overflow-hidden rounded-[2rem] border border-white/10 bg-white/[0.035] transition hover:-translate-y-1 hover:border-club-light-red/25"
                 >
                   <div className="relative aspect-[4/3] overflow-hidden bg-black">
-                    {cover?.file_url ? (
+                    {album.cover?.file_url ? (
                       <img
-                        src={cover.file_url}
+                        src={album.cover.file_url}
                         alt={album.title}
                         className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
                       />
@@ -80,7 +128,7 @@ export default async function GalleryPage() {
                     <div className="absolute bottom-4 right-4 flex gap-2">
                       <span className="inline-flex items-center gap-1 rounded-full bg-black/60 px-3 py-1.5 text-[9px] font-black text-white backdrop-blur">
                         <ImageIcon size={12} />
-                        {media.length}
+                        {album.media.length}
                       </span>
                       {videoCount > 0 && (
                         <span className="inline-flex items-center gap-1 rounded-full bg-black/60 px-3 py-1.5 text-[9px] font-black text-white backdrop-blur">

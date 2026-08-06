@@ -365,8 +365,9 @@ export async function deleteGalleryAlbum(formData: FormData) {
 }
 
 function revalidateGallery() {
-  revalidatePath("/");
-  revalidatePath("/galerie");
-  revalidatePath("/admin");
-  revalidatePath("/admin/galerie");
+  revalidatePath("/", "page");
+  revalidatePath("/galerie", "page");
+  revalidatePath("/galerie", "layout");
+  revalidatePath("/admin", "page");
+  revalidatePath("/admin/galerie", "page");
 }
