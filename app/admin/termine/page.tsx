@@ -5,7 +5,7 @@ import { requireRole } from "../../../lib/auth/roles";
 import { createClient } from "../../../lib/supabase/server";
 import { createEvent, deleteEvent } from "./actions";
 
-type SearchParams = Promise<{ created?: string; updated?: string; deleted?: string; view?: string; month?: string; year?: string }>;
+type SearchParams = Promise<{ created?: string; updated?: string; deleted?: string; error?: string; view?: string; month?: string; year?: string }>;
 
 const dateFormatter = new Intl.DateTimeFormat("de-DE", { dateStyle: "full", timeStyle: "short", timeZone: "Europe/Berlin" });
 
@@ -36,6 +36,11 @@ export default async function AdminTerminePage({ searchParams }: { searchParams:
 
       {(params.created || params.updated) && <Notice text="Der Termin wurde erfolgreich gespeichert." />}
       {params.deleted && <div className="mt-6 rounded-2xl border border-red-500/25 bg-red-950/30 p-4 text-sm text-red-300">Der Termin wurde gelöscht.</div>}
+      {params.error && (
+        <div className="mt-6 rounded-2xl border border-red-500/25 bg-red-950/30 p-4 text-sm leading-6 text-red-200">
+          {params.error}
+        </div>
+      )}
 
       <section className="club-card mt-8 p-5 sm:p-6">
         <div className="flex items-center gap-3"><div className="club-icon-box"><CalendarPlus size={19} /></div><div><p className="club-eyebrow">Neuer Eintrag</p><h2 className="mt-1 text-xl font-black uppercase">Termin anlegen</h2></div></div>
@@ -43,7 +48,7 @@ export default async function AdminTerminePage({ searchParams }: { searchParams:
           <Field label="Titel"><input name="title" required placeholder="z. B. Training 1. Mannschaft" className="admin-input" /></Field>
           <Field label="Kategorie"><select name="event_type" defaultValue="Training" className="admin-input">{EVENT_CATEGORIES.map((item) => <option key={item}>{item}</option>)}</select></Field>
           <Field label="Startdatum"><input name="date" type="date" required className="admin-input" /></Field>
-          <Field label="Startzeit"><input name="time" type="time" className="admin-input" /></Field>
+          <Field label="Startzeit"><input name="time" type="time" required defaultValue="18:30" className="admin-input" /><p className="mt-2 text-xs text-zinc-600">Bei ganztägigen Terminen wird diese Zeit ignoriert.</p></Field>
           <Field label="Enddatum"><input name="end_date" type="date" className="admin-input" /></Field>
           <Field label="Endzeit"><input name="end_time" type="time" className="admin-input" /></Field>
           <Field label="Ort" className="md:col-span-2"><input name="location" placeholder="Adresse oder Treffpunkt" className="admin-input" /></Field>
