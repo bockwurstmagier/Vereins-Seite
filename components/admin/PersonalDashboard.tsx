@@ -11,7 +11,13 @@ import {
   CalendarDays,
   CheckCircle2,
   CircleDot,
+  Cloud,
+  CloudFog,
+  CloudLightning,
+  CloudRain,
+  CloudSnow,
   Clock3,
+  Droplets,
   Eye,
   EyeOff,
   GripVertical,
@@ -25,8 +31,12 @@ import {
   RotateCcw,
   Settings2,
   Sparkles,
+  Sun,
+  Timer,
   Trophy,
+  Umbrella,
   Users,
+  Wind,
   X,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
@@ -95,6 +105,8 @@ type DashboardData = {
 };
 
 type WidgetId =
+  | "smart_countdown"
+  | "weather"
   | "stats"
   | "next_match"
   | "season"
@@ -109,6 +121,8 @@ type DashboardPreferences = {
 };
 
 const ALL_WIDGETS: WidgetId[] = [
+  "smart_countdown",
+  "weather",
   "stats",
   "next_match",
   "season",
@@ -120,23 +134,23 @@ const ALL_WIDGETS: WidgetId[] = [
 
 const ROLE_DEFAULTS: Record<AppRole, DashboardPreferences> = {
   administrator: {
-    order: ["stats", "next_match", "season", "events", "activities", "news", "media"],
+    order: ["smart_countdown", "weather", "stats", "next_match", "season", "events", "activities", "news", "media"],
     hidden: [],
   },
   vorstand: {
-    order: ["stats", "next_match", "events", "season", "activities", "news", "media"],
+    order: ["smart_countdown", "weather", "stats", "next_match", "events", "season", "activities", "news", "media"],
     hidden: [],
   },
   trainer: {
-    order: ["next_match", "season", "events", "stats", "activities", "news", "media"],
+    order: ["smart_countdown", "weather", "next_match", "season", "events", "stats", "activities", "news", "media"],
     hidden: ["news", "media"],
   },
   social_media: {
-    order: ["news", "media", "next_match", "stats", "events", "activities", "season"],
+    order: ["smart_countdown", "weather", "news", "media", "next_match", "stats", "events", "activities", "season"],
     hidden: ["season"],
   },
   betreuer: {
-    order: ["next_match", "events", "season", "stats", "activities", "news", "media"],
+    order: ["smart_countdown", "weather", "next_match", "events", "season", "stats", "activities", "news", "media"],
     hidden: ["media"],
   },
   spieler: {
@@ -146,6 +160,8 @@ const ROLE_DEFAULTS: Record<AppRole, DashboardPreferences> = {
 };
 
 const WIDGET_LABELS: Record<WidgetId, string> = {
+  smart_countdown: "Smart Countdown",
+  weather: "Wetter am Vereinsgelände",
   stats: "Kennzahlen",
   next_match: "Nächstes Spiel",
   season: "Leistungsübersicht",
@@ -275,7 +291,7 @@ export default function PersonalDashboard({ data }: { data: DashboardData }) {
             </div>
 
             <h1 className="mt-5 text-3xl font-black tracking-tight text-white sm:text-5xl">
-              Willkommen, {data.displayName}
+              {getGreeting()}, {data.displayName}
             </h1>
             <p className="mt-3 max-w-2xl text-sm leading-6 text-zinc-400 sm:text-base">
               Deine persönliche Vereinszentrale zeigt zuerst die Bereiche, die
@@ -464,6 +480,18 @@ function DashboardWidget({
       {children}
     </div>
   );
+
+  if (id === "smart_countdown") {
+    const nextItem = getNextDashboardItem(data.nextMatch, data.upcomingEvents);
+
+    return wrapper(
+      <SmartCountdownWidget nextItem={nextItem} />,
+    );
+  }
+
+  if (id === "weather") {
+    return wrapper(<WeatherWidget nextMatch={data.nextMatch} />);
+  }
 
   if (id === "stats") {
     const cards = [
@@ -781,6 +809,319 @@ function DashboardWidget({
       </div>
     </section>,
   );
+}
+
+
+type WeatherPayload = {
+  location: string;
+  current: {
+    time: string;
+    temperature_2m: number;
+    apparent_temperature: number;
+    relative_humidity_2m: number;
+    precipitation: number;
+    weather_code: number;
+    wind_speed_10m: number;
+    is_day: number;
+  };
+  daily: {
+    time: string[];
+    weather_code: number[];
+    temperature_2m_max: number[];
+    temperature_2m_min: number[];
+    precipitation_probability_max: number[];
+    wind_speed_10m_max: number[];
+    sunrise: string[];
+    sunset: string[];
+  };
+};
+
+type CountdownItem = {
+  type: "match" | "event";
+  title: string;
+  subtitle: string;
+  date: string;
+  href: string;
+} | null;
+
+function getNextDashboardItem(
+  match: NextMatch,
+  events: EventRow[],
+): CountdownItem {
+  const candidates: Array<CountdownItem & { timestamp: number }> = [];
+
+  if (match) {
+    candidates.push({
+      type: "match",
+      title: `${match.home_team} – ${match.away_team}`,
+      subtitle: match.competition,
+      date: match.match_date,
+      href: `/admin/live/${match.id}`,
+      timestamp: new Date(match.match_date).getTime(),
+    });
+  }
+
+  for (const event of events) {
+    candidates.push({
+      type: "event",
+      title: event.title,
+      subtitle: event.event_type,
+      date: event.starts_at,
+      href: `/admin/termine/${event.id}`,
+      timestamp: new Date(event.starts_at).getTime(),
+    });
+  }
+
+  return (
+    candidates
+      .filter((entry) => entry.timestamp >= Date.now())
+      .sort((a, b) => a.timestamp - b.timestamp)[0] ?? null
+  );
+}
+
+function SmartCountdownWidget({ nextItem }: { nextItem: CountdownItem }) {
+  const [now, setNow] = useState(() => Date.now());
+
+  useEffect(() => {
+    const timer = window.setInterval(() => setNow(Date.now()), 1000);
+    return () => window.clearInterval(timer);
+  }, []);
+
+  if (!nextItem) {
+    return (
+      <section className="rounded-[2rem] border border-white/[0.07] bg-white/[0.035] p-5 sm:p-6">
+        <PanelHeader
+          icon={<Timer size={18} />}
+          eyebrow="Smart Countdown"
+          title="Nächster wichtiger Termin"
+        />
+        <EmptyState text="Aktuell steht kein kommender Termin an." />
+      </section>
+    );
+  }
+
+  const target = new Date(nextItem.date).getTime();
+  const difference = Math.max(0, target - now);
+  const days = Math.floor(difference / 86_400_000);
+  const hours = Math.floor((difference % 86_400_000) / 3_600_000);
+  const minutes = Math.floor((difference % 3_600_000) / 60_000);
+  const seconds = Math.floor((difference % 60_000) / 1000);
+
+  return (
+    <section className="relative overflow-hidden rounded-[2rem] border border-club-light-red/15 bg-gradient-to-br from-club-burgundy/45 via-black/55 to-black/75 p-5 sm:p-6">
+      <div className="pointer-events-none absolute right-[-4rem] top-[-5rem] h-48 w-48 rounded-full bg-club-red/20 blur-[70px]" />
+      <div className="relative">
+        <PanelHeader
+          icon={<Timer size={18} />}
+          eyebrow="Smart Countdown"
+          title={nextItem.type === "match" ? "Bis zum nächsten Spiel" : "Bis zum nächsten Termin"}
+          href={nextItem.href}
+        />
+
+        <div className="mt-6 grid grid-cols-4 gap-2 sm:gap-3">
+          {[
+            [days, "Tage"],
+            [hours, "Std."],
+            [minutes, "Min."],
+            [seconds, "Sek."],
+          ].map(([value, label]) => (
+            <div
+              key={label}
+              className="rounded-2xl border border-white/[0.08] bg-black/30 px-2 py-4 text-center backdrop-blur"
+            >
+              <p className="text-2xl font-black tabular-nums text-white sm:text-4xl">
+                {String(value).padStart(2, "0")}
+              </p>
+              <p className="mt-1 text-[8px] font-black uppercase tracking-wider text-zinc-600 sm:text-[9px]">
+                {label}
+              </p>
+            </div>
+          ))}
+        </div>
+
+        <div className="mt-5 rounded-2xl border border-white/[0.07] bg-black/20 p-4">
+          <p className="truncate text-sm font-black text-white">
+            {nextItem.title}
+          </p>
+          <p className="mt-1 text-[10px] font-bold uppercase tracking-wider text-club-light-red">
+            {nextItem.subtitle} · {dateFormatter.format(new Date(nextItem.date))} ·{" "}
+            {timeFormatter.format(new Date(nextItem.date))} Uhr
+          </p>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function WeatherWidget({ nextMatch }: { nextMatch: NextMatch }) {
+  const [weather, setWeather] = useState<WeatherPayload | null>(null);
+  const [failed, setFailed] = useState(false);
+
+  useEffect(() => {
+    const controller = new AbortController();
+
+    fetch("/api/dashboard/weather", {
+      signal: controller.signal,
+      headers: { Accept: "application/json" },
+    })
+      .then(async (response) => {
+        if (!response.ok) throw new Error("Weather request failed");
+        return (await response.json()) as WeatherPayload;
+      })
+      .then((payload) => setWeather(payload))
+      .catch((error) => {
+        if (error instanceof DOMException && error.name === "AbortError") return;
+        setFailed(true);
+      });
+
+    return () => controller.abort();
+  }, []);
+
+  if (failed) {
+    return (
+      <section className="rounded-[2rem] border border-white/[0.07] bg-white/[0.035] p-5 sm:p-6">
+        <PanelHeader
+          icon={<Cloud size={18} />}
+          eyebrow="Spieltag-Wetter"
+          title="Gelsenkirchen"
+        />
+        <EmptyState text="Das Wetter konnte gerade nicht geladen werden." />
+      </section>
+    );
+  }
+
+  if (!weather) {
+    return (
+      <section className="rounded-[2rem] border border-white/[0.07] bg-white/[0.035] p-5 sm:p-6">
+        <PanelHeader
+          icon={<Cloud size={18} />}
+          eyebrow="Spieltag-Wetter"
+          title="Wetter wird geladen"
+        />
+        <div className="mt-5 h-36 animate-pulse rounded-3xl bg-white/[0.035]" />
+      </section>
+    );
+  }
+
+  const WeatherIcon = getWeatherIcon(weather.current.weather_code);
+  const condition = getWeatherLabel(weather.current.weather_code);
+  const todayRain = weather.daily.precipitation_probability_max[0] ?? 0;
+  const matchDayIndex = nextMatch
+    ? weather.daily.time.findIndex(
+        (day) => day === nextMatch.match_date.slice(0, 10),
+      )
+    : -1;
+
+  return (
+    <section className="relative overflow-hidden rounded-[2rem] border border-white/[0.07] bg-gradient-to-br from-sky-950/35 via-white/[0.035] to-club-red/[0.06] p-5 sm:p-6">
+      <div className="pointer-events-none absolute right-[-3rem] top-[-4rem] h-44 w-44 rounded-full bg-sky-400/10 blur-[65px]" />
+      <div className="relative">
+        <PanelHeader
+          icon={<WeatherIcon size={18} />}
+          eyebrow="Spieltag-Wetter"
+          title={weather.location}
+        />
+
+        <div className="mt-5 flex items-center gap-5">
+          <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-3xl border border-white/[0.08] bg-black/20 text-sky-200">
+            <WeatherIcon size={40} />
+          </div>
+          <div>
+            <p className="text-4xl font-black tabular-nums text-white">
+              {Math.round(weather.current.temperature_2m)}°
+            </p>
+            <p className="mt-1 text-sm font-black text-zinc-300">{condition}</p>
+            <p className="mt-1 text-xs text-zinc-600">
+              Gefühlt {Math.round(weather.current.apparent_temperature)}°
+            </p>
+          </div>
+        </div>
+
+        <div className="mt-5 grid grid-cols-3 gap-2">
+          <WeatherMetric
+            icon={<Droplets size={15} />}
+            label="Luftfeuchte"
+            value={`${weather.current.relative_humidity_2m}%`}
+          />
+          <WeatherMetric
+            icon={<Wind size={15} />}
+            label="Wind"
+            value={`${Math.round(weather.current.wind_speed_10m)} km/h`}
+          />
+          <WeatherMetric
+            icon={<Umbrella size={15} />}
+            label="Regenrisiko"
+            value={`${todayRain}%`}
+          />
+        </div>
+
+        {nextMatch && matchDayIndex >= 0 && (
+          <div className="mt-4 rounded-2xl border border-club-light-red/12 bg-club-red/[0.07] p-3">
+            <p className="text-[9px] font-black uppercase tracking-[0.16em] text-club-light-red">
+              Prognose für den Spieltag
+            </p>
+            <p className="mt-2 text-xs leading-5 text-zinc-300">
+              {Math.round(weather.daily.temperature_2m_min[matchDayIndex])}° bis{" "}
+              {Math.round(weather.daily.temperature_2m_max[matchDayIndex])}° ·{" "}
+              {weather.daily.precipitation_probability_max[matchDayIndex]}% Regenrisiko · Wind bis{" "}
+              {Math.round(weather.daily.wind_speed_10m_max[matchDayIndex])} km/h
+            </p>
+          </div>
+        )}
+      </div>
+    </section>
+  );
+}
+
+function WeatherMetric({
+  icon,
+  label,
+  value,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: string;
+}) {
+  return (
+    <div className="rounded-2xl border border-white/[0.07] bg-black/20 p-3">
+      <div className="text-sky-200">{icon}</div>
+      <p className="mt-2 text-sm font-black text-white">{value}</p>
+      <p className="mt-1 text-[8px] font-black uppercase tracking-wider text-zinc-600">
+        {label}
+      </p>
+    </div>
+  );
+}
+
+function getWeatherIcon(code: number) {
+  if (code === 0) return Sun;
+  if ([1, 2, 3].includes(code)) return Cloud;
+  if ([45, 48].includes(code)) return CloudFog;
+  if ([51, 53, 55, 56, 57, 61, 63, 65, 66, 67, 80, 81, 82].includes(code))
+    return CloudRain;
+  if ([71, 73, 75, 77, 85, 86].includes(code)) return CloudSnow;
+  if ([95, 96, 99].includes(code)) return CloudLightning;
+  return Cloud;
+}
+
+function getWeatherLabel(code: number) {
+  if (code === 0) return "Klar";
+  if (code === 1) return "Überwiegend klar";
+  if (code === 2) return "Teilweise bewölkt";
+  if (code === 3) return "Bewölkt";
+  if ([45, 48].includes(code)) return "Neblig";
+  if ([51, 53, 55, 56, 57].includes(code)) return "Nieselregen";
+  if ([61, 63, 65, 66, 67, 80, 81, 82].includes(code)) return "Regen";
+  if ([71, 73, 75, 77, 85, 86].includes(code)) return "Schnee";
+  if ([95, 96, 99].includes(code)) return "Gewitter";
+  return "Wetterlage";
+}
+
+function getGreeting() {
+  const hour = new Date().getHours();
+  if (hour < 11) return "Guten Morgen";
+  if (hour < 17) return "Hallo";
+  return "Guten Abend";
 }
 
 function getQuickActions(role: AppRole) {
