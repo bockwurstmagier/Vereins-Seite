@@ -399,10 +399,10 @@ export default function MatchdayMode(props: Props) {
                   HUJA AI Engine
                 </Link>
                 <Link
-                  href={`/admin/grafikstudio?match=${props.match.id}`}
+                  href={`/admin/autographics?match=${props.match.id}`}
                   className="club-button-secondary"
                 >
-                  Grafikstudio
+                  AutoGraphics
                   <ArrowUpRight size={15} />
                 </Link>
               </div>

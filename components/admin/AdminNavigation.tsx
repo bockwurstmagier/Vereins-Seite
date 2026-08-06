@@ -28,6 +28,7 @@ import {
   Table2,
   UserCog,
   UserRoundCog,
+  WandSparkles,
   Users,
 } from "lucide-react";
 
@@ -69,6 +70,7 @@ const sections: Array<{
       { label: "Medien", href: "/admin/medien", icon: FolderOpen, area: "medien" },
       { label: "Social Studio", href: "/admin/social", icon: Palette, area: "social_studio" },
       { label: "HUJA AI Engine", href: "/admin/mediencenter", icon: BrainCircuit, area: "mediencenter" },
+      { label: "HUJA AutoGraphics", href: "/admin/autographics", icon: WandSparkles, area: "autographics" },
       { label: "Text-Assistent", href: "/admin/text-assistent", icon: Sparkles, area: "text_assistent" },
       { label: "Vereinsassistent", href: "/admin/vereinsassistent", icon: Bot, area: "vereinsassistent" },
     ],

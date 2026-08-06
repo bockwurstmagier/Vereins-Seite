@@ -169,11 +169,11 @@ export default function AutomationStatusPanel({
           </Link>
         )}
         <Link
-          href={`/admin/grafikstudio?match=${matchId}`}
+          href={`/admin/autographics?match=${matchId}`}
           className="club-button-primary justify-center"
         >
           <ImageIcon size={16} />
-          Medienpaket erstellen
+          AutoGraphics öffnen
         </Link>
         <Link
           href={`/admin/match-center/${matchId}`}
