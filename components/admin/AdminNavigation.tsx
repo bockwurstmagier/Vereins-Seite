@@ -6,6 +6,7 @@ import {
   BarChart3,
   Bot,
   BrainCircuit,
+  Building2,
   CalendarClock,
   CalendarDays,
   FileSpreadsheet,
@@ -46,7 +47,10 @@ const sections: Array<{
 }> = [
   {
     title: "Übersicht",
-    items: [{ label: "Dashboard", href: "/admin", icon: Home, area: "dashboard" }],
+    items: [
+      { label: "Dashboard", href: "/admin", icon: Home, area: "dashboard" },
+      { label: "Vereinszentrale", href: "/admin/vereinszentrale", icon: Building2, area: "vereinszentrale" },
+    ],
   },
   {
     title: "Sport",

@@ -77,6 +77,7 @@ export default async function AdminDashboard() {
 
   const allAreas: AdminArea[] = [
     "dashboard",
+    "vereinszentrale",
     "spiele",
     "saisonimport",
     "match_center",

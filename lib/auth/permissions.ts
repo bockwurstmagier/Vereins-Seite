@@ -2,6 +2,7 @@ import type { AppRole } from "./roles";
 
 export type AdminArea =
   | "dashboard"
+  | "vereinszentrale"
   | "spiele"
   | "saisonimport"
   | "match_center"
@@ -30,6 +31,7 @@ export type AdminArea =
 
 const permissions: Record<AppRole, AdminArea[]> = {
   administrator: [
+    "vereinszentrale",
     "dashboard",
     "spiele",
     "saisonimport",
@@ -58,6 +60,7 @@ const permissions: Record<AppRole, AdminArea[]> = {
     "autographics",
 ],
   vorstand: [
+    "vereinszentrale",
     "dashboard",
     "spiele",
     "saisonimport",
@@ -78,6 +81,7 @@ const permissions: Record<AppRole, AdminArea[]> = {
     "autographics",
 ],
   trainer: [
+    "vereinszentrale",
     "dashboard",
     "spiele",
     "match_center",
@@ -94,6 +98,7 @@ const permissions: Record<AppRole, AdminArea[]> = {
     "autographics",
 ],
   social_media: [
+    "vereinszentrale",
     "dashboard",
     "news",
     "galerie",
@@ -107,6 +112,7 @@ const permissions: Record<AppRole, AdminArea[]> = {
 ],
   spieler: [],
   betreuer: [
+    "vereinszentrale",
     "dashboard",
     "spiele",
     "match_center",
