@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { ArrowLeft, Save } from "lucide-react";
+import DirectNewsImageUploader from "../../../../components/news/DirectNewsImageUploader";
 import { createClient } from "../../../../lib/supabase/server";
 import { updateNews } from "../actions";
 
@@ -124,17 +125,12 @@ export default async function EditNewsPage({ params }: PageProps) {
           </div>
         )}
 
-        <Field label="Neues Titelbild" className="md:col-span-2">
-          <input
-            name="image"
-            type="file"
-            accept="image/*"
-            className="admin-file-input"
+        <div className="md:col-span-2">
+          <DirectNewsImageUploader
+            initialUrl={news.image_url}
+            initialPath={news.image_path}
           />
-          <p className="mt-2 text-xs text-zinc-600">
-            Leer lassen, um das aktuelle Bild beizubehalten.
-          </p>
-        </Field>
+        </div>
 
         <div className="md:col-span-2">
           <button type="submit" className="club-button-primary w-full">

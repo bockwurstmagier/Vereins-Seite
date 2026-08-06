@@ -6,6 +6,7 @@ import {
   Plus,
   Trash2,
 } from "lucide-react";
+import DirectNewsImageUploader from "../../../components/news/DirectNewsImageUploader";
 import { createClient } from "../../../lib/supabase/server";
 import { createNews, deleteNews } from "./actions";
 
@@ -126,17 +127,9 @@ export default async function NewsAdminPage({
             />
           </Field>
 
-          <Field label="Titelbild" className="md:col-span-2">
-            <input
-              name="image"
-              type="file"
-              accept="image/*"
-              className="admin-file-input"
-            />
-            <p className="mt-2 text-xs text-zinc-600">
-              Unterstützt werden Bilddateien bis maximal 8 MB.
-            </p>
-          </Field>
+          <div className="md:col-span-2">
+            <DirectNewsImageUploader />
+          </div>
 
           <div className="md:col-span-2">
             <button type="submit" className="club-button-primary w-full">

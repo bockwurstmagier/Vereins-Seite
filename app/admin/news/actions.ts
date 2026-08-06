@@ -44,49 +44,6 @@ async function requireUser() {
   return { supabase, user };
 }
 
-async function uploadImage(file: File, userId: string) {
-  if (!file.size) {
-    return { imageUrl: null, imagePath: null };
-  }
-
-  if (!file.type.startsWith("image/")) {
-    throw new Error("Es dürfen nur Bilddateien hochgeladen werden.");
-  }
-
-  const maxSize = 8 * 1024 * 1024;
-
-  if (file.size > maxSize) {
-    throw new Error("Das Bild darf maximal 8 MB groß sein.");
-  }
-
-  const extension = file.name.split(".").pop()?.toLowerCase() || "jpg";
-  const safeExtension = extension.replace(/[^a-z0-9]/g, "") || "jpg";
-  const imagePath = `${userId}/${crypto.randomUUID()}.${safeExtension}`;
-
-  const { supabase } = await requireUser();
-
-  const { error } = await supabase.storage
-    .from("news-images")
-    .upload(imagePath, file, {
-      cacheControl: "3600",
-      upsert: false,
-      contentType: file.type,
-    });
-
-  if (error) {
-    throw new Error(`Bild konnte nicht hochgeladen werden: ${error.message}`);
-  }
-
-  const { data } = supabase.storage
-    .from("news-images")
-    .getPublicUrl(imagePath);
-
-  return {
-    imageUrl: data.publicUrl,
-    imagePath,
-  };
-}
-
 export async function createNews(formData: FormData) {
   const { supabase, user } = await requireUser();
 
@@ -95,13 +52,8 @@ export async function createNews(formData: FormData) {
   const content = getRequiredText(formData, "content");
   const category = getRequiredText(formData, "category");
   const status = getRequiredText(formData, "status");
-  const image = formData.get("image");
-
-  let uploaded = { imageUrl: null as string | null, imagePath: null as string | null };
-
-  if (image instanceof File && image.size > 0) {
-    uploaded = await uploadImage(image, user.id);
-  }
+  const imageUrl = getText(formData, "direct_image_url") || null;
+  const imagePath = getText(formData, "direct_image_path") || null;
 
   const publishedAt =
     status === "published" ? new Date().toISOString() : null;
@@ -112,18 +64,16 @@ export async function createNews(formData: FormData) {
     excerpt,
     content,
     category,
-    image_url: uploaded.imageUrl,
-    image_path: uploaded.imagePath,
+    image_url: imageUrl,
+    image_path: imagePath,
     status,
     published_at: publishedAt,
     created_by: user.id,
   });
 
   if (error) {
-    if (uploaded.imagePath) {
-      await supabase.storage
-        .from("news-images")
-        .remove([uploaded.imagePath]);
+    if (imagePath) {
+      await supabase.storage.from("news-images").remove([imagePath]);
     }
 
     throw new Error(`News konnte nicht gespeichert werden: ${error.message}`);
@@ -136,7 +86,7 @@ export async function createNews(formData: FormData) {
 }
 
 export async function updateNews(formData: FormData) {
-  const { supabase, user } = await requireUser();
+  const { supabase } = await requireUser();
 
   const id = getRequiredText(formData, "id");
   const title = getRequiredText(formData, "title");
@@ -146,16 +96,11 @@ export async function updateNews(formData: FormData) {
   const status = getRequiredText(formData, "status");
   const oldImagePath = getText(formData, "old_image_path") || null;
   const oldPublishedAt = getText(formData, "old_published_at") || null;
-  const image = formData.get("image");
+  const directImageUrl = getText(formData, "direct_image_url");
+  const directImagePath = getText(formData, "direct_image_path");
 
-  let imageUrl = getText(formData, "old_image_url") || null;
-  let imagePath = oldImagePath;
-
-  if (image instanceof File && image.size > 0) {
-    const uploaded = await uploadImage(image, user.id);
-    imageUrl = uploaded.imageUrl;
-    imagePath = uploaded.imagePath;
-  }
+  const imageUrl = directImageUrl || null;
+  const imagePath = directImagePath || null;
 
   const publishedAt =
     status === "published"
