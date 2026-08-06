@@ -96,6 +96,7 @@ export default async function AdminDashboard() {
     "vereinsassistent",
     "social_studio",
     "grafikstudio",
+    "mediencenter",
     "spielerportal",
     "benutzer",
     "aktivitaeten",

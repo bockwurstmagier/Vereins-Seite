@@ -21,6 +21,7 @@ export type AdminArea =
   | "vereinsassistent"
   | "social_studio"
   | "grafikstudio"
+  | "mediencenter"
   | "spielerportal"
   | "benutzer"
   | "aktivitaeten"
@@ -52,6 +53,7 @@ const permissions: Record<AppRole, AdminArea[]> = {
     "aktivitaeten",
     "einstellungen",
       "spielerportal",
+    "mediencenter",
 ],
   vorstand: [
     "dashboard",
@@ -70,6 +72,7 @@ const permissions: Record<AppRole, AdminArea[]> = {
     "grafikstudio",
     "aktivitaeten",
       "spielerportal",
+    "mediencenter",
 ],
   trainer: [
     "dashboard",
@@ -84,6 +87,7 @@ const permissions: Record<AppRole, AdminArea[]> = {
     "vereinsassistent",
     "grafikstudio",
       "spielerportal",
+    "mediencenter",
 ],
   social_media: [
     "dashboard",
@@ -94,7 +98,8 @@ const permissions: Record<AppRole, AdminArea[]> = {
     "vereinsassistent",
     "social_studio",
     "grafikstudio",
-  ],
+      "mediencenter",
+],
   spieler: [],
   betreuer: [
     "dashboard",
@@ -108,6 +113,7 @@ const permissions: Record<AppRole, AdminArea[]> = {
     "vereinsassistent",
     "grafikstudio",
       "spielerportal",
+    "mediencenter",
 ],
 };
 
