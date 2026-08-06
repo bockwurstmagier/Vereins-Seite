@@ -7,8 +7,6 @@ import { requireRole } from "../../../lib/auth/roles";
 import { createClient } from "../../../lib/supabase/server";
 
 const ALLOWED_ROLES = ["administrator", "vorstand", "social_media"] as const;
-const MAX_IMAGE_SIZE = 15 * 1024 * 1024;
-const MAX_VIDEO_SIZE = 25 * 1024 * 1024;
 
 function text(formData: FormData, key: string) {
   return String(formData.get(key) ?? "").trim();
@@ -94,18 +92,32 @@ export async function updateGalleryAlbum(formData: FormData) {
   redirect(`/admin/galerie?album=${albumId}&saved=1`);
 }
 
-export async function uploadGalleryMedia(formData: FormData) {
+type DirectUploadItem = {
+  mediaType: "image" | "video";
+  title: string;
+  fileUrl: string;
+  filePath: string;
+  mimeType: string;
+};
+
+export async function registerDirectGalleryUploads(input: {
+  albumId: string;
+  photographer?: string;
+  items: DirectUploadItem[];
+}) {
   const { supabase, user } = await getContext();
-  const albumId = text(formData, "album_id");
-  const photographer = text(formData, "photographer") || null;
-  const files = formData
-    .getAll("files")
-    .filter((value): value is File => value instanceof File && value.size > 0);
+
+  const albumId = input.albumId.trim();
+  const photographer = input.photographer?.trim() || null;
+  const items = Array.isArray(input.items) ? input.items : [];
 
   if (!albumId) throw new Error("Bitte ein Album auswählen.");
-  if (!files.length) throw new Error("Bitte mindestens eine Datei auswählen.");
+  if (!items.length) throw new Error("Es wurden keine Uploads übermittelt.");
+  if (items.length > 100) {
+    throw new Error("Maximal 100 Dateien pro Upload-Vorgang.");
+  }
 
-  const { data: lastMedia } = await supabase
+  const { data: lastMedia, error: lastMediaError } = await supabase
     .from("gallery_media")
     .select("sort_order")
     .eq("album_id", albumId)
@@ -113,99 +125,87 @@ export async function uploadGalleryMedia(formData: FormData) {
     .limit(1)
     .maybeSingle();
 
-  let sortOrder = (lastMedia?.sort_order ?? -1) + 1;
-  const uploadedPaths: string[] = [];
-
-  try {
-    for (const file of files) {
-      const isImage = file.type.startsWith("image/");
-      const isVideo = file.type.startsWith("video/");
-
-      if (!isImage && !isVideo) {
-        throw new Error(`${file.name}: Nur Bilder und Videos sind erlaubt.`);
-      }
-
-      const maxSize = isImage ? MAX_IMAGE_SIZE : MAX_VIDEO_SIZE;
-      if (file.size > maxSize) {
-        throw new Error(
-          `${file.name}: Datei ist größer als ${isImage ? "15" : "25"} MB.`,
-        );
-      }
-
-      const extension =
-        file.name.split(".").pop()?.toLowerCase().replace(/[^a-z0-9]/g, "") ||
-        (isVideo ? "mp4" : "jpg");
-      const filePath = `${albumId}/${crypto.randomUUID()}.${extension}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from("gallery-media")
-        .upload(filePath, file, {
-          cacheControl: "31536000",
-          contentType: file.type,
-          upsert: false,
-        });
-
-      if (uploadError) {
-        throw new Error(`${file.name}: ${uploadError.message}`);
-      }
-
-      uploadedPaths.push(filePath);
-
-      const { data: publicUrl } = supabase.storage
-        .from("gallery-media")
-        .getPublicUrl(filePath);
-
-      const { error: insertError } = await supabase
-        .from("gallery_media")
-        .insert({
-          album_id: albumId,
-          media_type: isVideo ? "video" : "image",
-          title: file.name.replace(/\.[^.]+$/, ""),
-          file_url: publicUrl.publicUrl,
-          file_path: filePath,
-          mime_type: file.type,
-          sort_order: sortOrder,
-          is_public: true,
-          photographer,
-          created_by: user.id,
-        });
-
-      if (insertError) throw new Error(insertError.message);
-      sortOrder += 1;
-    }
-  } catch (error) {
-    if (uploadedPaths.length) {
-      await supabase.storage.from("gallery-media").remove(uploadedPaths);
-    }
-    throw error;
+  if (lastMediaError) {
+    throw new Error(
+      `Reihenfolge konnte nicht ermittelt werden: ${lastMediaError.message}`,
+    );
   }
 
-  const { data: album } = await supabase
+  let sortOrder = (lastMedia?.sort_order ?? -1) + 1;
+
+  const rows = items.map((item) => {
+    if (!["image", "video"].includes(item.mediaType)) {
+      throw new Error("Ungültiger Medientyp.");
+    }
+
+    if (
+      !item.filePath.startsWith(`${albumId}/`) ||
+      !item.fileUrl.includes("/gallery-media/")
+    ) {
+      throw new Error("Ungültiger Galerie-Dateipfad.");
+    }
+
+    return {
+      album_id: albumId,
+      media_type: item.mediaType,
+      title: item.title.trim() || "Galerie-Medium",
+      file_url: item.fileUrl,
+      file_path: item.filePath,
+      mime_type: item.mimeType || null,
+      sort_order: sortOrder++,
+      is_public: true,
+      photographer,
+      created_by: user.id,
+    };
+  });
+
+  const { data: inserted, error: insertError } = await supabase
+    .from("gallery_media")
+    .insert(rows)
+    .select("id,media_type");
+
+  if (insertError) {
+    throw new Error(
+      `Dateiinformationen konnten nicht gespeichert werden: ${insertError.message}`,
+    );
+  }
+
+  const { data: album, error: albumError } = await supabase
     .from("gallery_albums")
     .select("cover_media_id")
     .eq("id", albumId)
     .single();
 
-  if (!album?.cover_media_id) {
-    const { data: firstImage } = await supabase
-      .from("gallery_media")
-      .select("id")
-      .eq("album_id", albumId)
-      .eq("media_type", "image")
-      .order("sort_order")
-      .limit(1)
-      .maybeSingle();
+  if (albumError) {
+    throw new Error(`Album konnte nicht geladen werden: ${albumError.message}`);
+  }
+
+  if (!album.cover_media_id) {
+    const firstImage = inserted?.find((item) => item.media_type === "image");
 
     if (firstImage) {
-      await supabase
+      const { error: coverError } = await supabase
         .from("gallery_albums")
-        .update({ cover_media_id: firstImage.id })
+        .update({
+          cover_media_id: firstImage.id,
+          updated_at: new Date().toISOString(),
+        })
         .eq("id", albumId);
+
+      if (coverError) {
+        throw new Error(
+          `Titelbild konnte nicht automatisch gesetzt werden: ${coverError.message}`,
+        );
+      }
     }
   }
 
   revalidateGallery();
-  redirect(`/admin/galerie?album=${albumId}&uploaded=${files.length}`);
+
+  return {
+    success: true,
+    uploaded: rows.length,
+  };
 }
 
 export async function addExternalVideo(formData: FormData) {

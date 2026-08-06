@@ -15,6 +15,7 @@ import {
   Upload,
 } from "lucide-react";
 
+import DirectGalleryUploader from "../../../components/gallery/DirectGalleryUploader";
 import { requireRole } from "../../../lib/auth/roles";
 import { createClient } from "../../../lib/supabase/server";
 import {
@@ -26,7 +27,6 @@ import {
   setAlbumCover,
   updateGalleryAlbum,
   updateGalleryMedia,
-  uploadGalleryMedia,
 } from "./actions";
 
 type PageProps = {
@@ -394,36 +394,9 @@ export default async function GalleryAdminPage({ searchParams }: PageProps) {
                       </h2>
                     </div>
                   </div>
-                  <form
-                    action={uploadGalleryMedia}
-                    className="mt-5 space-y-3"
-                  >
-                    <input
-                      type="hidden"
-                      name="album_id"
-                      value={selectedAlbum.id}
-                    />
-                    <input
-                      type="file"
-                      name="files"
-                      accept="image/*,video/mp4,video/webm"
-                      multiple
-                      required
-                      className="admin-file-input"
-                    />
-                    <input
-                      name="photographer"
-                      placeholder="Fotograf optional"
-                      className="admin-input"
-                    />
-                    <button className="club-button-primary w-full">
-                      <Upload size={16} />
-                      Dateien hochladen
-                    </button>
-                  </form>
-                  <p className="mt-3 text-xs leading-5 text-zinc-600">
-                    Bilder maximal 15 MB, Videos maximal 25 MB pro Datei.
-                  </p>
+                  <div className="mt-5">
+                    <DirectGalleryUploader albumId={selectedAlbum.id} />
+                  </div>
                 </div>
 
                 <div className="club-card p-5 sm:p-6">
