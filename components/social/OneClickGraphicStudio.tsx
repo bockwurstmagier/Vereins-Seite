@@ -24,6 +24,7 @@ type Props = {
   standings: SocialStanding[];
   goals: SocialGoal[];
   clubLogoSrc: string;
+  initialMatchId?: string;
 };
 
 type PackageItem = {
@@ -113,8 +114,13 @@ export default function OneClickGraphicStudio({
   standings,
   goals,
   clubLogoSrc,
+  initialMatchId,
 }: Props) {
-  const [matchId, setMatchId] = useState(matches[0]?.id ?? "");
+  const [matchId, setMatchId] = useState(
+    initialMatchId && matches.some((match) => match.id === initialMatchId)
+      ? initialMatchId
+      : matches[0]?.id ?? "",
+  );
   const [playerId, setPlayerId] = useState(players[0]?.id ?? "");
   const [accent, setAccent] = useState("#c1121f");
   const [secondary, setSecondary] = useState("#51000e");

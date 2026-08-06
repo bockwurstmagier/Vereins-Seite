@@ -5,7 +5,12 @@ import OneClickGraphicStudio from "../../../components/social/OneClickGraphicStu
 import { requireRole } from "../../../lib/auth/roles";
 import { getSocialStudioData } from "../../../lib/social/data";
 
-export default async function GraphicStudioPage() {
+type PageProps = {
+  searchParams: Promise<{ match?: string }>;
+};
+
+export default async function GraphicStudioPage({ searchParams }: PageProps) {
+  const { match } = await searchParams;
   await requireRole([
     "administrator",
     "vorstand",
@@ -57,6 +62,7 @@ export default async function GraphicStudioPage() {
           standings={standings}
           goals={goals}
           clubLogoSrc={vereinsLogo.src}
+          initialMatchId={match}
         />
       </div>
     </div>

@@ -118,6 +118,7 @@ export default async function AdminMatchCenterDetailPage({ params, searchParams 
           </div>
           <form action={finalizeMatchDay}>
             <input type="hidden" name="match_id" value={match.id} />
+              <input type="hidden" name="publish_report" value="true" />
             <button type="submit" className="club-button-primary min-h-16 w-full px-7 sm:w-auto">
               <Sparkles size={20} /> Spiel beenden & alles erstellen
             </button>
