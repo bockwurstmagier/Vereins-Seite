@@ -62,7 +62,7 @@ const permissions: Record<AppRole, AdminArea[]> = {
     "aktivitaeten",
     "vereinsassistent",
 ],
-  trainer: ["dashboard", "spiele", "match_center", "live_admin", "trainer_cockpit", "tabelle", "team", "termine"  "vereinsassistent",
+  trainer: ["dashboard", "spiele", "match_center", "live_admin", "trainer_cockpit", "tabelle", "team", "termine", "vereinsassistent",
 ],
   social_media: [
     "dashboard",
@@ -73,7 +73,7 @@ const permissions: Record<AppRole, AdminArea[]> = {
     "social_studio",
     "vereinsassistent",
 ],
-  betreuer: ["dashboard", "spiele", "match_center", "live_admin", "trainer_cockpit", "team", "termine"  "vereinsassistent",
+  betreuer: ["dashboard", "spiele", "match_center", "live_admin", "trainer_cockpit", "team", "termine", "vereinsassistent",
 ],
 };
 
