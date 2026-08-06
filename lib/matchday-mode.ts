@@ -167,7 +167,7 @@ export async function getMatchdayModeData() {
       .maybeSingle(),
   ]);
 
-  const mode =
+  const mode: "countdown" | "live" | "halftime" | "finished" =
     match.status === "live"
       ? "live"
       : match.status === "halftime"
