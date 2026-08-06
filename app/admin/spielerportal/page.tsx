@@ -1,3 +1,4 @@
+import Link from "next/link";
 import {
   Link2,
   MessageSquarePlus,
@@ -68,6 +69,16 @@ export default async function PlayerPortalAdminPage({
             sowie Verletzungsmeldungen überblicken.
           </p>
         </div>
+      </div>
+
+      <div className="mt-6">
+        <Link
+          href="/admin/spielerportal/einladungen"
+          className="club-button-primary inline-flex"
+        >
+          <Link2 size={17} />
+          Spieler per WhatsApp einladen
+        </Link>
       </div>
 
       {(params.linked || params.message) && (
