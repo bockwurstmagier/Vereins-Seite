@@ -76,7 +76,7 @@ export default function DynamicLastMatchCard({
               <Team
                 name={match.home_team}
                 label="Heim"
-                showClubLogo={isOurClub(match.home_team)}
+                logoUrl={match.home_logo_url}
               />
 
               <div className="flex min-h-28 flex-col items-center justify-center">
@@ -96,7 +96,7 @@ export default function DynamicLastMatchCard({
               <Team
                 name={match.away_team}
                 label="Gast"
-                showClubLogo={isOurClub(match.away_team)}
+                logoUrl={match.away_logo_url}
               />
             </div>
 
@@ -146,12 +146,14 @@ function isOurClub(team: string) {
 function Team({
   name,
   label,
-  showClubLogo,
+  logoUrl,
 }: {
   name: string;
   label: string;
-  showClubLogo: boolean;
+  logoUrl?: string | null;
 }) {
+  const ours = isOurClub(name);
+
   return (
     <div className="min-w-0">
       <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-3xl border border-white/10 bg-black/40 p-3">
