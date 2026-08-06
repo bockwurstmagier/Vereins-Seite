@@ -22,6 +22,7 @@ export async function getNextMatch(): Promise<DatabaseMatch | null> {
       "id, competition, matchday, home_team, away_team, match_date, location, maps_query, home_score, away_score, status, scorers",
     )
     .eq("status", "scheduled")
+    .or("home_team.ilike.%Middelich-Resse%,away_team.ilike.%Middelich-Resse%")
     .gte("match_date", new Date().toISOString())
     .order("match_date", { ascending: true })
     .limit(1)

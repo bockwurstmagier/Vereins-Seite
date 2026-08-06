@@ -67,7 +67,10 @@ export default async function AdminDashboard() {
     activityResult,
     finishedMatchesResult,
   ] = await Promise.all([
-    supabase.from("matches").select("*", { count: "exact", head: true }),
+    supabase
+      .from("matches")
+      .select("*", { count: "exact", head: true })
+      .or("home_team.ilike.%Middelich-Resse%,away_team.ilike.%Middelich-Resse%"),
     supabase.from("news").select("*", { count: "exact", head: true }),
     supabase.from("sponsors").select("*", { count: "exact", head: true }),
     supabase.from("players").select("*", { count: "exact", head: true }).eq("is_active", true),
@@ -76,6 +79,7 @@ export default async function AdminDashboard() {
       .from("matches")
       .select("id, competition, home_team, away_team, match_date, location")
       .eq("status", "scheduled")
+      .or("home_team.ilike.%Middelich-Resse%,away_team.ilike.%Middelich-Resse%")
       .gte("match_date", now)
       .order("match_date", { ascending: true })
       .limit(1)
@@ -100,6 +104,7 @@ export default async function AdminDashboard() {
       .from("matches")
       .select("home_team, away_team, home_score, away_score")
       .eq("status", "finished")
+      .or("home_team.ilike.%Middelich-Resse%,away_team.ilike.%Middelich-Resse%")
       .not("home_score", "is", null)
       .not("away_score", "is", null),
   ]);

@@ -67,8 +67,9 @@ export async function getMatchCenterOverview() {
     .select(
       "id, competition, matchday, home_team, away_team, match_date, location, home_score, away_score, status, current_minute, clock_phase, clock_started_at, clock_base_minute, clock_resume_phase, report, player_of_match_id, formation",
     )
+    .or("home_team.ilike.%Middelich-Resse%,away_team.ilike.%Middelich-Resse%")
     .order("match_date", { ascending: false })
-    .limit(30);
+    .limit(60);
 
   if (error) {
     console.error("Match-Center konnte nicht geladen werden:", error.message);
