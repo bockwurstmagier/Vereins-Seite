@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
+  Bot,
   CalendarClock,
   CalendarDays,
   FileSpreadsheet,
@@ -62,6 +63,7 @@ const sections: Array<{
       { label: "Medien", href: "/admin/medien", icon: FolderOpen, area: "medien" },
       { label: "Social Studio", href: "/admin/social", icon: Palette, area: "social_studio" },
       { label: "Text-Assistent", href: "/admin/text-assistent", icon: Sparkles, area: "text_assistent" },
+      { label: "Vereinsassistent", href: "/admin/vereinsassistent", icon: Bot, area: "vereinsassistent" },
     ],
   },
   {

@@ -17,6 +17,7 @@ export type AdminArea =
   | "anfragen"
   | "medien"
   | "text_assistent"
+  | "vereinsassistent"
   | "social_studio"
   | "benutzer"
   | "aktivitaeten"
@@ -44,7 +45,8 @@ const permissions: Record<AppRole, AdminArea[]> = {
     "benutzer",
     "aktivitaeten",
     "einstellungen",
-  ],
+    "vereinsassistent",
+],
   vorstand: [
     "dashboard",
     "spiele",
@@ -58,8 +60,10 @@ const permissions: Record<AppRole, AdminArea[]> = {
     "medien",
     "social_studio",
     "aktivitaeten",
-  ],
-  trainer: ["dashboard", "spiele", "match_center", "live_admin", "trainer_cockpit", "tabelle", "team", "termine"],
+    "vereinsassistent",
+],
+  trainer: ["dashboard", "spiele", "match_center", "live_admin", "trainer_cockpit", "tabelle", "team", "termine"  "vereinsassistent",
+],
   social_media: [
     "dashboard",
     "news",
@@ -67,8 +71,10 @@ const permissions: Record<AppRole, AdminArea[]> = {
     "medien",
     "text_assistent",
     "social_studio",
-  ],
-  betreuer: ["dashboard", "spiele", "match_center", "live_admin", "trainer_cockpit", "team", "termine"],
+    "vereinsassistent",
+],
+  betreuer: ["dashboard", "spiele", "match_center", "live_admin", "trainer_cockpit", "team", "termine"  "vereinsassistent",
+],
 };
 
 export function canAccess(role: AppRole, area: AdminArea) {
