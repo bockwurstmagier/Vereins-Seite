@@ -19,130 +19,41 @@ export type ImportedMatch = {
 export type CsvPreviewResult = {
   delimiter: string;
   headers: string[];
+  originalHeaders: string[];
   records: CsvRecord[];
 };
-
-const HEADER_ALIASES = {
-  matchId: [
-    "spielkennung",
-    "spiel id",
-    "spiel-id",
-    "spielnummer",
-    "spiel-nr.",
-    "spielnr",
-    "kennung",
-  ],
-  competition: [
-    "wettbewerb",
-    "staffel",
-    "liga",
-    "klasse",
-    "wettbewerbsname",
-  ],
-  matchday: [
-    "spieltag",
-    "st.",
-    "staffelspieltag",
-    "runde",
-    "spielrunde",
-  ],
-  date: [
-    "datum",
-    "spieldatum",
-    "tag",
-    "datum/uhrzeit",
-    "termin",
-    "anstoss",
-    "anstoß",
-  ],
-  time: [
-    "uhrzeit",
-    "zeit",
-    "anstoßzeit",
-    "anstosszeit",
-    "beginn",
-  ],
-  home: [
-    "heim",
-    "heimverein",
-    "heimmannschaft",
-    "mannschaft 1",
-    "team 1",
-    "gastgeber",
-  ],
-  away: [
-    "gast",
-    "gastverein",
-    "gastmannschaft",
-    "mannschaft 2",
-    "team 2",
-  ],
-  location: [
-    "spielstätte",
-    "spielstaette",
-    "spielort",
-    "sportplatz",
-    "stätte",
-    "platz",
-    "anschrift",
-    "adresse",
-  ],
-  result: [
-    "ergebnis",
-    "endergebnis",
-    "resultat",
-    "tore",
-  ],
-  homeScore: [
-    "heimtore",
-    "tore heim",
-    "heim tore",
-    "heim-ergebnis",
-  ],
-  awayScore: [
-    "gasttore",
-    "tore gast",
-    "gast tore",
-    "gast-ergebnis",
-  ],
-} as const;
 
 function normalizeHeader(value: string) {
   return value
     .replace(/^\uFEFF/, "")
+    .replace(/\s+\[\d+\]$/, "")
     .toLowerCase()
     .trim()
     .replace(/\s+/g, " ");
 }
 
-function findHeader(headers: string[], aliases: readonly string[]) {
+function findHeader(headers: string[], aliases: string[], preferLast = false) {
   const normalized = headers.map((header) => ({
     original: header,
     normalized: normalizeHeader(header),
   }));
 
   for (const alias of aliases) {
-    const exact = normalized.find((item) => item.normalized === alias);
-    if (exact) return exact.original;
+    const matches = normalized.filter((item) => item.normalized === alias);
+    if (matches.length) return preferLast ? matches.at(-1)!.original : matches[0].original;
   }
 
   for (const alias of aliases) {
-    const partial = normalized.find((item) =>
-      item.normalized.includes(alias),
-    );
-    if (partial) return partial.original;
+    const matches = normalized.filter((item) => item.normalized.includes(alias));
+    if (matches.length) return preferLast ? matches.at(-1)!.original : matches[0].original;
   }
 
   return null;
 }
 
 function detectDelimiter(firstLine: string) {
-  const candidates = [";", "\t", ","];
-  return candidates
-    .map((delimiter) => ({
-      delimiter,
-      count: firstLine.split(delimiter).length,
-    }))
+  return ["\t", ";", ","]
+    .map((delimiter) => ({ delimiter, count: firstLine.split(delimiter).length }))
     .sort((a, b) => b.count - a.count)[0]?.delimiter ?? ";";
 }
 
@@ -153,42 +64,48 @@ function parseLine(line: string, delimiter: string) {
 
   for (let index = 0; index < line.length; index += 1) {
     const char = line[index];
-
     if (char === '"') {
       if (quoted && line[index + 1] === '"') {
         current += '"';
         index += 1;
-      } else {
-        quoted = !quoted;
-      }
+      } else quoted = !quoted;
       continue;
     }
-
     if (char === delimiter && !quoted) {
       values.push(current.trim());
       current = "";
       continue;
     }
-
     current += char;
   }
-
   values.push(current.trim());
   return values;
 }
 
+function uniqueHeaders(headers: string[]) {
+  const counts = new Map<string, number>();
+  return headers.map((header) => {
+    const cleaned = header.replace(/^\uFEFF/, "").trim();
+    const key = normalizeHeader(cleaned);
+    const count = (counts.get(key) ?? 0) + 1;
+    counts.set(key, count);
+    return count === 1 ? cleaned : `${cleaned} [${count}]`;
+  });
+}
+
 export function parseCsv(text: string): CsvPreviewResult {
-  const cleaned = text.replace(/\r\n/g, "\n").replace(/\r/g, "\n").trim();
-  if (!cleaned) {
-    return { delimiter: ";", headers: [], records: [] };
-  }
+  const cleaned = text
+    .replace(/\u0000/g, "")
+    .replace(/\r\n/g, "\n")
+    .replace(/\r/g, "\n")
+    .trim();
 
-  const lines = cleaned.split("\n").filter((line) => line.trim().length > 0);
+  if (!cleaned) return { delimiter: ";", headers: [], originalHeaders: [], records: [] };
+
+  const lines = cleaned.split("\n").filter((line) => line.trim());
   const delimiter = detectDelimiter(lines[0] ?? "");
-  const headers = parseLine(lines[0] ?? "", delimiter).map((header) =>
-    header.replace(/^\uFEFF/, "").trim(),
-  );
-
+  const originalHeaders = parseLine(lines[0] ?? "", delimiter);
+  const headers = uniqueHeaders(originalHeaders);
   const records = lines.slice(1).map((line) => {
     const values = parseLine(line, delimiter);
     return headers.reduce<CsvRecord>((record, header, index) => {
@@ -197,48 +114,29 @@ export function parseCsv(text: string): CsvPreviewResult {
     }, {});
   });
 
-  return { delimiter, headers, records };
+  return { delimiter, headers, originalHeaders, records };
 }
 
 function parseGermanDate(value: string) {
-  const trimmed = value.trim();
-  if (!trimmed) return null;
-
-  const iso = trimmed.match(/^(\d{4})-(\d{2})-(\d{2})/);
-  if (iso) return `${iso[1]}-${iso[2]}-${iso[3]}`;
-
-  const german = trimmed.match(
-    /(?:\w{2,10},?\s*)?(\d{1,2})\.(\d{1,2})\.(\d{2,4})/,
-  );
-  if (german) {
-    const year =
-      german[3].length === 2 ? `20${german[3]}` : german[3];
-    return `${year}-${german[2].padStart(2, "0")}-${german[1].padStart(2, "0")}`;
-  }
-
-  return null;
+  const match = value.trim().match(/(?:\w{2,10},?\s*)?(\d{1,2})\.(\d{1,2})\.(\d{2,4})/);
+  if (!match) return null;
+  const year = match[3].length === 2 ? `20${match[3]}` : match[3];
+  return `${year}-${match[2].padStart(2, "0")}-${match[1].padStart(2, "0")}`;
 }
 
 function parseTime(value: string) {
   const match = value.match(/(\d{1,2})[:.](\d{2})/);
-  if (!match) return "00:00";
-  return `${match[1].padStart(2, "0")}:${match[2]}`;
+  return match ? `${match[1].padStart(2, "0")}:${match[2]}` : "00:00";
 }
 
 function parseScore(value: string) {
   const match = value.match(/(\d+)\s*[:\-]\s*(\d+)/);
-  if (!match) return null;
-
-  return {
-    home: Number.parseInt(match[1], 10),
-    away: Number.parseInt(match[2], 10),
-  };
+  return match ? { home: Number(match[1]), away: Number(match[2]) } : null;
 }
 
-function toIsoInBrowser(date: string, time: string) {
-  const local = new Date(`${date}T${time}:00`);
-  if (Number.isNaN(local.getTime())) return null;
-  return local.toISOString();
+function toIso(date: string, time: string) {
+  const parsed = new Date(`${date}T${time}:00`);
+  return Number.isNaN(parsed.getTime()) ? null : parsed.toISOString();
 }
 
 function slugPart(value: string) {
@@ -251,6 +149,10 @@ function slugPart(value: string) {
     .slice(0, 70);
 }
 
+function read(record: CsvRecord, header: string | null) {
+  return header ? record[header]?.trim() ?? "" : "";
+}
+
 export function mapCsvRecords(input: {
   headers: string[];
   records: CsvRecord[];
@@ -259,34 +161,32 @@ export function mapCsvRecords(input: {
   clubName: string;
   onlyClubMatches: boolean;
   defaultLocation: string;
-}): { matches: ImportedMatch[]; skipped: number; detected: Record<string, string | null> } {
-  const { headers, records } = input;
-
+}) {
+  const headers = input.headers;
   const columns = {
-    matchId: findHeader(headers, HEADER_ALIASES.matchId),
-    competition: findHeader(headers, HEADER_ALIASES.competition),
-    matchday: findHeader(headers, HEADER_ALIASES.matchday),
-    date: findHeader(headers, HEADER_ALIASES.date),
-    time: findHeader(headers, HEADER_ALIASES.time),
-    home: findHeader(headers, HEADER_ALIASES.home),
-    away: findHeader(headers, HEADER_ALIASES.away),
-    location: findHeader(headers, HEADER_ALIASES.location),
-    result: findHeader(headers, HEADER_ALIASES.result),
-    homeScore: findHeader(headers, HEADER_ALIASES.homeScore),
-    awayScore: findHeader(headers, HEADER_ALIASES.awayScore),
+    matchId: findHeader(headers, ["spielkennung", "spielnummer", "spiel-id"]),
+    season: findHeader(headers, ["saison", "spielzeit"]),
+    staffel: findHeader(headers, ["staffel"]),
+    competition: findHeader(headers, ["wettkampf", "spielklasse", "wettbewerb", "liga"]),
+    matchday: findHeader(headers, ["spieltag", "runde"]),
+    date: findHeader(headers, ["spieldatum", "datum"]),
+    movedDate: findHeader(headers, ["verlegtspieldatum", "verlegt spieldatum"]),
+    time: findHeader(headers, ["uhrzeit", "anstoßzeit", "anstosszeit"], true),
+    movedTime: findHeader(headers, ["verlegtuhrzeit", "verlegt uhrzeit"]),
+    home: findHeader(headers, ["heimmannschaft", "heimverein", "heim"]),
+    away: findHeader(headers, ["gastmannschaft", "gastverein", "gast"]),
+    location: findHeader(headers, ["spielstätte", "spielstaette", "spielort", "sportplatz"]),
+    result: findHeader(headers, ["ergebnis", "endergebnis", "resultat"]),
   };
 
   const matches: ImportedMatch[] = [];
   let skipped = 0;
+  let detectedSeason: string | null = null;
 
-  for (const record of records) {
-    const homeTeam = columns.home ? record[columns.home]?.trim() : "";
-    const awayTeam = columns.away ? record[columns.away]?.trim() : "";
-    const rawDate = columns.date ? record[columns.date] ?? "" : "";
-    const rawTime =
-      (columns.time ? record[columns.time] ?? "" : "") || rawDate;
-    const date = parseGermanDate(rawDate);
-
+  for (const record of input.records) {
+    const homeTeam = read(record, columns.home);
+    const awayTeam = read(record, columns.away);
+    const date = parseGermanDate(read(record, columns.movedDate) || read(record, columns.date));
     if (!homeTeam || !awayTeam || !date) {
       skipped += 1;
       continue;
@@ -294,89 +194,46 @@ export function mapCsvRecords(input: {
 
     if (
       input.onlyClubMatches &&
-      !`${homeTeam} ${awayTeam}`
-        .toLowerCase()
-        .includes(input.clubName.toLowerCase())
-    ) {
-      continue;
-    }
+      !`${homeTeam} ${awayTeam}`.toLowerCase().includes(input.clubName.toLowerCase())
+    ) continue;
 
-    const time = parseTime(rawTime);
-    const matchDateIso = toIsoInBrowser(date, time);
+    const time = parseTime(read(record, columns.movedTime) || read(record, columns.time));
+    const matchDateIso = toIso(date, time);
     if (!matchDateIso) {
       skipped += 1;
       continue;
     }
 
-    const result = columns.result
-      ? parseScore(record[columns.result] ?? "")
-      : null;
-
-    const homeScoreText = columns.homeScore
-      ? record[columns.homeScore]?.trim()
-      : "";
-    const awayScoreText = columns.awayScore
-      ? record[columns.awayScore]?.trim()
-      : "";
-
-    const homeScore =
-      result?.home ??
-      (homeScoreText && /^\d+$/.test(homeScoreText)
-        ? Number.parseInt(homeScoreText, 10)
-        : null);
-    const awayScore =
-      result?.away ??
-      (awayScoreText && /^\d+$/.test(awayScoreText)
-        ? Number.parseInt(awayScoreText, 10)
-        : null);
-
-    const sourceMatchId = columns.matchId
-      ? record[columns.matchId]?.trim() || null
-      : null;
+    const result = parseScore(read(record, columns.result));
+    const sourceMatchId = read(record, columns.matchId) || null;
+    const csvSeason = read(record, columns.season);
+    if (!detectedSeason && csvSeason) detectedSeason = csvSeason;
+    const season = input.season || csvSeason;
     const competition =
-      (columns.competition
-        ? record[columns.competition]?.trim()
-        : "") || input.defaultCompetition;
-    const matchday =
-      (columns.matchday ? record[columns.matchday]?.trim() : "") || null;
-    const location =
-      (columns.location ? record[columns.location]?.trim() : "") ||
-      input.defaultLocation ||
-      null;
-
+      read(record, columns.staffel) ||
+      read(record, columns.competition) ||
+      input.defaultCompetition;
+    const location = read(record, columns.location) || input.defaultLocation || null;
     const importKey = sourceMatchId
       ? `dfbnet:${sourceMatchId}`
-      : [
-          "dfbnet",
-          input.season,
-          slugPart(competition),
-          slugPart(homeTeam),
-          slugPart(awayTeam),
-          date,
-          time,
-        ].join(":");
+      : ["dfbnet", season, slugPart(competition), slugPart(homeTeam), slugPart(awayTeam), date, time].join(":");
 
     matches.push({
       importKey,
       sourceMatchId,
-      season: input.season,
+      season,
       competition,
-      matchday,
+      matchday: read(record, columns.matchday) || null,
       homeTeam,
       awayTeam,
       matchDateIso,
       location,
       mapsQuery: location,
-      status:
-        homeScore !== null && awayScore !== null ? "finished" : "scheduled",
-      homeScore,
-      awayScore,
+      status: result ? "finished" : "scheduled",
+      homeScore: result?.home ?? null,
+      awayScore: result?.away ?? null,
     });
   }
 
-  return {
-    matches,
-    skipped,
-    detected: columns,
-  };
+  return { matches, skipped, detected: columns, detectedSeason };
 }

@@ -27,9 +27,11 @@ export default async function SeasonImportPage({
           <p className="club-eyebrow">Automatisierung</p>
           <h1 className="club-heading mt-2">DFBnet-Saisonimport</h1>
           <p className="mt-3 max-w-3xl text-sm leading-6 text-zinc-400">
-            Importiere den Vereins- oder Staffelspielplan einmal als CSV. Das
-            System versorgt danach automatisch nächstes Spiel, Countdown,
-            letztes Ergebnis, Spielplan, Match-Center und Saisonstatistiken.
+            Importiere den offiziellen DFBnet-Spielplan direkt im
+            UTF-16-Tabulatorformat. Das System erkennt Spielkennung,
+            verlegte Termine und Spielstätten und versorgt danach automatisch
+            nächstes Spiel, Countdown, letztes Ergebnis, Spielplan,
+            Match-Center und Saisonstatistiken.
           </p>
         </div>
       </div>

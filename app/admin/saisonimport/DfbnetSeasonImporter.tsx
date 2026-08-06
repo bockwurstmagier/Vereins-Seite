@@ -15,6 +15,7 @@ import {
   type CsvPreviewResult,
   type ImportedMatch,
 } from "../../../lib/dfbnet/csv-parser";
+import { decodeCsvFile, type DetectedEncoding } from "../../../lib/dfbnet/file-decoder";
 import { importDfbnetSeason } from "./actions";
 
 type Preview = {
@@ -22,6 +23,8 @@ type Preview = {
   matches: ImportedMatch[];
   skipped: number;
   detected: Record<string, string | null>;
+  detectedSeason: string | null;
+  encoding: DetectedEncoding;
 };
 
 export default function DfbnetSeasonImporter() {
@@ -54,8 +57,8 @@ export default function DfbnetSeasonImporter() {
     setError(null);
 
     try {
-      const text = await file.text();
-      const parsed = parseCsv(text);
+      const decoded = await decodeCsvFile(file);
+      const parsed = parseCsv(decoded.text);
 
       if (!parsed.headers.length || !parsed.records.length) {
         throw new Error("Die CSV-Datei enthält keine verwertbaren Datensätze.");
@@ -78,7 +81,7 @@ export default function DfbnetSeasonImporter() {
       }
 
       setFileName(file.name);
-      setPreview({ parsed, ...mapped });
+      setPreview({ parsed, ...mapped, encoding: decoded.encoding });
     } catch (caught) {
       setPreview(null);
       setError(
@@ -104,7 +107,7 @@ export default function DfbnetSeasonImporter() {
       defaultLocation,
     });
 
-    setPreview({ parsed: preview.parsed, ...mapped });
+    setPreview({ parsed: preview.parsed, ...mapped, encoding: preview.encoding });
   }
 
   return (
@@ -176,6 +179,7 @@ export default function DfbnetSeasonImporter() {
           </span>
           <span className="mt-2 max-w-md text-sm leading-6 text-zinc-400">
             Unterstützt Semikolon-, Komma- und Tabulator-getrennte Dateien.
+            UTF-16-DFBnet-Exporte und UTF-8-Dateien werden automatisch erkannt.
             Bestehende Spiele werden beim erneuten Import aktualisiert.
           </span>
 
@@ -202,9 +206,9 @@ export default function DfbnetSeasonImporter() {
         <>
           <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             <Stat label="Datei" value={fileName} />
+            <Stat label="Kodierung" value={encodingLabel(preview.encoding)} />
             <Stat label="CSV-Zeilen" value={String(preview.parsed.records.length)} />
             <Stat label="Erkannte Spiele" value={String(preview.matches.length)} />
-            <Stat label="Übersprungen" value={String(preview.skipped)} />
           </section>
 
           <section className="club-card p-5 sm:p-6">
@@ -324,4 +328,12 @@ function Stat({ label, value }: { label: string; value: string }) {
       <p className="mt-2 truncate text-lg font-black text-white">{value}</p>
     </div>
   );
+}
+
+
+function encodingLabel(encoding: DetectedEncoding) {
+  if (encoding === "utf-16le") return "UTF-16 LE";
+  if (encoding === "utf-16be") return "UTF-16 BE";
+  if (encoding === "utf-8-bom") return "UTF-8 BOM";
+  return "UTF-8";
 }
