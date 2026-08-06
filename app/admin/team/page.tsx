@@ -7,6 +7,7 @@ import {
   Users,
 } from "lucide-react";
 
+import DirectPlayerImageUploader from "../../../components/team/DirectPlayerImageUploader";
 import { createClient } from "../../../lib/supabase/server";
 import { createPlayer, deletePlayer } from "./actions";
 
@@ -179,17 +180,9 @@ export default async function TeamAdminPage({
             <input name="favorite_player" className="admin-input" />
           </Field>
 
-          <Field label="Spielerfoto" className="md:col-span-2">
-            <input
-              name="image"
-              type="file"
-              accept="image/*"
-              className="admin-file-input"
-            />
-            <p className="mt-2 text-xs text-zinc-600">
-              Bilddatei bis maximal 8 MB.
-            </p>
-          </Field>
+          <div className="md:col-span-2">
+            <DirectPlayerImageUploader label="Spielerfoto" />
+          </div>
 
           <label className="flex items-center gap-3 rounded-2xl border border-white/10 bg-black/30 px-4 py-4 md:col-span-2">
             <input

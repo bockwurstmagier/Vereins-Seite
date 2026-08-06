@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { ArrowLeft, Save } from "lucide-react";
 
+import DirectPlayerImageUploader from "../../../../components/team/DirectPlayerImageUploader";
 import { createClient } from "../../../../lib/supabase/server";
 import { updatePlayer } from "../actions";
 
@@ -207,17 +208,13 @@ export default async function EditPlayerPage({ params }: PageProps) {
           </div>
         )}
 
-        <Field label="Neues Spielerfoto" className="md:col-span-2">
-          <input
-            name="image"
-            type="file"
-            accept="image/*"
-            className="admin-file-input"
+        <div className="md:col-span-2">
+          <DirectPlayerImageUploader
+            label="Spielerfoto ersetzen"
+            initialUrl={player.image_url}
+            initialPath={player.image_path}
           />
-          <p className="mt-2 text-xs text-zinc-600">
-            Leer lassen, um das aktuelle Foto beizubehalten.
-          </p>
-        </Field>
+        </div>
 
         <label className="flex items-center gap-3 rounded-2xl border border-white/10 bg-black/30 px-4 py-4 md:col-span-2">
           <input

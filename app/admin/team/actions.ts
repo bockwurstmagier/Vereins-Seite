@@ -56,51 +56,6 @@ async function requireUser() {
   return { supabase, user };
 }
 
-async function uploadPlayerImage(file: File, userId: string) {
-  if (!file.size) {
-    return { imageUrl: null, imagePath: null };
-  }
-
-  if (!file.type.startsWith("image/")) {
-    throw new Error("Es dürfen nur Bilddateien hochgeladen werden.");
-  }
-
-  const maxSize = 8 * 1024 * 1024;
-
-  if (file.size > maxSize) {
-    throw new Error("Das Spielerbild darf maximal 8 MB groß sein.");
-  }
-
-  const extension = file.name.split(".").pop()?.toLowerCase() || "jpg";
-  const safeExtension = extension.replace(/[^a-z0-9]/g, "") || "jpg";
-  const imagePath = `${userId}/${crypto.randomUUID()}.${safeExtension}`;
-
-  const { supabase } = await requireUser();
-
-  const { error } = await supabase.storage
-    .from("player-images")
-    .upload(imagePath, file, {
-      cacheControl: "3600",
-      upsert: false,
-      contentType: file.type,
-    });
-
-  if (error) {
-    throw new Error(
-      `Spielerbild konnte nicht hochgeladen werden: ${error.message}`,
-    );
-  }
-
-  const { data } = supabase.storage
-    .from("player-images")
-    .getPublicUrl(imagePath);
-
-  return {
-    imageUrl: data.publicUrl,
-    imagePath,
-  };
-}
-
 export async function createPlayer(formData: FormData) {
   const { supabase, user } = await requireUser();
 
@@ -108,16 +63,8 @@ export async function createPlayer(formData: FormData) {
   const lastName = getRequiredText(formData, "last_name");
   const position = getRequiredText(formData, "position");
   const squad = getRequiredText(formData, "squad");
-  const image = formData.get("image");
-
-  let uploaded = {
-    imageUrl: null as string | null,
-    imagePath: null as string | null,
-  };
-
-  if (image instanceof File && image.size > 0) {
-    uploaded = await uploadPlayerImage(image, user.id);
-  }
+  const directImageUrl = getText(formData, "direct_image_url") || null;
+  const directImagePath = getText(formData, "direct_image_path") || null;
 
   const { error } = await supabase.from("players").insert({
     first_name: firstName,
@@ -134,18 +81,16 @@ export async function createPlayer(formData: FormData) {
     short_profile: getText(formData, "short_profile") || null,
     favorite_club: getText(formData, "favorite_club") || null,
     favorite_player: getText(formData, "favorite_player") || null,
-    image_url: uploaded.imageUrl,
-    image_path: uploaded.imagePath,
+    image_url: directImageUrl,
+    image_path: directImagePath,
     is_active: formData.get("is_active") === "on",
     sort_order: parseOptionalInteger(formData, "sort_order") ?? 0,
     created_by: user.id,
   });
 
   if (error) {
-    if (uploaded.imagePath) {
-      await supabase.storage
-        .from("player-images")
-        .remove([uploaded.imagePath]);
+    if (directImagePath) {
+      await supabase.storage.from("player-images").remove([directImagePath]);
     }
 
     throw new Error(
@@ -161,7 +106,7 @@ export async function createPlayer(formData: FormData) {
 }
 
 export async function updatePlayer(formData: FormData) {
-  const { supabase, user } = await requireUser();
+  const { supabase } = await requireUser();
 
   const id = getRequiredText(formData, "id");
   const firstName = getRequiredText(formData, "first_name");
@@ -170,16 +115,11 @@ export async function updatePlayer(formData: FormData) {
   const squad = getRequiredText(formData, "squad");
   const oldImageUrl = getText(formData, "old_image_url") || null;
   const oldImagePath = getText(formData, "old_image_path") || null;
-  const image = formData.get("image");
+  const directImageUrl = getText(formData, "direct_image_url");
+  const directImagePath = getText(formData, "direct_image_path");
 
-  let imageUrl = oldImageUrl;
-  let imagePath = oldImagePath;
-
-  if (image instanceof File && image.size > 0) {
-    const uploaded = await uploadPlayerImage(image, user.id);
-    imageUrl = uploaded.imageUrl;
-    imagePath = uploaded.imagePath;
-  }
+  const imageUrl = directImageUrl || null;
+  const imagePath = directImagePath || null;
 
   const { error } = await supabase
     .from("players")
