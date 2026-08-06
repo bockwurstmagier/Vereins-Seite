@@ -19,6 +19,7 @@ import {
   PackageCheck,
   Palette,
   Radio,
+  RadioTower,
   Settings,
   Shield,
   Smartphone,
