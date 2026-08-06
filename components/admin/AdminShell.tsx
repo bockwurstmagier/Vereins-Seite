@@ -15,6 +15,7 @@ import {
 import { logout } from "../../app/login/actions";
 import type { AppRole } from "../../lib/auth/roles";
 import AdminNavigation from "./AdminNavigation";
+import { HUJA_BRANDING } from "../../lib/branding";
 
 type AdminShellProps = {
   children: React.ReactNode;

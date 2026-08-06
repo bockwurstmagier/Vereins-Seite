@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import vereinsLogo from "../logo.png";
 import LoginForm from "./LoginForm";
 import { createClient } from "../../lib/supabase/server";
+import HujaCopyright from "../../components/branding/HujaCopyright";
 
 export default async function LoginPage() {
   const supabase = await createClient();
@@ -46,6 +47,7 @@ export default async function LoginPage() {
 
         <LoginForm />
       </section>
-    </main>
+      <HujaCopyright compact className="mt-8" />
+</main>
   );
 }

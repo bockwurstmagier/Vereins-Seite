@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import PWARegister from "../components/PWARegister";
 import AppExperience from "../components/AppExperience";
 import "./globals.css";
+import { HUJA_BRANDING } from "../lib/branding";
 const geistSans=Geist({variable:"--font-geist-sans",subsets:["latin"]});
 const geistMono=Geist_Mono({variable:"--font-geist-mono",subsets:["latin"]});
 export const metadata:Metadata={title:{default:"SpVgg Middelich-Resse",template:"%s | SpVgg Middelich-Resse"},description:"HUJA – die mobile Vereins-App der SpVgg Middelich-Resse.",applicationName:"HUJA App",appleWebApp:{capable:true,statusBarStyle:"black-translucent",title:"HUJA App"},icons:{apple:"/icons/icon-192.png"}};
