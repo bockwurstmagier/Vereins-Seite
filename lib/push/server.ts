@@ -23,6 +23,15 @@ type PushSubscriptionRow = {
   auth: string;
 };
 
+type PushPayload = {
+  title: string;
+  body: string;
+  url: string;
+  tag: string;
+  eventType: string;
+  vibrate?: number[];
+};
+
 function getAdminClient() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const secret =
@@ -55,9 +64,171 @@ function configureWebPush() {
   webpush.setVapidDetails(subject, publicKey, privateKey);
 }
 
+async function claimPushEvent(eventKey: string) {
+  const supabase = getAdminClient();
+
+  const { error } = await supabase.from("push_delivery_log").insert({
+    event_key: eventKey,
+  });
+
+  if (!error) return true;
+
+  // 23505 = unique_violation -> derselbe automatische Push wurde bereits gesendet.
+  if (error.code === "23505") return false;
+
+  throw new Error(
+    `Push-Deduplizierung konnte nicht geprüft werden: ${error.message}`,
+  );
+}
+
+async function sendPushToSubscriptions({
+  payload,
+  preferenceColumn,
+  ttl = 60 * 60,
+  urgency = "normal",
+}: {
+  payload: PushPayload;
+  preferenceColumn?: string;
+  ttl?: number;
+  urgency?: "very-low" | "low" | "normal" | "high";
+}) {
+  configureWebPush();
+  const supabase = getAdminClient();
+
+  let query = supabase
+    .from("push_subscriptions")
+    .select("id, endpoint, p256dh, auth")
+    .eq("active", true);
+
+  if (preferenceColumn) {
+    query = query.eq(preferenceColumn, true);
+  }
+
+  const { data: subscriptions, error } = await query;
+
+  if (error || !subscriptions?.length) return;
+
+  const data = JSON.stringify({
+    ...payload,
+    icon: "/icons/icon-192.png",
+    badge: "/icons/icon-192.png",
+  });
+
+  const failedIds: string[] = [];
+
+  await Promise.allSettled(
+    (subscriptions as PushSubscriptionRow[]).map(async (row) => {
+      try {
+        await webpush.sendNotification(
+          {
+            endpoint: row.endpoint,
+            keys: {
+              p256dh: row.p256dh,
+              auth: row.auth,
+            },
+          },
+          data,
+          { TTL: ttl, urgency },
+        );
+      } catch (error) {
+        const statusCode =
+          typeof error === "object" &&
+          error !== null &&
+          "statusCode" in error
+            ? Number(error.statusCode)
+            : 0;
+
+        if (statusCode === 404 || statusCode === 410) {
+          failedIds.push(row.id);
+        } else {
+          console.error("Push-Nachricht konnte nicht gesendet werden:", error);
+        }
+      }
+    }),
+  );
+
+  if (failedIds.length) {
+    await supabase
+      .from("push_subscriptions")
+      .update({
+        active: false,
+        updated_at: new Date().toISOString(),
+      })
+      .in("id", failedIds);
+  }
+}
+
+export async function sendMatchLivePush(matchId: string) {
+  try {
+    const claimed = await claimPushEvent(`match-live:${matchId}`);
+    if (!claimed) return;
+
+    const supabase = getAdminClient();
+    const { data: match } = await supabase
+      .from("matches")
+      .select("home_team, away_team")
+      .eq("id", matchId)
+      .maybeSingle();
+
+    if (!match) return;
+
+    await sendPushToSubscriptions({
+      preferenceColumn: "live_starts_enabled",
+      urgency: "high",
+      payload: {
+        title: "🔴 JETZT LIVE!",
+        body: `${match.home_team} gegen ${match.away_team} läuft jetzt im HUJA MatchCenter.`,
+        url: `/match-center/${matchId}`,
+        tag: `match-${matchId}-live`,
+        eventType: "match_live",
+        vibrate: [220, 90, 220, 90, 350],
+      },
+    });
+  } catch (error) {
+    // Push darf niemals den Live-Start verhindern.
+    console.error("Live-Start-Push wurde übersprungen:", error);
+  }
+}
+
+export async function sendNewsPush(newsId: string) {
+  try {
+    const claimed = await claimPushEvent(`news-published:${newsId}`);
+    if (!claimed) return;
+
+    const supabase = getAdminClient();
+    const { data: item } = await supabase
+      .from("news")
+      .select("title, excerpt, slug, status")
+      .eq("id", newsId)
+      .maybeSingle();
+
+    if (!item || item.status !== "published") return;
+
+    const body =
+      item.excerpt?.trim() ||
+      "Es gibt neue Vereinsnews bei der SpVgg Middelich-Resse.";
+
+    await sendPushToSubscriptions({
+      preferenceColumn: "news_enabled",
+      urgency: "normal",
+      ttl: 24 * 60 * 60,
+      payload: {
+        title: "📰 Neue Vereinsnews",
+        body: `${item.title} · ${body}`.slice(0, 220),
+        url: `/news/${item.slug}`,
+        tag: `news-${newsId}`,
+        eventType: "news",
+        vibrate: [180, 80, 180],
+      },
+    });
+  } catch (error) {
+    // Eine Push-Störung darf das Veröffentlichen einer News nicht verhindern.
+    console.error("News-Push wurde übersprungen:", error);
+  }
+}
+
 export async function sendLivePush(input: SendLivePushInput) {
   try {
-    configureWebPush();
     const supabase = getAdminClient();
 
     const [{ data: match }, { data: player }, { data: secondPlayer }] =
@@ -92,14 +263,6 @@ export async function sendLivePush(input: SendLivePushInput) {
           ? "substitutions_enabled"
           : "cards_enabled";
 
-    const { data: subscriptions, error } = await supabase
-      .from("push_subscriptions")
-      .select("id, endpoint, p256dh, auth")
-      .eq("active", true)
-      .eq(preferenceColumn, true);
-
-    if (error || !subscriptions?.length) return;
-
     const playerName = player
       ? `${player.first_name} ${player.last_name}`
       : null;
@@ -125,72 +288,28 @@ export async function sendLivePush(input: SendLivePushInput) {
         ? `${playerName || "Spieler rein"} für ${secondPlayerName || "Spieler raus"}`
         : playerName || input.description || "Neues Live-Ereignis";
 
-    const payload = JSON.stringify({
-      title,
-      body: `${input.minute}' · ${eventDetail}\n${scoreLine}`,
-      icon: "/icons/icon-192.png",
-      badge: "/icons/icon-192.png",
-      url: `/match-center/${input.matchId}`,
-      tag: `match-${input.matchId}-${input.eventType}-${input.minute}`,
-      eventType: input.eventType,
-      vibrate:
-        input.eventType === "goal"
-          ? [250, 100, 250, 100, 500]
-          : [180, 80, 180],
+    await sendPushToSubscriptions({
+      preferenceColumn,
+      urgency: input.eventType === "goal" ? "high" : "normal",
+      payload: {
+        title,
+        body: `${input.minute}' · ${eventDetail}\n${scoreLine}`,
+        url: `/match-center/${input.matchId}`,
+        tag: `match-${input.matchId}-${input.eventType}-${input.minute}`,
+        eventType: input.eventType,
+        vibrate:
+          input.eventType === "goal"
+            ? [250, 100, 250, 100, 500]
+            : [180, 80, 180],
+      },
     });
-
-    const failedIds: string[] = [];
-
-    await Promise.allSettled(
-      (subscriptions as PushSubscriptionRow[]).map(async (row) => {
-        try {
-          await webpush.sendNotification(
-            {
-              endpoint: row.endpoint,
-              keys: {
-                p256dh: row.p256dh,
-                auth: row.auth,
-              },
-            },
-            payload,
-            {
-              TTL: 60 * 60,
-              urgency: input.eventType === "goal" ? "high" : "normal",
-            },
-          );
-        } catch (error) {
-          const statusCode =
-            typeof error === "object" &&
-            error !== null &&
-            "statusCode" in error
-              ? Number(error.statusCode)
-              : 0;
-
-          if (statusCode === 404 || statusCode === 410) {
-            failedIds.push(row.id);
-          } else {
-            console.error("Push-Nachricht konnte nicht gesendet werden:", error);
-          }
-        }
-      }),
-    );
-
-    if (failedIds.length) {
-      await supabase
-        .from("push_subscriptions")
-        .update({ active: false, updated_at: new Date().toISOString() })
-        .in("id", failedIds);
-    }
   } catch (error) {
-    // Ein Push-Fehler darf niemals das Speichern eines Live-Ereignisses verhindern.
     console.error("Web-Push wurde übersprungen:", error);
   }
 }
 
-
 export async function sendFulltimePush(matchId: string) {
   try {
-    configureWebPush();
     const supabase = getAdminClient();
     const { data: match } = await supabase
       .from("matches")
@@ -200,48 +319,17 @@ export async function sendFulltimePush(matchId: string) {
 
     if (!match) return;
 
-    const { data: subscriptions } = await supabase
-      .from("push_subscriptions")
-      .select("id, endpoint, p256dh, auth")
-      .eq("active", true);
-
-    if (!subscriptions?.length) return;
-
-    const payload = JSON.stringify({
-      title: "🏁 ABPFIFF",
-      body: `${match.home_team} ${match.home_score ?? 0}:${match.away_score ?? 0} ${match.away_team}`,
-      icon: "/icons/icon-192.png",
-      badge: "/icons/icon-192.png",
-      url: `/match-center/${matchId}`,
-      tag: `match-${matchId}-fulltime`,
-      eventType: "fulltime",
-      vibrate: [250, 100, 250],
+    await sendPushToSubscriptions({
+      urgency: "high",
+      payload: {
+        title: "🏁 ABPFIFF",
+        body: `${match.home_team} ${match.home_score ?? 0}:${match.away_score ?? 0} ${match.away_team}`,
+        url: `/match-center/${matchId}`,
+        tag: `match-${matchId}-fulltime`,
+        eventType: "fulltime",
+        vibrate: [250, 100, 250],
+      },
     });
-
-    const failedIds: string[] = [];
-    await Promise.allSettled(
-      (subscriptions as PushSubscriptionRow[]).map(async (row) => {
-        try {
-          await webpush.sendNotification(
-            { endpoint: row.endpoint, keys: { p256dh: row.p256dh, auth: row.auth } },
-            payload,
-            { TTL: 60 * 60, urgency: "high" },
-          );
-        } catch (error) {
-          const statusCode = typeof error === "object" && error !== null && "statusCode" in error
-            ? Number(error.statusCode)
-            : 0;
-          if (statusCode === 404 || statusCode === 410) failedIds.push(row.id);
-        }
-      }),
-    );
-
-    if (failedIds.length) {
-      await supabase
-        .from("push_subscriptions")
-        .update({ active: false, updated_at: new Date().toISOString() })
-        .in("id", failedIds);
-    }
   } catch (error) {
     console.error("Abpfiff-Push wurde übersprungen:", error);
   }

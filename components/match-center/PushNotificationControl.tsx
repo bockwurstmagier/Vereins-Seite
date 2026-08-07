@@ -4,12 +4,16 @@ import { useEffect, useMemo, useState } from "react";
 import { Bell, BellOff, Volume2, VolumeX } from "lucide-react";
 
 type Preferences = {
+  liveStarts: boolean;
+  news: boolean;
   goals: boolean;
   cards: boolean;
   substitutions: boolean;
 };
 
 const DEFAULT_PREFERENCES: Preferences = {
+  liveStarts: true,
+  news: true,
   goals: true,
   cards: true,
   substitutions: true,
@@ -136,12 +140,12 @@ export default function PushNotificationControl() {
 
       await saveSubscription(subscription);
       setSubscribed(true);
-      setMessage("Live-Hinweise bleiben jetzt auf diesem Gerät aktiv.");
+      setMessage("Push-Hinweise bleiben jetzt auf diesem Gerät aktiv.");
     } catch (error) {
       setMessage(
         error instanceof Error
           ? error.message
-          : "Live-Hinweise konnten nicht aktiviert werden.",
+          : "Push-Hinweise konnten nicht aktiviert werden.",
       );
     } finally {
       setLoading(false);
@@ -167,12 +171,12 @@ export default function PushNotificationControl() {
       });
 
       setSubscribed(false);
-      setMessage("Live-Hinweise wurden für dieses Gerät deaktiviert.");
+      setMessage("Push-Hinweise wurden für dieses Gerät deaktiviert.");
     } catch (error) {
       setMessage(
         error instanceof Error
           ? error.message
-          : "Live-Hinweise konnten nicht deaktiviert werden.",
+          : "Push-Hinweise konnten nicht deaktiviert werden.",
       );
     } finally {
       setLoading(false);
@@ -212,16 +216,18 @@ export default function PushNotificationControl() {
       {open && (
         <div className="mb-3 w-[min(22rem,calc(100vw-2rem))] rounded-[1.75rem] border border-white/10 bg-black/95 p-4 text-white shadow-2xl backdrop-blur-2xl">
           <p className="text-sm font-black uppercase tracking-wider">
-            Live-Hinweise
+            Push-Hinweise
           </p>
           <p className="mt-1 text-xs leading-5 text-zinc-400">
             Das Push-Abo bleibt gespeichert und funktioniert auch bei
             geschlossener App.
           </p>
 
-          <div className="mt-4 grid grid-cols-3 gap-2">
+          <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-3">
             {(
               [
+                ["liveStarts", "Spiel live"],
+                ["news", "News"],
                 ["goals", "Tore"],
                 ["cards", "Karten"],
                 ["substitutions", "Wechsel"],
@@ -294,7 +300,7 @@ export default function PushNotificationControl() {
         }`}
       >
         <Bell size={16} />
-        {subscribed ? "Live-Hinweise aktiv" : "Live-Hinweise"}
+        {subscribed ? "Push-Hinweise aktiv" : "Push-Hinweise"}
       </button>
     </div>
   );

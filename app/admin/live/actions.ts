@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 
 import { requireRole } from "../../../lib/auth/roles";
 import { calculateLiveMinute } from "../../../lib/live-clock";
-import { sendLivePush } from "../../../lib/push/server";
+import { sendLivePush, sendMatchLivePush } from "../../../lib/push/server";
 import { createClient } from "../../../lib/supabase/server";
 
 const ALLOWED_ROLES = ["administrator", "trainer", "betreuer"] as const;
@@ -172,7 +172,7 @@ export async function setLivePhase(formData: FormData) {
   const { data: match, error: readError } = await supabase
     .from("matches")
     .select(
-      "current_minute, clock_phase, clock_started_at, clock_base_minute, clock_resume_phase",
+      "current_minute, status, clock_phase, clock_started_at, clock_base_minute, clock_resume_phase",
     )
     .eq("id", matchId)
     .maybeSingle();
@@ -254,6 +254,13 @@ export async function setLivePhase(formData: FormData) {
     throw new Error(
       `Ticker-Eintrag konnte nicht gespeichert werden: ${eventError.message}`,
     );
+  }
+
+  if (
+    phase === "kickoff" &&
+    !(match.status === "live" && match.clock_phase === "first_half")
+  ) {
+    await sendMatchLivePush(matchId);
   }
 
   refresh(matchId);

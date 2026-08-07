@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { sendNewsPush } from "../../../lib/push/server";
 import { createClient } from "../../../lib/supabase/server";
 
 function getText(formData: FormData, key: string) {
@@ -58,28 +59,37 @@ export async function createNews(formData: FormData) {
   const publishedAt =
     status === "published" ? new Date().toISOString() : null;
 
-  const { error } = await supabase.from("news").insert({
-    title,
-    slug: createSlug(title),
-    excerpt,
-    content,
-    category,
-    image_url: imageUrl,
-    image_path: imagePath,
-    status,
-    published_at: publishedAt,
-    created_by: user.id,
-  });
+  const { data: createdNews, error } = await supabase
+    .from("news")
+    .insert({
+      title,
+      slug: createSlug(title),
+      excerpt,
+      content,
+      category,
+      image_url: imageUrl,
+      image_path: imagePath,
+      status,
+      published_at: publishedAt,
+      created_by: user.id,
+    })
+    .select("id")
+    .single();
 
-  if (error) {
+  if (error || !createdNews) {
     if (imagePath) {
       await supabase.storage.from("news-images").remove([imagePath]);
     }
 
-    throw new Error(`News konnte nicht gespeichert werden: ${error.message}`);
+    throw new Error(`News konnte nicht gespeichert werden: ${error?.message ?? "Unbekannter Fehler"}`);
+  }
+
+  if (status === "published") {
+    await sendNewsPush(createdNews.id);
   }
 
   revalidatePath("/");
+  revalidatePath("/news");
   revalidatePath("/admin");
   revalidatePath("/admin/news");
   redirect("/admin/news?created=1");
@@ -134,7 +144,12 @@ export async function updateNews(formData: FormData) {
     await supabase.storage.from("news-images").remove([oldImagePath]);
   }
 
+  if (status === "published" && !oldPublishedAt) {
+    await sendNewsPush(id);
+  }
+
   revalidatePath("/");
+  revalidatePath("/news");
   revalidatePath("/admin");
   revalidatePath("/admin/news");
   revalidatePath(`/admin/news/${id}`);

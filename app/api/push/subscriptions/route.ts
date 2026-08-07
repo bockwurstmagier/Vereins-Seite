@@ -11,6 +11,8 @@ type SubscriptionBody = {
     };
   };
   preferences?: {
+    liveStarts?: boolean;
+    news?: boolean;
     goals?: boolean;
     cards?: boolean;
     substitutions?: boolean;
@@ -60,6 +62,8 @@ export async function POST(request: Request) {
         p256dh,
         auth,
         user_agent: request.headers.get("user-agent"),
+        live_starts_enabled: preferences.liveStarts ?? true,
+        news_enabled: preferences.news ?? true,
         goals_enabled: preferences.goals ?? true,
         cards_enabled: preferences.cards ?? true,
         substitutions_enabled: preferences.substitutions ?? true,
