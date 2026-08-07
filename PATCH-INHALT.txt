@@ -1,0 +1,17 @@
+HUJA v20.6.0 – Smart Update System
+
+Patch-Basis: v20.5.0 – HUJA Stadium Experience
+
+Geänderte/neue Dateien:
+- VERSION
+- package.json
+- package-lock.json
+- lib/branding.ts
+- public/sw.js
+- components/PWARegister.tsx
+- components/AppExperience.tsx
+- app/api/version/route.ts
+- INSTALLATION-V20.6.0-HUJA-SMART-UPDATE-SYSTEM.md
+
+Keine Supabase-SQL-Datei erforderlich.
+Login/Auth/Rollen/Push-Logik/LiveCenter wurden nicht verändert.
