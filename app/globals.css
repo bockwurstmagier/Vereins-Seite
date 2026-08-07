@@ -172,3 +172,29 @@ body {
     opacity: 1;
   }
 }
+
+
+/* HUJA Club Atmosphere v20.4.0 - public home only */
+.huja-home-content .club-section {
+  background-color: transparent;
+}
+
+.huja-home-grid {
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.018) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.018) 1px, transparent 1px);
+  background-size: 46px 46px;
+  mask-image: linear-gradient(to bottom, transparent, black 8%, black 92%, transparent);
+}
+
+.huja-home-stripes {
+  background-image: repeating-linear-gradient(
+    118deg,
+    transparent 0,
+    transparent 92px,
+    rgba(193, 18, 31, 0.018) 94px,
+    rgba(193, 18, 31, 0.018) 95px,
+    transparent 97px,
+    transparent 180px
+  );
+}
