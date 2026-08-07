@@ -157,3 +157,18 @@ body {
     transition-duration: 0.01ms !important;
   }
 }
+
+
+@keyframes hujaSplashProgress {
+  0% {
+    transform: scaleX(0);
+    opacity: 0.45;
+  }
+  35% {
+    opacity: 1;
+  }
+  100% {
+    transform: scaleX(1);
+    opacity: 1;
+  }
+}
