@@ -166,48 +166,53 @@ export default function AppExperience({ children }: { children: React.ReactNode 
   }, [availableVersion]);
 
   const installUpdate = async () => {
+    setInstallingUpdate(true);
+
+    const reloadFresh = async () => {
+      try {
+        if ("caches" in window) {
+          const keys = await window.caches.keys();
+          await Promise.all(
+            keys
+              .filter((key) => key.startsWith("huja-v"))
+              .map((key) => window.caches.delete(key)),
+          );
+        }
+      } catch {
+        // Cache-Bereinigung ist nur ein zusaetzliches Sicherheitsnetz.
+      }
+
+      const url = new URL(window.location.href);
+      url.searchParams.set("huja-update", Date.now().toString());
+      window.location.replace(url.toString());
+    };
+
     if (!("serviceWorker" in navigator)) {
-      window.location.reload();
+      await reloadFresh();
       return;
     }
-
-    setInstallingUpdate(true);
 
     try {
       const registration = await navigator.serviceWorker.ready;
       await registration.update();
 
-      const activateWaitingWorker = () => {
-        if (!registration.waiting) return false;
-        registration.waiting.postMessage({ type: "SKIP_WAITING" });
-        return true;
-      };
+      const waitingWorker = registration.waiting;
+      if (waitingWorker) {
+        waitingWorker.postMessage({ type: "SKIP_WAITING" });
 
-      if (!activateWaitingWorker()) {
-        const worker = registration.installing;
-        if (worker) {
-          await new Promise<void>((resolve) => {
-            const onStateChange = () => {
-              if (worker.state === "installed" || worker.state === "activated" || worker.state === "redundant") {
-                worker.removeEventListener("statechange", onStateChange);
-                resolve();
-              }
-            };
-            worker.addEventListener("statechange", onStateChange);
-          });
-        }
-
-        if (!activateWaitingWorker()) {
-          window.location.reload();
-          return;
-        }
+        reloadFallbackRef.current = window.setTimeout(() => {
+          void reloadFresh();
+        }, 2500);
+        return;
       }
 
-      reloadFallbackRef.current = window.setTimeout(() => {
-        window.location.reload();
-      }, 5000);
+      // Die Versions-API kann ein neues Deployment bereits sehen, bevor der
+      // Browser den neuen Worker als "waiting" meldet. In diesem Fall laden
+      // wir die aktuelle Server-Version gezielt frisch statt den Button ins
+      // Leere laufen zu lassen.
+      await reloadFresh();
     } catch {
-      window.location.reload();
+      await reloadFresh();
     }
   };
 

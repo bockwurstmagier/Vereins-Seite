@@ -1,4 +1,4 @@
-const CACHE = "huja-v20.6.0";
+const CACHE = "huja-v20.6.1";
 const CORE = [
   "/",
   "/team",
