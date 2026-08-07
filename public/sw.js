@@ -1,4 +1,4 @@
-const CACHE = "huja-v20.6.1";
+const CACHE = "huja-v20.6.2";
 const CORE = [
   "/",
   "/team",
@@ -17,7 +17,25 @@ const NETWORK_ONLY_PREFIXES = [
 ];
 
 self.addEventListener("install", (event) => {
-  event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(CORE)));
+  event.waitUntil(
+    (async () => {
+      const cache = await caches.open(CACHE);
+
+      // Ein einzelner temporaer nicht erreichbarer Core-Pfad darf ein HUJA-
+      // Update nicht komplett blockieren. Erfolgreiche Antworten werden
+      // vorgeladen, fehlgeschlagene Pfade spaeter normal ueber das Netz geholt.
+      await Promise.allSettled(
+        CORE.map(async (path) => {
+          const response = await fetch(path, { cache: "reload" });
+          if (response.ok) await cache.put(path, response.clone());
+        }),
+      );
+
+      // Wichtig fuer installierte PWAs: Der neue Worker wartet nicht mehr
+      // auf den alten Worker/Button, sondern uebernimmt nach der Installation.
+      await self.skipWaiting();
+    })(),
+  );
 });
 
 self.addEventListener("message", (event) => {
@@ -31,7 +49,7 @@ self.addEventListener("activate", (event) => {
       .then((keys) =>
         Promise.all(
           keys
-            .filter((key) => key !== CACHE)
+            .filter((key) => key.startsWith("huja-v") && key !== CACHE)
             .map((key) => caches.delete(key)),
         ),
       )

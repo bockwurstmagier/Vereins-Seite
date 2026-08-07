@@ -119,7 +119,17 @@ export default function AppExperience({ children }: { children: React.ReactNode 
         window.clearTimeout(reloadFallbackRef.current);
         reloadFallbackRef.current = null;
       }
-      window.location.reload();
+
+      // Ab v20.6.2 aktiviert sich ein neuer HUJA-Service-Worker selbst.
+      // Nur wenn der Nutzer gerade aktiv auf "Jetzt aktualisieren" gedrueckt
+      // hat, laden wir sofort neu. Andernfalls zeigen wir den Update-Dialog
+      // und lassen den Nutzer den kontrollierten Reload ausloesen.
+      if (installingUpdate) {
+        window.location.reload();
+      } else {
+        setUpdateReady(true);
+        void checkForUpdate();
+      }
     };
 
     navigator.serviceWorker.addEventListener("controllerchange", onControllerChange);
@@ -159,7 +169,7 @@ export default function AppExperience({ children }: { children: React.ReactNode 
       navigator.serviceWorker.removeEventListener("controllerchange", onControllerChange);
       if (reloadFallbackRef.current) window.clearTimeout(reloadFallbackRef.current);
     };
-  }, [checkForUpdate, markWorkerReady]);
+  }, [checkForUpdate, markWorkerReady, installingUpdate]);
 
   useEffect(() => {
     if (availableVersion) setUpdateReady(true);
