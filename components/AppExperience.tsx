@@ -4,7 +4,7 @@ import Image from "next/image";
 import { AnimatePresence, motion } from "framer-motion";
 import { RefreshCw, Sparkles, WifiOff, X } from "lucide-react";
 import { usePathname } from "next/navigation";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import clubLogo from "../app/logo.png";
 import { HUJA_BRANDING } from "../lib/branding";
@@ -44,7 +44,6 @@ export default function AppExperience({ children }: { children: React.ReactNode 
   const [updateReady, setUpdateReady] = useState(false);
   const [availableVersion, setAvailableVersion] = useState<string | null>(null);
   const [installingUpdate, setInstallingUpdate] = useState(false);
-  const reloadFallbackRef = useRef<number | null>(null);
 
   useEffect(() => {
     const alreadyShown = window.sessionStorage.getItem("huja-splash-seen");
@@ -67,91 +66,47 @@ export default function AppExperience({ children }: { children: React.ReactNode 
     };
   }, []);
 
-  const markWorkerReady = useCallback((worker: ServiceWorker | null) => {
-    if (!worker) return;
-
-    if (worker.state === "installed" && navigator.serviceWorker.controller) {
-      setUpdateReady(true);
-      return;
-    }
-
-    worker.addEventListener("statechange", () => {
-      if (worker.state === "installed" && navigator.serviceWorker.controller) {
-        setUpdateReady(true);
-      }
-    });
-  }, []);
-
   const checkForUpdate = useCallback(async () => {
-    if (!navigator.onLine || !("serviceWorker" in navigator)) return;
+    if (!navigator.onLine) return;
 
     try {
-      const response = await fetch(`/api/version?t=${Date.now()}`, {
+      const response = await fetch(`/api/version?huja-check=${Date.now()}`, {
         cache: "no-store",
-        headers: { "Cache-Control": "no-cache" },
+        headers: {
+          "Cache-Control": "no-cache, no-store, must-revalidate",
+          Pragma: "no-cache",
+        },
       });
 
-      if (response.ok) {
-        const data = (await response.json()) as VersionResponse;
-        if (data.version && isNewerVersion(data.version, HUJA_BRANDING.version)) {
-          setAvailableVersion(data.version);
-        }
-      }
+      if (!response.ok) return;
 
-      const registration = await navigator.serviceWorker.ready;
-      await registration.update();
-
-      if (registration.waiting) {
+      const data = (await response.json()) as VersionResponse;
+      if (data.version && isNewerVersion(data.version, HUJA_BRANDING.version)) {
+        setAvailableVersion(data.version);
         setUpdateReady(true);
       } else {
-        markWorkerReady(registration.installing);
+        // Ganz wichtig: Ein Service-Worker-Zustand allein darf kein Update-
+        // Fenster mehr auslösen. Nur eine tatsächlich neuere Server-Version.
+        setAvailableVersion(null);
+        setUpdateReady(false);
+      }
+
+      if ("serviceWorker" in navigator) {
+        const registration = await navigator.serviceWorker.getRegistration();
+        if (registration) void registration.update().catch(() => undefined);
       }
     } catch {
-      // Eine fehlgeschlagene Update-Prüfung darf die App niemals blockieren.
+      // Update-Prüfungen dürfen die App niemals blockieren.
     }
-  }, [markWorkerReady]);
+  }, []);
 
   useEffect(() => {
-    if (!("serviceWorker" in navigator)) return;
-
-    const onControllerChange = () => {
-      if (reloadFallbackRef.current) {
-        window.clearTimeout(reloadFallbackRef.current);
-        reloadFallbackRef.current = null;
-      }
-
-      // Ab v20.6.2 aktiviert sich ein neuer HUJA-Service-Worker selbst.
-      // Nur wenn der Nutzer gerade aktiv auf "Jetzt aktualisieren" gedrueckt
-      // hat, laden wir sofort neu. Andernfalls zeigen wir den Update-Dialog
-      // und lassen den Nutzer den kontrollierten Reload ausloesen.
-      if (installingUpdate) {
-        window.location.reload();
-      } else {
-        setUpdateReady(true);
-        void checkForUpdate();
-      }
-    };
-
-    navigator.serviceWorker.addEventListener("controllerchange", onControllerChange);
-
-    let cancelled = false;
-    let registrationRef: ServiceWorkerRegistration | null = null;
-
-    void navigator.serviceWorker.ready.then((registration) => {
-      if (cancelled) return;
-      registrationRef = registration;
-
-      if (registration.waiting) setUpdateReady(true);
-      markWorkerReady(registration.installing);
-
-      registration.addEventListener("updatefound", () => {
-        markWorkerReady(registration.installing);
-      });
-    });
-
     void checkForUpdate();
 
-    const interval = window.setInterval(() => void checkForUpdate(), UPDATE_CHECK_INTERVAL_MS);
+    const interval = window.setInterval(
+      () => void checkForUpdate(),
+      UPDATE_CHECK_INTERVAL_MS,
+    );
     const onFocus = () => void checkForUpdate();
     const onVisibilityChange = () => {
       if (document.visibilityState === "visible") void checkForUpdate();
@@ -161,68 +116,40 @@ export default function AppExperience({ children }: { children: React.ReactNode 
     document.addEventListener("visibilitychange", onVisibilityChange);
 
     return () => {
-      cancelled = true;
-      void registrationRef;
       window.clearInterval(interval);
       window.removeEventListener("focus", onFocus);
       document.removeEventListener("visibilitychange", onVisibilityChange);
-      navigator.serviceWorker.removeEventListener("controllerchange", onControllerChange);
-      if (reloadFallbackRef.current) window.clearTimeout(reloadFallbackRef.current);
     };
-  }, [checkForUpdate, markWorkerReady, installingUpdate]);
-
-  useEffect(() => {
-    if (availableVersion) setUpdateReady(true);
-  }, [availableVersion]);
+  }, [checkForUpdate]);
 
   const installUpdate = async () => {
+    if (installingUpdate) return;
     setInstallingUpdate(true);
 
-    const reloadFresh = async () => {
-      try {
-        if ("caches" in window) {
-          const keys = await window.caches.keys();
-          await Promise.all(
-            keys
-              .filter((key) => key.startsWith("huja-v"))
-              .map((key) => window.caches.delete(key)),
-          );
+    try {
+      if ("serviceWorker" in navigator) {
+        const registration = await navigator.serviceWorker.getRegistration();
+        if (registration) {
+          // Den Browser noch einmal aktiv nach der neuesten sw.js fragen lassen.
+          await registration.update().catch(() => undefined);
+          registration.waiting?.postMessage({ type: "SKIP_WAITING" });
         }
-      } catch {
-        // Cache-Bereinigung ist nur ein zusaetzliches Sicherheitsnetz.
       }
 
+      if ("caches" in window) {
+        const keys = await window.caches.keys();
+        await Promise.all(
+          keys
+            .filter((key) => key.startsWith("huja-v"))
+            .map((key) => window.caches.delete(key)),
+        );
+      }
+    } finally {
+      // Kein Reload über den Service-Worker-Cache mehr. Der Query-Parameter
+      // erzwingt eine neue Navigation zum aktuell deployten Next.js-Build.
       const url = new URL(window.location.href);
       url.searchParams.set("huja-update", Date.now().toString());
-      window.location.replace(url.toString());
-    };
-
-    if (!("serviceWorker" in navigator)) {
-      await reloadFresh();
-      return;
-    }
-
-    try {
-      const registration = await navigator.serviceWorker.ready;
-      await registration.update();
-
-      const waitingWorker = registration.waiting;
-      if (waitingWorker) {
-        waitingWorker.postMessage({ type: "SKIP_WAITING" });
-
-        reloadFallbackRef.current = window.setTimeout(() => {
-          void reloadFresh();
-        }, 2500);
-        return;
-      }
-
-      // Die Versions-API kann ein neues Deployment bereits sehen, bevor der
-      // Browser den neuen Worker als "waiting" meldet. In diesem Fall laden
-      // wir die aktuelle Server-Version gezielt frisch statt den Button ins
-      // Leere laufen zu lassen.
-      await reloadFresh();
-    } catch {
-      await reloadFresh();
+      window.location.assign(url.toString());
     }
   };
 
@@ -277,7 +204,7 @@ export default function AppExperience({ children }: { children: React.ReactNode 
             <WifiOff size={19} aria-hidden="true" />
             <div className="min-w-0 flex-1">
               <p className="text-sm font-black">Du bist offline</p>
-              <p className="text-xs text-amber-200/70">Gespeicherte Inhalte bleiben verfügbar.</p>
+              <p className="text-xs text-amber-200/70">Einige Inhalte benötigen wieder eine Internetverbindung.</p>
             </div>
           </motion.div>
         )}
@@ -330,7 +257,7 @@ export default function AppExperience({ children }: { children: React.ReactNode 
                 </h2>
                 <p className="mt-3 text-sm leading-6 text-zinc-400">
                   {installingUpdate
-                    ? "Die neue HUJA-Version wird aktiviert. Die App startet danach automatisch neu."
+                    ? "HUJA lädt die neue Version direkt vom Server. Die App startet danach automatisch neu."
                     : "Eine neue Version der HUJA Vereins-App ist bereit. Du musst die App nicht schließen."}
                 </p>
 
