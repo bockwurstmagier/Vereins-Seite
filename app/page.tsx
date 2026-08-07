@@ -16,7 +16,7 @@ import HomeAtmosphere from "../components/home/HomeAtmosphere";
 
 export default function Home() {
   return (
-    <main className="huja-home min-h-screen bg-black pb-24">
+    <main className="huja-home huja-stadium-experience min-h-screen bg-black pb-24">
       <Hero />
 
       <div className="huja-home-content relative isolate overflow-hidden">

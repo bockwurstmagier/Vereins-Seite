@@ -378,3 +378,316 @@ body {
     animation: none !important;
   }
 }
+
+/* HUJA Stadium Experience v20.5.0 - public home only */
+.huja-stadium-experience .huja-home-content {
+  background:
+    radial-gradient(circle at 50% 0%, rgba(193, 18, 31, 0.12), transparent 24rem),
+    #020202;
+}
+
+.huja-stadium-experience .club-section {
+  position: relative;
+  background: transparent;
+}
+
+.huja-stadium-experience .club-section::before {
+  content: "";
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(90deg, transparent 0%, rgba(239, 51, 64, 0.025) 50%, transparent 100%),
+    radial-gradient(ellipse at 50% 50%, rgba(121, 0, 20, 0.08), transparent 68%);
+  opacity: 0.9;
+}
+
+.huja-stadium-experience .club-container {
+  z-index: 2;
+}
+
+.huja-stadium-experience .club-card {
+  border-color: rgba(239, 51, 64, 0.28);
+  background:
+    linear-gradient(145deg, rgba(20, 4, 7, 0.86), rgba(2, 2, 2, 0.9)),
+    rgba(0, 0, 0, 0.74);
+  box-shadow:
+    0 22px 70px rgba(0, 0, 0, 0.58),
+    0 0 0 1px rgba(193, 18, 31, 0.04) inset,
+    0 0 28px rgba(193, 18, 31, 0.12);
+  backdrop-filter: blur(18px);
+}
+
+.huja-stadium-experience .club-card:hover {
+  border-color: rgba(239, 51, 64, 0.44);
+  box-shadow:
+    0 22px 70px rgba(0, 0, 0, 0.62),
+    0 0 0 1px rgba(239, 51, 64, 0.07) inset,
+    0 0 34px rgba(193, 18, 31, 0.18);
+}
+
+.huja-stadium-experience .club-card-inner {
+  border-color: rgba(239, 51, 64, 0.18);
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.huja-stadium-experience .club-eyebrow {
+  position: relative;
+  padding-left: 0.85rem;
+  text-shadow: 0 0 14px rgba(239, 51, 64, 0.32);
+}
+
+.huja-stadium-experience .club-eyebrow::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 2px;
+  height: 1.05rem;
+  transform: translateY(-50%);
+  border-radius: 999px;
+  background: #ef3340;
+  box-shadow: 0 0 12px rgba(239, 51, 64, 0.8);
+}
+
+.huja-stadium-experience .club-heading {
+  text-shadow: 0 2px 18px rgba(0, 0, 0, 0.82);
+}
+
+.huja-stadium-experience .club-icon-box {
+  border: 1px solid rgba(239, 51, 64, 0.18);
+  background: rgba(121, 0, 20, 0.28);
+  box-shadow: 0 0 18px rgba(193, 18, 31, 0.11);
+}
+
+.huja-stadium-top-glow {
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(193, 18, 31, 0.2), transparent 62%),
+    linear-gradient(to bottom, rgba(121, 0, 20, 0.12), transparent);
+  filter: blur(1px);
+}
+
+.huja-stadium-stands {
+  background:
+    linear-gradient(to bottom, transparent 0 36%, rgba(0, 0, 0, 0.74) 37% 48%, transparent 49%),
+    repeating-linear-gradient(90deg, transparent 0 22px, rgba(239, 51, 64, 0.05) 23px 24px, transparent 25px 48px);
+  mask-image: linear-gradient(to bottom, transparent, black 22%, black 58%, transparent 92%);
+}
+
+.huja-stadium-light-bank {
+  position: absolute;
+  top: 4.5rem;
+  width: 7.8rem;
+  height: 24rem;
+  opacity: 0.62;
+  filter: drop-shadow(0 0 16px rgba(239, 51, 64, 0.3));
+}
+
+.huja-stadium-light-bank-left {
+  left: -2.7rem;
+  transform: rotate(9deg);
+}
+
+.huja-stadium-light-bank-right {
+  right: -2.7rem;
+  transform: rotate(-9deg) scaleX(-1);
+}
+
+.huja-stadium-light-head {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.3rem;
+  width: 5.8rem;
+  padding: 0.5rem;
+  border: 1px solid rgba(239, 51, 64, 0.34);
+  border-radius: 0.7rem;
+  background: rgba(15, 2, 4, 0.88);
+  box-shadow: 0 0 30px rgba(239, 51, 64, 0.16);
+}
+
+.huja-stadium-light-bulb {
+  display: block;
+  aspect-ratio: 1;
+  border-radius: 999px;
+  background: #fff1f1;
+  box-shadow:
+    0 0 5px #fff,
+    0 0 12px rgba(255, 88, 96, 0.95),
+    0 0 24px rgba(239, 51, 64, 0.72);
+  animation: hujaFloodlightPulse 4.8s ease-in-out infinite alternate;
+}
+
+.huja-stadium-light-mast {
+  position: absolute;
+  left: 2.62rem;
+  top: 4.4rem;
+  width: 0.34rem;
+  height: 20rem;
+  border-left: 1px solid rgba(239, 51, 64, 0.32);
+  border-right: 1px solid rgba(239, 51, 64, 0.2);
+  background: rgba(12, 12, 12, 0.9);
+  transform: skewX(-3deg);
+}
+
+.huja-stadium-light-mast::before,
+.huja-stadium-light-mast::after {
+  content: "";
+  position: absolute;
+  left: -1rem;
+  width: 2.35rem;
+  height: 1px;
+  background: rgba(239, 51, 64, 0.2);
+  transform: rotate(62deg);
+  box-shadow: 0 2.7rem 0 rgba(239, 51, 64, 0.16), 0 5.4rem 0 rgba(239, 51, 64, 0.13), 0 8.1rem 0 rgba(239, 51, 64, 0.1);
+}
+
+.huja-stadium-light-mast::before { top: 2rem; }
+.huja-stadium-light-mast::after { top: 3.35rem; transform: rotate(-62deg); }
+
+.huja-home-smoke-e {
+  top: 91%;
+  opacity: 0.23;
+  animation: hujaSmokeDriftA 36s ease-in-out -17s infinite alternate;
+}
+
+.huja-stadium-sparks {
+  opacity: 0.56;
+  background-image:
+    radial-gradient(circle at 6% 9%, rgba(255, 89, 78, 0.92) 0 1px, transparent 1.7px),
+    radial-gradient(circle at 17% 32%, rgba(255, 43, 55, 0.7) 0 1.2px, transparent 2px),
+    radial-gradient(circle at 36% 16%, rgba(255, 123, 80, 0.78) 0 1px, transparent 1.8px),
+    radial-gradient(circle at 66% 25%, rgba(255, 58, 66, 0.82) 0 1px, transparent 1.8px),
+    radial-gradient(circle at 84% 48%, rgba(255, 113, 77, 0.75) 0 1px, transparent 1.8px),
+    radial-gradient(circle at 94% 20%, rgba(255, 50, 61, 0.82) 0 1.2px, transparent 2px);
+  background-size: 170px 230px, 240px 280px, 290px 250px, 220px 320px, 260px 260px, 310px 290px;
+  animation: hujaStadiumSparks 22s linear infinite;
+}
+
+.huja-stadium-vignette {
+  background:
+    linear-gradient(90deg, rgba(0, 0, 0, 0.68), transparent 15%, transparent 85%, rgba(0, 0, 0, 0.68)),
+    radial-gradient(ellipse at center, transparent 24%, rgba(0, 0, 0, 0.7) 100%);
+}
+
+.huja-home-crest-tertiary {
+  animation-duration: 15s;
+  animation-delay: -7s;
+}
+
+.huja-stadium-hero .huja-hero-crest {
+  filter: drop-shadow(0 0 18px rgba(239, 51, 64, 0.25));
+  animation: hujaHeroCrestBreath 6.5s ease-in-out infinite alternate;
+}
+
+.huja-hero-word {
+  font-family: Arial Black, Impact, Haettenschweiler, sans-serif;
+  text-shadow:
+    0 3px 0 rgba(0, 0, 0, 0.85),
+    0 0 24px rgba(255, 255, 255, 0.14),
+    0 0 36px rgba(193, 18, 31, 0.24);
+  transform: skewX(-3deg);
+}
+
+.huja-hero-slogan {
+  text-shadow: 0 0 18px rgba(239, 51, 64, 0.38);
+}
+
+.huja-hero-button {
+  box-shadow:
+    0 0 0 1px rgba(239, 51, 64, 0.08) inset,
+    0 0 30px rgba(193, 18, 31, 0.2),
+    0 18px 42px rgba(0, 0, 0, 0.48);
+}
+
+.huja-hero-smoke {
+  position: absolute;
+  bottom: 4%;
+  width: 72%;
+  height: 44%;
+  opacity: 0.48;
+  filter: blur(28px);
+  mix-blend-mode: screen;
+  background:
+    radial-gradient(ellipse at 20% 76%, rgba(193, 18, 31, 0.55) 0 8%, transparent 28%),
+    radial-gradient(ellipse at 48% 44%, rgba(118, 4, 20, 0.6) 0 9%, transparent 30%),
+    radial-gradient(ellipse at 78% 68%, rgba(239, 51, 64, 0.35) 0 7%, transparent 28%);
+  mask-image: radial-gradient(ellipse at center, black 0 52%, transparent 88%);
+}
+
+.huja-hero-smoke-left {
+  left: -24%;
+  animation: hujaHeroSmokeLeft 18s ease-in-out infinite alternate;
+}
+
+.huja-hero-smoke-right {
+  right: -24%;
+  transform: scaleX(-1);
+  animation: hujaHeroSmokeRight 21s ease-in-out -6s infinite alternate;
+}
+
+.huja-hero-embers {
+  opacity: 0.68;
+  background-image:
+    radial-gradient(circle at 8% 64%, rgba(255, 77, 68, 0.95) 0 1px, transparent 1.8px),
+    radial-gradient(circle at 24% 82%, rgba(255, 139, 83, 0.65) 0 1px, transparent 1.8px),
+    radial-gradient(circle at 67% 76%, rgba(255, 57, 67, 0.9) 0 1px, transparent 1.8px),
+    radial-gradient(circle at 89% 62%, rgba(255, 120, 80, 0.72) 0 1px, transparent 1.8px);
+  background-size: 180px 240px, 230px 280px, 260px 250px, 210px 300px;
+  animation: hujaEmbersRise 18s linear infinite;
+}
+
+@keyframes hujaFloodlightPulse {
+  from { opacity: 0.78; filter: brightness(0.92); }
+  to { opacity: 1; filter: brightness(1.18); }
+}
+
+@keyframes hujaStadiumSparks {
+  from { transform: translate3d(0, 4%, 0); background-position: 0 0, 0 0, 0 0, 0 0, 0 0, 0 0; }
+  to { transform: translate3d(0, -4%, 0); background-position: 15px -220px, -12px -170px, 20px -260px, -18px -200px, 11px -230px, -16px -190px; }
+}
+
+@keyframes hujaHeroCrestBreath {
+  from { transform: scale(0.985); filter: drop-shadow(0 0 14px rgba(239, 51, 64, 0.2)); }
+  to { transform: scale(1.015); filter: drop-shadow(0 0 28px rgba(239, 51, 64, 0.38)); }
+}
+
+@keyframes hujaHeroSmokeLeft {
+  from { transform: translate3d(-3%, 2%, 0) scale(1.03); opacity: 0.38; }
+  to { transform: translate3d(9%, -5%, 0) scale(1.16); opacity: 0.58; }
+}
+
+@keyframes hujaHeroSmokeRight {
+  from { transform: translate3d(3%, 1%, 0) scaleX(-1) scale(1.02); opacity: 0.34; }
+  to { transform: translate3d(-8%, -6%, 0) scaleX(-1) scale(1.18); opacity: 0.56; }
+}
+
+@media (max-width: 640px) {
+  .huja-stadium-light-bank {
+    top: 3.5rem;
+    width: 6.2rem;
+    height: 20rem;
+    opacity: 0.52;
+  }
+
+  .huja-stadium-light-bank-left { left: -3.5rem; }
+  .huja-stadium-light-bank-right { right: -3.5rem; }
+  .huja-stadium-light-head { width: 5rem; gap: 0.24rem; padding: 0.42rem; }
+  .huja-stadium-light-mast { left: 2.3rem; height: 17rem; }
+
+  .huja-stadium-experience .club-card {
+    backdrop-filter: blur(14px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .huja-stadium-light-bulb,
+  .huja-stadium-sparks,
+  .huja-hero-smoke,
+  .huja-hero-embers,
+  .huja-stadium-hero .huja-hero-crest,
+  .huja-home-crest-tertiary {
+    animation: none !important;
+  }
+}
