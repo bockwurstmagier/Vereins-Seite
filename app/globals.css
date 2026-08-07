@@ -174,7 +174,7 @@ body {
 }
 
 
-/* HUJA Club Atmosphere v20.4.0 - public home only */
+/* HUJA Stadium Atmosphere v20.4.1 - public home only */
 .huja-home-content .club-section {
   background-color: transparent;
 }
@@ -197,4 +197,184 @@ body {
     transparent 97px,
     transparent 180px
   );
+}
+
+.huja-home-floodlight {
+  position: absolute;
+  top: -7rem;
+  width: 42rem;
+  height: 54rem;
+  opacity: 0.2;
+  filter: blur(10px);
+  mix-blend-mode: screen;
+  transform-origin: top center;
+  background: conic-gradient(
+    from 178deg at 50% 0%,
+    transparent 0deg,
+    transparent 166deg,
+    rgba(255, 35, 45, 0.02) 172deg,
+    rgba(255, 55, 64, 0.2) 178deg,
+    rgba(255, 120, 125, 0.08) 183deg,
+    transparent 190deg,
+    transparent 360deg
+  );
+  mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.95), rgba(0, 0, 0, 0.4) 55%, transparent 90%);
+}
+
+.huja-home-floodlight-left {
+  left: -22rem;
+  transform: rotate(18deg);
+}
+
+.huja-home-floodlight-right {
+  right: -22rem;
+  transform: rotate(-18deg) scaleX(-1);
+}
+
+.huja-home-smoke {
+  position: absolute;
+  left: -28%;
+  width: 156%;
+  height: 34rem;
+  opacity: 0.28;
+  filter: blur(30px);
+  mix-blend-mode: screen;
+  will-change: transform, opacity;
+  background:
+    radial-gradient(ellipse at 8% 58%, rgba(141, 8, 20, 0.42) 0 7%, transparent 25%),
+    radial-gradient(ellipse at 26% 35%, rgba(74, 5, 12, 0.46) 0 8%, transparent 27%),
+    radial-gradient(ellipse at 43% 62%, rgba(193, 18, 31, 0.32) 0 7%, transparent 25%),
+    radial-gradient(ellipse at 62% 37%, rgba(99, 6, 16, 0.42) 0 8%, transparent 27%),
+    radial-gradient(ellipse at 81% 56%, rgba(181, 12, 27, 0.34) 0 7%, transparent 26%),
+    radial-gradient(ellipse at 96% 36%, rgba(84, 5, 13, 0.4) 0 7%, transparent 25%);
+  mask-image: radial-gradient(ellipse at center, black 0 45%, rgba(0, 0, 0, 0.85) 62%, transparent 88%);
+}
+
+.huja-home-smoke-a {
+  top: 4%;
+  animation: hujaSmokeDriftA 28s ease-in-out infinite alternate;
+}
+
+.huja-home-smoke-b {
+  top: 29%;
+  opacity: 0.22;
+  transform: scaleX(-1) scale(1.08);
+  animation: hujaSmokeDriftB 34s ease-in-out infinite alternate;
+}
+
+.huja-home-smoke-c {
+  top: 55%;
+  opacity: 0.24;
+  animation: hujaSmokeDriftA 38s ease-in-out -12s infinite alternate;
+}
+
+.huja-home-smoke-d {
+  top: 79%;
+  opacity: 0.2;
+  transform: scaleX(-1) scale(1.12);
+  animation: hujaSmokeDriftB 32s ease-in-out -8s infinite alternate;
+}
+
+.huja-home-crest {
+  filter: saturate(0.75) brightness(0.62) contrast(1.25) drop-shadow(0 0 28px rgba(196, 18, 31, 0.28));
+  animation: hujaCrestPulse 9s ease-in-out infinite alternate;
+}
+
+.huja-home-crest-secondary {
+  animation-duration: 13s;
+  animation-delay: -4s;
+}
+
+.huja-home-embers {
+  opacity: 0.3;
+  background-image:
+    radial-gradient(circle at 10% 18%, rgba(255, 59, 65, 0.8) 0 1px, transparent 1.8px),
+    radial-gradient(circle at 23% 42%, rgba(255, 108, 78, 0.55) 0 1px, transparent 1.8px),
+    radial-gradient(circle at 41% 12%, rgba(255, 64, 72, 0.75) 0 1px, transparent 1.6px),
+    radial-gradient(circle at 58% 71%, rgba(255, 91, 62, 0.55) 0 1px, transparent 1.7px),
+    radial-gradient(circle at 77% 33%, rgba(255, 52, 62, 0.8) 0 1px, transparent 1.8px),
+    radial-gradient(circle at 91% 62%, rgba(255, 114, 78, 0.5) 0 1px, transparent 1.7px);
+  background-size: 210px 260px, 260px 220px, 310px 280px, 240px 300px, 280px 240px, 330px 290px;
+  animation: hujaEmbersRise 26s linear infinite;
+}
+
+@keyframes hujaSmokeDriftA {
+  0% {
+    transform: translate3d(-3%, 1.5rem, 0) scale(1.02);
+    opacity: 0.18;
+  }
+  48% {
+    transform: translate3d(3%, -0.8rem, 0) scale(1.08);
+    opacity: 0.3;
+  }
+  100% {
+    transform: translate3d(-1%, -2.2rem, 0) scale(1.13);
+    opacity: 0.22;
+  }
+}
+
+@keyframes hujaSmokeDriftB {
+  0% {
+    transform: translate3d(4%, 2rem, 0) scaleX(-1) scale(1.05);
+    opacity: 0.16;
+  }
+  55% {
+    transform: translate3d(-2%, -1rem, 0) scaleX(-1) scale(1.12);
+    opacity: 0.27;
+  }
+  100% {
+    transform: translate3d(2%, -2.6rem, 0) scaleX(-1) scale(1.16);
+    opacity: 0.2;
+  }
+}
+
+@keyframes hujaCrestPulse {
+  from {
+    filter: saturate(0.68) brightness(0.56) contrast(1.2) drop-shadow(0 0 18px rgba(196, 18, 31, 0.18));
+  }
+  to {
+    filter: saturate(0.84) brightness(0.68) contrast(1.3) drop-shadow(0 0 34px rgba(196, 18, 31, 0.34));
+  }
+}
+
+@keyframes hujaEmbersRise {
+  from {
+    transform: translate3d(0, 3%, 0);
+    background-position: 0 0, 0 0, 0 0, 0 0, 0 0, 0 0;
+  }
+  to {
+    transform: translate3d(0, -3%, 0);
+    background-position: 12px -180px, -18px -140px, 22px -210px, -14px -165px, 19px -195px, -11px -155px;
+  }
+}
+
+@media (max-width: 640px) {
+  .huja-home-smoke {
+    left: -52%;
+    width: 204%;
+    height: 27rem;
+    filter: blur(24px);
+  }
+
+  .huja-home-floodlight {
+    width: 30rem;
+    height: 42rem;
+    opacity: 0.16;
+  }
+
+  .huja-home-floodlight-left {
+    left: -19rem;
+  }
+
+  .huja-home-floodlight-right {
+    right: -19rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .huja-home-smoke,
+  .huja-home-crest,
+  .huja-home-embers {
+    animation: none !important;
+  }
 }
