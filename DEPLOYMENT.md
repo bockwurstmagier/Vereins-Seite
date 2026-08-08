@@ -51,14 +51,14 @@ Settings
 → New repository secret
 ```
 
-Diese beiden Secrets anlegen:
+Für CI mindestens diese beiden öffentlichen Build-Variablen anlegen:
 
 ```text
 NEXT_PUBLIC_SUPABASE_URL
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
 ```
 
-Die Werte stammen aus deiner lokalen `.env.local`.
+Die Werte stammen aus deiner lokalen `.env.local`. Server-Secrets gehören ausschließlich in die Environment Variables des Deployments und nicht in Client-Code.
 
 ## 4. Vercel verbinden
 
@@ -76,9 +76,16 @@ Vor dem ersten Deployment unter `Environment Variables` hinzufügen:
 ```text
 NEXT_PUBLIC_SUPABASE_URL
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
+NEXT_PUBLIC_SITE_URL
+SUPABASE_SECRET_KEY
+NEXT_PUBLIC_VAPID_PUBLIC_KEY
+VAPID_PRIVATE_KEY
+VAPID_SUBJECT
 ```
 
-Beide mindestens für:
+`SUPABASE_SERVICE_ROLE_KEY` wird aus Kompatibilitätsgründen weiterhin als Fallback akzeptiert. Für neue Konfigurationen `SUPABASE_SECRET_KEY` verwenden.
+
+Die Variablen mindestens für:
 
 ```text
 Production

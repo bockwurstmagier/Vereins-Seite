@@ -33,7 +33,7 @@ sql/VERSION-15.1.0-SPIELER-EINLADUNGEN.sql
 ### 2. Vercel-Variablen ergänzen
 
 ```text
-SUPABASE_SERVICE_ROLE_KEY
+SUPABASE_SECRET_KEY
 NEXT_PUBLIC_SITE_URL
 ```
 
@@ -43,14 +43,9 @@ Beispiel:
 NEXT_PUBLIC_SITE_URL=https://vereins-seite-gamma.vercel.app
 ```
 
-Den `SUPABASE_SERVICE_ROLE_KEY` findest du in Supabase unter:
+Verwende bevorzugt den aktuellen Supabase `Secret Key`. Ältere Projekte können weiterhin `SUPABASE_SERVICE_ROLE_KEY` als Fallback verwenden.
 
-```text
-Project Settings → API Keys → service_role
-```
-
-Der Service-Role-Key darf niemals mit `NEXT_PUBLIC_` beginnen und niemals im
-Browsercode verwendet werden.
+Der Server-Key darf niemals mit `NEXT_PUBLIC_` beginnen und niemals im Browsercode verwendet werden.
 
 ### 3. Patch kopieren und deployen
 

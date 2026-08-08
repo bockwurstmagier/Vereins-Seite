@@ -1,4 +1,4 @@
-// HUJA v20.6.3 – Push-only Service Worker
+// HUJA – Push-only Service Worker (v20.7.1 Stability Audit)
 //
 // Wichtig: Der Service Worker cached absichtlich KEINE Next.js-Seiten oder
 // JavaScript-Bundles mehr. Dadurch kann eine alte PWA-Shell kein neues

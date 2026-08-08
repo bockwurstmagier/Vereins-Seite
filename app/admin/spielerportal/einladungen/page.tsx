@@ -20,6 +20,7 @@ import {
   normalizePhoneNumber,
 } from "../../../../lib/player-invitations";
 import { createClient } from "../../../../lib/supabase/server";
+import { getAdminSupabaseConfigStatus } from "../../../../lib/supabase/admin";
 import {
   createInvitationsForOpenPlayers,
   createPlayerInvitation,
@@ -45,6 +46,7 @@ export default async function PlayerInvitationsPage({
   const forwardedProto = requestHeaders.get("x-forwarded-proto") || "https";
   const forwardedHost = requestHeaders.get("x-forwarded-host") || requestHeaders.get("host");
   const requestOrigin = forwardedHost ? `${forwardedProto}://${forwardedHost}` : undefined;
+  const adminConfig = getAdminSupabaseConfigStatus();
   const supabase = await createClient();
 
   const [playersResult, accountsResult, invitationsResult] = await Promise.all([
@@ -65,6 +67,11 @@ export default async function PlayerInvitationsPage({
   const players = playersResult.data ?? [];
   const accounts = accountsResult.data ?? [];
   const invitations = invitationsResult.data ?? [];
+  const invitationDataError =
+    playersResult.error?.message ||
+    accountsResult.error?.message ||
+    invitationsResult.error?.message ||
+    null;
   const linkedPlayerIds = new Set(accounts.map((account) => account.player_id));
   const playerMap = new Map(
     players.map((player) => [
@@ -101,6 +108,29 @@ export default async function PlayerInvitationsPage({
           </p>
         </div>
       </div>
+
+      {invitationDataError && (
+        <section className="mt-7 rounded-3xl border border-red-500/25 bg-red-950/25 p-5 sm:p-6">
+          <p className="font-black text-red-100">Spieler-Einladungen konnten nicht vollständig geladen werden</p>
+          <p className="mt-2 text-sm leading-6 text-red-100/70">{invitationDataError}</p>
+          <p className="mt-2 text-xs text-red-200/60">Prüfe, ob die Spielerportal-SQL-Migrationen in Supabase vollständig ausgeführt wurden.</p>
+        </section>
+      )}
+
+      {!adminConfig.ok && (
+        <section className="mt-7 rounded-3xl border border-red-500/25 bg-red-950/25 p-5 sm:p-6">
+          <div className="flex items-start gap-3">
+            <ShieldCheck size={22} className="mt-0.5 shrink-0 text-red-300" />
+            <div>
+              <p className="font-black text-red-100">Einladungs-Registrierung noch nicht vollständig konfiguriert</p>
+              <p className="mt-2 text-sm leading-6 text-red-100/70">
+                Auf dem Server fehlt: <span className="font-black text-red-200">{adminConfig.missing.join(", ")}</span>.
+                Links können zwar erstellt werden, die öffentliche Registrierungsseite funktioniert aber erst nach dem Setzen der Variable und einem neuen Deployment.
+              </p>
+            </div>
+          </div>
+        </section>
+      )}
 
       {params.revoked && <Notice text="Einladung wurde widerrufen." />}
       {params.bulk && (

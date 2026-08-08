@@ -23,14 +23,36 @@ export function normalizePhoneNumber(value: string) {
   return normalized.replace(/[^\d]/g, "");
 }
 
+function normalizeOrigin(value?: string | null) {
+  if (!value) return undefined;
+
+  const firstValue = value.split(",")[0]?.trim();
+  if (!firstValue) return undefined;
+
+  try {
+    const url = new URL(firstValue);
+    if (url.protocol !== "https:" && url.protocol !== "http:") return undefined;
+    return url.origin.replace(/\/+$/, "");
+  } catch {
+    return undefined;
+  }
+}
+
+function vercelOrigin() {
+  const host =
+    process.env.VERCEL_PROJECT_PRODUCTION_URL || process.env.VERCEL_URL;
+  if (!host) return undefined;
+  return normalizeOrigin(`https://${host.replace(/^https?:\/\//, "")}`);
+}
+
 export function createRegistrationUrl(token: string, requestOrigin?: string) {
-  const configuredBase = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/+$/, "");
-  const vercelBase = process.env.VERCEL_PROJECT_PRODUCTION_URL
-    ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL.replace(/\/+$/, "")}`
-    : process.env.VERCEL_URL
-      ? `https://${process.env.VERCEL_URL.replace(/\/+$/, "")}`
-      : undefined;
-  const base = requestOrigin?.replace(/\/+$/, "") || configuredBase || vercelBase;
+  const safeToken = token.trim();
+  if (!safeToken) throw new Error("Einladungstoken fehlt.");
+
+  const base =
+    normalizeOrigin(requestOrigin) ||
+    normalizeOrigin(process.env.NEXT_PUBLIC_SITE_URL) ||
+    vercelOrigin();
 
   if (!base) {
     throw new Error(
@@ -38,7 +60,7 @@ export function createRegistrationUrl(token: string, requestOrigin?: string) {
     );
   }
 
-  return `${base}/registrieren/spieler/${token}`;
+  return `${base}/registrieren/spieler/${encodeURIComponent(safeToken)}`;
 }
 
 export function createWhatsAppText(input: {

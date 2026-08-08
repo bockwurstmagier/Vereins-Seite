@@ -40,7 +40,7 @@ function getAdminClient() {
 
   if (!url || !secret) {
     throw new Error(
-      "Für Web Push fehlen NEXT_PUBLIC_SUPABASE_URL und SUPABASE_SECRET_KEY.",
+      "Für Web Push fehlen NEXT_PUBLIC_SUPABASE_URL sowie SUPABASE_SECRET_KEY oder SUPABASE_SERVICE_ROLE_KEY.",
     );
   }
 

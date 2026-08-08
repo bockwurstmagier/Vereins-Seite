@@ -81,16 +81,11 @@ export default function LiveMomentUploader({
       if (uploadError) throw new Error(uploadError.message);
 
       setProgress(80);
-      const { data } = supabase.storage
-        .from("live-moments")
-        .getPublicUrl(uploadedPath);
-
       await addLiveMoment({
         matchId,
         minute,
         eventType,
         description,
-        videoUrl: data.publicUrl,
         videoPath: uploadedPath,
       });
 

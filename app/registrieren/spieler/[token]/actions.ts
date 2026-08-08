@@ -2,7 +2,7 @@
 
 import { redirect } from "next/navigation";
 
-import { createAdminClient } from "../../../../lib/supabase/admin";
+import { createAdminClient, getAdminSupabaseConfigStatus } from "../../../../lib/supabase/admin";
 import { createClient } from "../../../../lib/supabase/server";
 
 function value(formData: FormData, key: string) {
@@ -25,6 +25,15 @@ export async function registerInvitedPlayer(formData: FormData) {
 
   if (password !== passwordRepeat) {
     redirect(`/registrieren/spieler/${token}?error=repeat`);
+  }
+
+  const adminConfig = getAdminSupabaseConfigStatus();
+  if (!adminConfig.ok) {
+    console.error(
+      "HUJA Spielerregistrierung: Serverkonfiguration unvollständig:",
+      adminConfig.missing.join(", "),
+    );
+    redirect(`/registrieren/spieler/${token}?error=config`);
   }
 
   const admin = createAdminClient();

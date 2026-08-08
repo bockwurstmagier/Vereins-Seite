@@ -405,7 +405,6 @@ export async function addLiveMoment(input: {
   minute: number;
   eventType: "penalty" | "moment";
   description?: string;
-  videoUrl: string;
   videoPath: string;
 }) {
   const { supabase, user } = await authorizedClient();
@@ -415,12 +414,13 @@ export async function addLiveMoment(input: {
     (input.eventType === "penalty" ? "Elfmeter" : "Live-Moment");
 
   if (!matchId) throw new Error("Spiel fehlt.");
-  if (!input.videoUrl.includes("/live-moments/")) {
-    throw new Error("Ungültige Video-URL.");
-  }
   if (!input.videoPath.startsWith(`${user.id}/${matchId}/`)) {
     throw new Error("Ungültiger Video-Pfad.");
   }
+
+  const { data: publicVideo } = supabase.storage
+    .from("live-moments")
+    .getPublicUrl(input.videoPath);
 
   const { error } = await supabase.from("match_events").insert({
     match_id: matchId,
@@ -428,7 +428,7 @@ export async function addLiveMoment(input: {
     minute,
     description,
     moment_type: input.eventType,
-    video_url: input.videoUrl,
+    video_url: publicVideo.publicUrl,
     video_path: input.videoPath,
     created_by: user.id,
   });

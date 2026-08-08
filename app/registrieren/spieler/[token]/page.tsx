@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 
 import vereinsLogo from "../../../logo.png";
-import { createAdminClient } from "../../../../lib/supabase/admin";
+import { createAdminClient, getAdminSupabaseConfigStatus } from "../../../../lib/supabase/admin";
 import { registerInvitedPlayer } from "./actions";
 
 type PageProps = {
@@ -24,15 +24,32 @@ export default async function PlayerRegistrationPage({
 }: PageProps) {
   const { token } = await params;
   const { error } = await searchParams;
-  const admin = createAdminClient();
+  const adminConfig = getAdminSupabaseConfigStatus();
 
-  const { data: invitation } = await admin
+  if (!adminConfig.ok) {
+    console.error(
+      "HUJA Spieler-Einladung: Serverkonfiguration unvollständig:",
+      adminConfig.missing.join(", "),
+    );
+    return <RegistrationUnavailable />;
+  }
+
+  const admin = createAdminClient();
+  const { data: invitation, error: invitationLoadError } = await admin
     .from("player_invitations")
     .select(
       "id,player_id,invited_email,expires_at,accepted_at,revoked_at,players(first_name,last_name,position,squad,image_url)",
     )
     .eq("token", token)
     .maybeSingle();
+
+  if (invitationLoadError) {
+    console.error(
+      "HUJA Spieler-Einladung konnte nicht geladen werden:",
+      invitationLoadError.message,
+    );
+    return <RegistrationUnavailable />;
+  }
 
   const invalid =
     !invitation ||
@@ -167,6 +184,30 @@ export default async function PlayerRegistrationPage({
   );
 }
 
+function RegistrationUnavailable() {
+  return (
+    <main className="min-h-screen bg-club-black px-4 py-10 text-white">
+      <div className="mx-auto max-w-lg">
+        <Image src={vereinsLogo} alt="" className="mx-auto w-28" />
+        <section className="club-card mt-7 overflow-hidden">
+          <div className="border-b border-white/10 bg-gradient-to-r from-club-burgundy/60 via-club-dark-red/20 to-transparent p-6 text-center">
+            <p className="club-eyebrow">HUJA Spielerportal</p>
+            <h1 className="mt-2 text-2xl font-black uppercase">Registrierung</h1>
+          </div>
+          <div className="p-6 text-center">
+            <ShieldCheck size={42} className="mx-auto text-red-300" />
+            <h2 className="mt-4 text-xl font-black uppercase">Registrierung gerade nicht verfügbar</h2>
+            <p className="mt-3 text-sm leading-6 text-zinc-400">
+              Der Einladungsdienst konnte nicht geladen werden. Bitte informiere das Trainerteam und versuche es später erneut.
+            </p>
+            <Link href="/" className="club-button-secondary mt-6 w-full">Zur HUJA Startseite</Link>
+          </div>
+        </section>
+      </div>
+    </main>
+  );
+}
+
 function ErrorMessage({ code }: { code: string }) {
   const messages: Record<string, string> = {
     email: "Bitte eine gültige E-Mail-Adresse eingeben.",
@@ -178,6 +219,7 @@ function ErrorMessage({ code }: { code: string }) {
     exists: "Für diese E-Mail-Adresse existiert bereits ein Benutzerkonto.",
     create: "Das Benutzerkonto konnte nicht erstellt werden.",
     database: "Die Registrierung konnte nicht vollständig gespeichert werden.",
+    config: "Die Registrierung ist serverseitig noch nicht vollständig eingerichtet. Bitte informiere das Trainerteam.",
   };
 
   return (
