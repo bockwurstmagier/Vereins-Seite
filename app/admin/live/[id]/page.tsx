@@ -16,9 +16,11 @@ import {
   Undo2,
   UsersRound,
   Sparkles,
+  Video,
 } from "lucide-react";
 
 import LiveClock from "../../../../components/match-center/LiveClock";
+import LiveMomentUploader from "../../../../components/match-center/LiveMomentUploader";
 import MatchdayDeviceControls from "../../../../components/match-center/MatchdayDeviceControls";
 import { requireRole } from "../../../../lib/auth/roles";
 import { getPublicMatchCenterMatch } from "../../../../lib/match-center";
@@ -142,10 +144,11 @@ export default async function MobileLiveControlPage({ params, searchParams }: Pa
       <section className="club-card mt-5 p-5">
         <p className="club-eyebrow">Event-Center</p>
         <h2 className="mt-2 text-xl font-black uppercase text-white">Schnellaktionen</h2>
-        <div className="mt-5 grid grid-cols-3 gap-3">
+        <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
           <a href="#goal-event" className="club-button-primary min-h-20 flex-col"><Goal size={22} /> Tor</a>
           <a href="#card-event" className="club-button-secondary min-h-20 flex-col"><ShieldAlert size={22} /> Karte</a>
           <a href="#substitution-event" className="club-button-secondary min-h-20 flex-col"><RefreshCcw size={22} /> Wechsel</a>
+          <a href="#live-moment" className="club-button-secondary min-h-20 flex-col"><Video size={22} /> Video</a>
         </div>
       </section>
 
@@ -233,6 +236,15 @@ export default async function MobileLiveControlPage({ params, searchParams }: Pa
         </form>
       </section>
 
+      <section id="live-moment" className="club-card mt-5 scroll-mt-24 p-5">
+        <SectionTitle icon={<Video size={20} />} title="Live-Moment mit Video" />
+        <p className="mt-3 text-sm leading-6 text-zinc-400">
+          Elfmeter, Großchance oder besondere Szene direkt vom Handy hochladen.
+          Zuschauer sehen den Clip anschließend direkt im Live-Ticker.
+        </p>
+        <LiveMomentUploader matchId={match.id} defaultMinute={match.current_minute} />
+      </section>
+
       <section className="club-card mt-5 p-5">
         <div className="flex items-center justify-between gap-4">
           <SectionTitle icon={<Undo2 size={20} />} title="Letzte Aktionen" />
@@ -246,7 +258,7 @@ export default async function MobileLiveControlPage({ params, searchParams }: Pa
             <div key={event.id} className="flex items-center gap-3 rounded-2xl border border-white/[0.08] bg-black/25 p-3">
               <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-club-red/10 text-xs font-black text-club-light-red">{event.minute}'</span>
               <div className="min-w-0">
-                <p className="text-[9px] font-black uppercase tracking-wider text-club-light-red">{eventLabel(event.event_type)}</p>
+                <p className="text-[9px] font-black uppercase tracking-wider text-club-light-red">{eventLabel(event.event_type, event.moment_type)}</p>
                 <p className="mt-1 truncate text-sm font-bold text-white">{event.player_id ? playerName.get(event.player_id) : event.description || "Vereinsereignis"}</p>
               </div>
             </div>
@@ -273,7 +285,9 @@ function PhaseButton({ matchId, phase, label, icon, danger = false }: { matchId:
   return <form action={setLivePhase}><input type="hidden" name="match_id" value={matchId} /><input type="hidden" name="phase" value={phase} /><button type="submit" className={`${danger ? "border-red-500/25 bg-red-950/30 text-red-300" : ""} club-button-secondary min-h-16 w-full`}>{icon}{label}</button></form>;
 }
 
-function eventLabel(type: string) {
+function eventLabel(type: string, momentType?: string | null) {
+  if (momentType === "penalty") return "Elfmeter";
+  if (momentType === "moment") return "Live-Moment";
   if (type === "goal") return "Tor";
   if (type === "yellow_card") return "Gelbe Karte";
   if (type === "red_card") return "Rote Karte";

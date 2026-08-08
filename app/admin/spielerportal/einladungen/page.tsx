@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { headers } from "next/headers";
 import {
   ArrowLeft,
   CheckCircle2,
@@ -40,6 +41,10 @@ export default async function PlayerInvitationsPage({
 }: PageProps) {
   await requireRole(["administrator", "vorstand", "trainer", "betreuer"]);
   const params = await searchParams;
+  const requestHeaders = await headers();
+  const forwardedProto = requestHeaders.get("x-forwarded-proto") || "https";
+  const forwardedHost = requestHeaders.get("x-forwarded-host") || requestHeaders.get("host");
+  const requestOrigin = forwardedHost ? `${forwardedProto}://${forwardedHost}` : undefined;
   const supabase = await createClient();
 
   const [playersResult, accountsResult, invitationsResult] = await Promise.all([
@@ -104,7 +109,7 @@ export default async function PlayerInvitationsPage({
 
       {createdInvitation && (() => {
         const player = playerMap.get(createdInvitation.player_id);
-        const registrationUrl = createRegistrationUrl(createdInvitation.token);
+        const registrationUrl = createRegistrationUrl(createdInvitation.token, requestOrigin);
         const whatsappText = createWhatsAppText({
           playerName: player?.name ?? "Spieler",
           registrationUrl,

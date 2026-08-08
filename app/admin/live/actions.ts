@@ -399,13 +399,61 @@ export async function addSubstitution(formData: FormData) {
   redirect(`/admin/live/${matchId}?substitution=1`);
 }
 
+
+export async function addLiveMoment(input: {
+  matchId: string;
+  minute: number;
+  eventType: "penalty" | "moment";
+  description?: string;
+  videoUrl: string;
+  videoPath: string;
+}) {
+  const { supabase, user } = await authorizedClient();
+  const matchId = input.matchId.trim();
+  const minute = Math.max(0, Math.min(130, Number(input.minute) || 0));
+  const description = input.description?.trim() ||
+    (input.eventType === "penalty" ? "Elfmeter" : "Live-Moment");
+
+  if (!matchId) throw new Error("Spiel fehlt.");
+  if (!input.videoUrl.includes("/live-moments/")) {
+    throw new Error("Ungültige Video-URL.");
+  }
+  if (!input.videoPath.startsWith(`${user.id}/${matchId}/`)) {
+    throw new Error("Ungültiger Video-Pfad.");
+  }
+
+  const { error } = await supabase.from("match_events").insert({
+    match_id: matchId,
+    event_type: "note",
+    minute,
+    description,
+    moment_type: input.eventType,
+    video_url: input.videoUrl,
+    video_path: input.videoPath,
+    created_by: user.id,
+  });
+
+  if (error) {
+    await supabase.storage.from("live-moments").remove([input.videoPath]);
+    throw new Error(`Live-Moment konnte nicht gespeichert werden: ${error.message}`);
+  }
+
+  await supabase
+    .from("matches")
+    .update({ current_minute: minute, status: "live", updated_at: new Date().toISOString() })
+    .eq("id", matchId);
+
+  refresh(matchId);
+  return { ok: true };
+}
+
 export async function undoLastEvent(formData: FormData) {
   const { supabase } = await authorizedClient();
   const matchId = required(formData, "match_id");
 
   const { data: event, error: eventError } = await supabase
     .from("match_events")
-    .select("id, event_type, description")
+    .select("id, event_type, description, video_path")
     .eq("match_id", matchId)
     .order("created_at", { ascending: false })
     .limit(1)
@@ -431,6 +479,10 @@ export async function undoLastEvent(formData: FormData) {
         })
         .eq("id", matchId);
     }
+  }
+
+  if (event.video_path) {
+    await supabase.storage.from("live-moments").remove([event.video_path]);
   }
 
   const { error } = await supabase.from("match_events").delete().eq("id", event.id);

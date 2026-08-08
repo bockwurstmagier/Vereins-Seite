@@ -6,7 +6,6 @@ import { redirect } from "next/navigation";
 import { requireRole } from "../../../../lib/auth/roles";
 import {
   createInvitationToken,
-  createRegistrationUrl,
 } from "../../../../lib/player-invitations";
 import { createClient } from "../../../../lib/supabase/server";
 
@@ -58,7 +57,6 @@ async function createInvitation(input: {
   return {
     invitationId: data.id as string,
     token,
-    registrationUrl: createRegistrationUrl(token),
   };
 }
 

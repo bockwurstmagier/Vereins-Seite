@@ -82,7 +82,7 @@ export default function LiveMatchCenter({
     const { data } = await supabase
       .from("match_events")
       .select(
-        "id, match_id, event_type, minute, player_id, secondary_player_id, description, created_at",
+        "id, match_id, event_type, minute, player_id, secondary_player_id, description, moment_type, video_url, video_path, created_at",
       )
       .eq("match_id", initialMatch.id)
       .order("minute", { ascending: false })
@@ -305,9 +305,9 @@ export default function LiveMatchCenter({
                       <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-club-red/10 text-sm font-black text-club-light-red">
                         {event.minute}'
                       </span>
-                      <div>
+                      <div className="min-w-0 flex-1">
                         <p className="text-[10px] font-black uppercase tracking-wider text-club-light-red">
-                          {eventLabel(event.event_type)}
+                          {eventLabel(event.event_type, event.moment_type)}
                         </p>
                         <p className="mt-1 text-sm font-black text-white">
                           {player
@@ -323,6 +323,20 @@ export default function LiveMatchCenter({
                           <p className="mt-1 text-xs text-zinc-500">
                             {event.description}
                           </p>
+                        )}
+                        {event.video_url && (
+                          <div className="mt-3 overflow-hidden rounded-2xl border border-club-light-red/20 bg-black">
+                            <video
+                              src={event.video_url}
+                              controls
+                              playsInline
+                              preload="metadata"
+                              className="max-h-[420px] w-full bg-black object-contain"
+                            />
+                            <p className="px-3 py-2 text-[10px] font-black uppercase tracking-wider text-club-light-red">
+                              ▶ Live-Moment ansehen
+                            </p>
+                          </div>
                         )}
                       </div>
                     </article>
@@ -494,7 +508,12 @@ function SquadCard({
   );
 }
 
-function eventLabel(type: MatchCenterEvent["event_type"]) {
+function eventLabel(
+  type: MatchCenterEvent["event_type"],
+  momentType?: MatchCenterEvent["moment_type"],
+) {
+  if (momentType === "penalty") return "Elfmeter";
+  if (momentType === "moment") return "Live-Moment";
   if (type === "goal") return "Tor";
   if (type === "yellow_card") return "Gelbe Karte";
   if (type === "red_card") return "Rote Karte";

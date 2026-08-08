@@ -23,17 +23,22 @@ export function normalizePhoneNumber(value: string) {
   return normalized.replace(/[^\d]/g, "");
 }
 
-export function createRegistrationUrl(token: string) {
-  const configuredBase =
-    process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/+$/, "") ?? "";
+export function createRegistrationUrl(token: string, requestOrigin?: string) {
+  const configuredBase = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/+$/, "");
+  const vercelBase = process.env.VERCEL_PROJECT_PRODUCTION_URL
+    ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL.replace(/\/+$/, "")}`
+    : process.env.VERCEL_URL
+      ? `https://${process.env.VERCEL_URL.replace(/\/+$/, "")}`
+      : undefined;
+  const base = requestOrigin?.replace(/\/+$/, "") || configuredBase || vercelBase;
 
-  if (!configuredBase) {
+  if (!base) {
     throw new Error(
-      "NEXT_PUBLIC_SITE_URL fehlt. Beispiel: https://vereins-seite-gamma.vercel.app",
+      "Die öffentliche HUJA-Adresse konnte nicht ermittelt werden. NEXT_PUBLIC_SITE_URL setzen.",
     );
   }
 
-  return `${configuredBase}/registrieren/spieler/${token}`;
+  return `${base}/registrieren/spieler/${token}`;
 }
 
 export function createWhatsAppText(input: {
