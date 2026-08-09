@@ -15,15 +15,16 @@ import {
   ShieldCheck,
   Trophy,
   UserRound,
+  PencilLine,
 } from "lucide-react";
 
 import vereinsLogo from "../logo.png";
 import { logout } from "../login/actions";
 import { getPlayerPortalData } from "../../lib/player-portal";
-import { createInjuryReport, savePlayerResponse } from "./actions";
+import { createInjuryReport, savePlayerResponse, updateOwnPlayerProfile } from "./actions";
 
 type PageProps = {
-  searchParams: Promise<{ saved?: string; injury?: string }>;
+  searchParams: Promise<{ saved?: string; injury?: string; profile_saved?: string }>;
 };
 
 const formatter = new Intl.DateTimeFormat("de-DE", {
@@ -107,6 +108,75 @@ export default async function PlayerPortalPage({ searchParams }: PageProps) {
         {params.injury && (
           <Notice text="Deine Verletzungsmeldung wurde an das Trainerteam gesendet." />
         )}
+        {params.profile_saved && (
+          <Notice text="Dein Spielerprofil wurde aktualisiert. Die Änderungen sind auch im Bereich Team sichtbar." />
+        )}
+
+        <section className="club-card mt-7 p-5 sm:p-6">
+          <SectionTitle icon={<PencilLine size={19} />} title="Mein öffentliches Spielerprofil" />
+          <p className="mt-3 max-w-3xl text-sm leading-6 text-zinc-400">
+            Diese Angaben erscheinen auch auf deiner öffentlichen Teamseite. Name, Mannschaft, Rolle und Spielerfoto können nur vom Verein geändert werden.
+          </p>
+
+          <form action={updateOwnPlayerProfile} className="mt-6 grid gap-4 md:grid-cols-2">
+            <PortalField label="Position">
+              <select name="position" defaultValue={data.player.position} className="admin-input">
+                <option>Torwart</option>
+                <option>Abwehr</option>
+                <option>Mittelfeld</option>
+                <option>Sturm</option>
+              </select>
+            </PortalField>
+
+            <PortalField label="Rückennummer">
+              <input name="shirt_number" type="number" min="0" max="99" defaultValue={data.player.shirt_number ?? ""} className="admin-input" />
+            </PortalField>
+
+            <PortalField label="Starker Fuß">
+              <select name="strong_foot" defaultValue={data.player.strong_foot ?? ""} className="admin-input">
+                <option value="">Keine Angabe</option>
+                <option>Rechts</option>
+                <option>Links</option>
+                <option>Beidfüßig</option>
+              </select>
+            </PortalField>
+
+            <PortalField label="Größe in cm">
+              <input name="height_cm" type="number" min="120" max="230" defaultValue={data.player.height_cm ?? ""} className="admin-input" />
+            </PortalField>
+
+            <PortalField label="Geburtsdatum">
+              <input name="birth_date" type="date" defaultValue={data.player.birth_date ?? ""} className="admin-input" />
+            </PortalField>
+
+            <PortalField label="Nationalität">
+              <input name="nationality" defaultValue={data.player.nationality ?? ""} placeholder="z. B. Deutsch" className="admin-input" />
+            </PortalField>
+
+            <PortalField label="Instagram-Link" className="md:col-span-2">
+              <input name="instagram_url" type="url" defaultValue={data.player.instagram_url ?? ""} placeholder="https://instagram.com/..." className="admin-input" />
+            </PortalField>
+
+            <PortalField label="Kurzprofil" className="md:col-span-2">
+              <textarea name="short_profile" rows={4} defaultValue={data.player.short_profile ?? ""} placeholder="Ein paar Worte über dich …" className="admin-input min-h-28 py-4" />
+            </PortalField>
+
+            <PortalField label="Lieblingsverein">
+              <input name="favorite_club" defaultValue={data.player.favorite_club ?? ""} className="admin-input" />
+            </PortalField>
+
+            <PortalField label="Lieblingsspieler">
+              <input name="favorite_player" defaultValue={data.player.favorite_player ?? ""} className="admin-input" />
+            </PortalField>
+
+            <div className="md:col-span-2">
+              <button className="club-button-primary w-full sm:w-auto">
+                <PencilLine size={17} />
+                Profil speichern
+              </button>
+            </div>
+          </form>
+        </section>
 
         <section className="mt-7 grid grid-cols-2 gap-4 md:grid-cols-4">
           <Stat icon={<Trophy size={18} />} label="Einsätze" value={data.stats?.appearances ?? 0} />
@@ -368,6 +438,26 @@ function SectionTitle({
       <div className="club-icon-box">{icon}</div>
       <h2 className="text-xl font-black uppercase">{title}</h2>
     </div>
+  );
+}
+
+
+function PortalField({
+  label,
+  children,
+  className = "",
+}: {
+  label: string;
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <label className={className}>
+      <span className="mb-2 block text-xs font-black uppercase tracking-wider text-zinc-400">
+        {label}
+      </span>
+      {children}
+    </label>
   );
 }
 

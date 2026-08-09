@@ -63,7 +63,7 @@ export async function getPlayerPortalData() {
   ] = await Promise.all([
     auth.supabase
       .from("players")
-      .select("id,first_name,last_name,slug,position,shirt_number,squad,image_url")
+      .select("id,first_name,last_name,slug,position,shirt_number,squad,image_url,strong_foot,height_cm,birth_date,nationality,instagram_url,short_profile,favorite_club,favorite_player")
       .eq("id", auth.playerId)
       .single(),
     auth.supabase

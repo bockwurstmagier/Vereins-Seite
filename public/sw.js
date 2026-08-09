@@ -1,4 +1,4 @@
-// HUJA – Push-only Service Worker (v20.9.0 Auto Tabelle)
+// HUJA – Push-only Service Worker (v20.10.0 Spielerprofil Self-Service)
 //
 // Wichtig: Der Service Worker cached absichtlich KEINE Next.js-Seiten oder
 // JavaScript-Bundles mehr. Dadurch kann eine alte PWA-Shell kein neues
