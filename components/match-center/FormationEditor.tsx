@@ -129,7 +129,7 @@ export default function FormationEditor({ matchId, players, initialSquad, initia
   }
 
   return (
-    <section className="club-card mt-8 overflow-hidden">
+    <section className="club-card relative z-0 mt-8 overflow-hidden">
       <div className="border-b border-white/10 p-5 sm:p-6">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex items-center gap-3">

@@ -167,7 +167,7 @@ export default async function AdminMatchCenterDetailPage({ params, searchParams 
           </form>
         </section>
 
-        <section className="club-card p-5 sm:p-6">
+        <section className="club-card relative z-40 p-5 sm:p-6">
           <div className="flex items-center gap-3">
             <div className="club-icon-box"><Circle size={19} aria-hidden="true" /></div>
             <div><p className="club-eyebrow">Live-Ticker</p><h2 className="mt-1 text-xl font-black uppercase">Ereignis hinzufügen</h2></div>
@@ -225,7 +225,7 @@ export default async function AdminMatchCenterDetailPage({ params, searchParams 
                       <summary className="flex h-10 cursor-pointer list-none items-center justify-center rounded-xl border border-white/10 bg-white/[0.03] px-3 text-[10px] font-black uppercase tracking-wider text-zinc-300 hover:border-club-light-red/30 hover:text-white">
                         Korrigieren
                       </summary>
-                      <div className="absolute left-1/2 z-30 mt-3 w-[min(92vw,34rem)] -translate-x-1/2 rounded-3xl border border-club-light-red/20 bg-zinc-950 p-5 shadow-2xl">
+                      <div className="absolute left-1/2 z-[90] mt-3 max-h-[75vh] w-[min(92vw,34rem)] -translate-x-1/2 overflow-y-auto rounded-3xl border border-club-light-red/20 bg-zinc-950 p-5 shadow-2xl">
                         <p className="club-eyebrow">Statistik korrigieren</p>
                         <p className="mt-2 text-sm text-zinc-400">Änderungen wirken sich automatisch auf Tore, Vorlagen, Karten und Spielerstatistiken aus.</p>
                         <form action={updateMatchEvent} className="mt-4 grid gap-3 sm:grid-cols-2">
