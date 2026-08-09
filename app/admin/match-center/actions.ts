@@ -41,6 +41,9 @@ function refresh(matchId: string) {
   revalidatePath("/admin");
   revalidatePath("/admin/match-center");
   revalidatePath(`/admin/match-center/${matchId}`);
+  revalidatePath("/statistiken");
+  revalidatePath("/admin/statistiken");
+  revalidatePath("/admin/trainer");
 }
 
 export async function updateMatchCenter(formData: FormData) {
@@ -95,6 +98,38 @@ export async function addMatchEvent(formData: FormData) {
 
   refresh(matchId);
   redirect(`/admin/match-center/${matchId}?event=1`);
+}
+
+
+export async function updateMatchEvent(formData: FormData) {
+  const { supabase } = await authenticatedClient();
+  const matchId = required(formData, "match_id");
+  const eventId = required(formData, "event_id");
+  const eventType = required(formData, "event_type");
+  const minute = integer(formData, "minute");
+  const playerId = text(formData, "player_id") || null;
+  const secondaryPlayerId = text(formData, "secondary_player_id") || null;
+  const description = text(formData, "description") || null;
+
+  const allowed = new Set(["goal", "yellow_card", "red_card", "substitution", "note"]);
+  if (!allowed.has(eventType)) throw new Error("Unbekannter Ereignistyp.");
+
+  const { error } = await supabase
+    .from("match_events")
+    .update({
+      event_type: eventType,
+      minute,
+      player_id: playerId,
+      secondary_player_id: secondaryPlayerId,
+      description,
+    })
+    .eq("id", eventId)
+    .eq("match_id", matchId);
+
+  if (error) throw new Error(`Ereignis konnte nicht korrigiert werden: ${error.message}`);
+
+  refresh(matchId);
+  redirect(`/admin/match-center/${matchId}?corrected=1`);
 }
 
 export async function deleteMatchEvent(formData: FormData) {

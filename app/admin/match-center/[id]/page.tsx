@@ -17,13 +17,14 @@ import {
   addMatchEvent,
   deleteMatchEvent,
   quickLiveAction,
+  updateMatchEvent,
   updateMatchCenter,
 } from "../actions";
 import { finalizeMatchDay } from "../finalize-actions";
 
 type PageProps = {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ saved?: string; event?: string; deleted?: string; squad?: string; quick?: string; tactics?: string }>;
+  searchParams: Promise<{ saved?: string; event?: string; deleted?: string; corrected?: string; squad?: string; quick?: string; tactics?: string }>;
 };
 
 export default async function AdminMatchCenterDetailPage({ params, searchParams }: PageProps) {
@@ -52,7 +53,7 @@ export default async function AdminMatchCenterDetailPage({ params, searchParams 
         </h1>
       </div>
 
-      {(notices.saved || notices.event || notices.deleted || notices.squad || notices.quick || notices.tactics) && (
+      {(notices.saved || notices.event || notices.deleted || notices.corrected || notices.squad || notices.quick || notices.tactics) && (
         <div className="mt-6 rounded-2xl border border-emerald-500/25 bg-emerald-950/30 px-4 py-3 text-sm text-emerald-300">
           Änderungen wurden erfolgreich gespeichert.
         </div>
@@ -211,7 +212,7 @@ export default async function AdminMatchCenterDetailPage({ params, searchParams 
               const player = event.player_id ? playerMap.get(event.player_id) : null;
               const second = event.secondary_player_id ? playerMap.get(event.secondary_player_id) : null;
               return (
-                <article key={event.id} className="flex items-start gap-3 rounded-3xl border border-white/[0.08] bg-black/25 p-4">
+                <article key={event.id} className="relative flex items-start gap-3 rounded-3xl border border-white/[0.08] bg-black/25 p-4">
                   <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-club-red/10 text-sm font-black text-club-light-red">{event.minute}'</span>
                   <div className="min-w-0 flex-1">
                     <p className="text-[10px] font-black uppercase tracking-wider text-club-light-red">{eventLabel(event.event_type)}</p>
@@ -219,11 +220,54 @@ export default async function AdminMatchCenterDetailPage({ params, searchParams 
                     {second && <p className="mt-1 text-xs text-zinc-500">für {second.first_name} {second.last_name}</p>}
                     {player && event.description && <p className="mt-1 text-xs text-zinc-500">{event.description}</p>}
                   </div>
-                  <form action={deleteMatchEvent}>
-                    <input type="hidden" name="match_id" value={match.id} />
-                    <input type="hidden" name="event_id" value={event.id} />
-                    <button type="submit" aria-label="Ereignis löschen" className="flex h-10 w-10 items-center justify-center rounded-xl border border-red-500/20 bg-red-950/30 text-red-400"><Trash2 size={16} aria-hidden="true" /></button>
-                  </form>
+                  <div className="flex shrink-0 items-center gap-2">
+                    <details className="group">
+                      <summary className="flex h-10 cursor-pointer list-none items-center justify-center rounded-xl border border-white/10 bg-white/[0.03] px-3 text-[10px] font-black uppercase tracking-wider text-zinc-300 hover:border-club-light-red/30 hover:text-white">
+                        Korrigieren
+                      </summary>
+                      <div className="absolute left-1/2 z-30 mt-3 w-[min(92vw,34rem)] -translate-x-1/2 rounded-3xl border border-club-light-red/20 bg-zinc-950 p-5 shadow-2xl">
+                        <p className="club-eyebrow">Statistik korrigieren</p>
+                        <p className="mt-2 text-sm text-zinc-400">Änderungen wirken sich automatisch auf Tore, Vorlagen, Karten und Spielerstatistiken aus.</p>
+                        <form action={updateMatchEvent} className="mt-4 grid gap-3 sm:grid-cols-2">
+                          <input type="hidden" name="match_id" value={match.id} />
+                          <input type="hidden" name="event_id" value={event.id} />
+                          <Field label="Ereignis">
+                            <select name="event_type" defaultValue={event.event_type} className="admin-input">
+                              <option value="goal">Tor</option>
+                              <option value="yellow_card">Gelbe Karte</option>
+                              <option value="red_card">Rote Karte</option>
+                              <option value="substitution">Auswechslung</option>
+                              <option value="note">Notiz</option>
+                            </select>
+                          </Field>
+                          <Field label="Minute">
+                            <input name="minute" type="number" min="0" max="130" defaultValue={event.minute} className="admin-input" />
+                          </Field>
+                          <Field label="Spieler / Torschütze">
+                            <select name="player_id" defaultValue={event.player_id ?? ""} className="admin-input">
+                              <option value="">Kein Spieler</option>
+                              {players.map((entry) => <option key={entry.id} value={entry.id}>{entry.first_name} {entry.last_name}</option>)}
+                            </select>
+                          </Field>
+                          <Field label="Vorlage / zweiter Spieler">
+                            <select name="secondary_player_id" defaultValue={event.secondary_player_id ?? ""} className="admin-input">
+                              <option value="">Keine Vorlage / kein zweiter Spieler</option>
+                              {players.map((entry) => <option key={entry.id} value={entry.id}>{entry.first_name} {entry.last_name}</option>)}
+                            </select>
+                          </Field>
+                          <Field label="Beschreibung" className="sm:col-span-2">
+                            <input name="description" defaultValue={event.description ?? ""} className="admin-input" />
+                          </Field>
+                          <button type="submit" className="club-button-primary sm:col-span-2">Korrektur speichern</button>
+                        </form>
+                      </div>
+                    </details>
+                    <form action={deleteMatchEvent}>
+                      <input type="hidden" name="match_id" value={match.id} />
+                      <input type="hidden" name="event_id" value={event.id} />
+                      <button type="submit" aria-label="Ereignis löschen" className="flex h-10 w-10 items-center justify-center rounded-xl border border-red-500/20 bg-red-950/30 text-red-400"><Trash2 size={16} aria-hidden="true" /></button>
+                    </form>
+                  </div>
                 </article>
               );
             }) : <p className="rounded-3xl border border-dashed border-white/10 p-6 text-center text-sm text-zinc-500">Noch keine Ereignisse vorhanden.</p>}

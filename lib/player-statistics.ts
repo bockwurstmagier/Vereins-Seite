@@ -1,4 +1,5 @@
 import { createClient } from "./supabase/server";
+import { isPlayingProfile } from "./player-role";
 
 export type PlayerSeasonStat = {
   playerId: string;
@@ -106,7 +107,7 @@ export async function getPlayerSeasonStats(
     return [];
   }
 
-  const players = (playersResult.data ?? []) as PlayerRow[];
+  const players = ((playersResult.data ?? []) as PlayerRow[]).filter(isPlayingProfile);
   const matches = (matchesResult.data ?? []) as MatchRow[];
   const matchIds = matches.map((match) => match.id);
 

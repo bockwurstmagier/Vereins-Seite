@@ -4,6 +4,7 @@ import {
   Award,
   BarChart3,
   Goal,
+  FilePenLine,
   Medal,
   Shield,
   Sparkles,
@@ -35,7 +36,11 @@ export default async function AdminStatisticsPage({ searchParams }: PageProps) {
           </p>
         </div>
 
-        <form method="get">
+        <div className="flex flex-col gap-2 sm:items-end">
+          <Link href="/admin/match-center" className="club-button-secondary">
+            <FilePenLine size={17} /> Spieldaten korrigieren
+          </Link>
+          <form method="get">
           <select
             name="season"
             defaultValue={data.season}
@@ -48,7 +53,8 @@ export default async function AdminStatisticsPage({ searchParams }: PageProps) {
           <button className="club-button-secondary mt-2 w-full">
             Saison laden
           </button>
-        </form>
+          </form>
+        </div>
       </div>
 
       <section className="mt-7 grid grid-cols-2 gap-4 xl:grid-cols-6">

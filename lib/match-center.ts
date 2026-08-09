@@ -1,5 +1,6 @@
 import { createClient } from "./supabase/server";
 import { getClubIdentityMap } from "./clubs";
+import { isPlayingProfile } from "./player-role";
 
 export type MatchCenterMatch = {
   id: string;
@@ -37,6 +38,7 @@ export type MatchCenterPlayer = {
   last_name: string;
   shirt_number: number | null;
   position: string;
+  squad: string;
   image_url: string | null;
 };
 
@@ -109,7 +111,7 @@ export async function getPublicMatchCenterMatch(id: string) {
         .maybeSingle(),
       supabase
         .from("players")
-        .select("id, first_name, last_name, shirt_number, position, image_url")
+        .select("id, first_name, last_name, shirt_number, position, squad, image_url")
         .eq("is_active", true),
       supabase
         .from("match_events")
@@ -141,7 +143,7 @@ export async function getPublicMatchCenterMatch(id: string) {
       home_logo_url: clubMap.get(match.home_team)?.logo_url ?? null,
       away_logo_url: clubMap.get(match.away_team)?.logo_url ?? null,
     },
-    players: (playersResult.data ?? []) as MatchCenterPlayer[],
+    players: ((playersResult.data ?? []) as MatchCenterPlayer[]).filter(isPlayingProfile),
     events: (eventsResult.data ?? []) as MatchCenterEvent[],
     squad: (squadResult.data ?? []) as MatchSquadEntry[],
   };

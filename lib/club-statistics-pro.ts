@@ -3,6 +3,7 @@ import "server-only";
 import { getAvailableSeasons, getPlayerSeasonStats } from "./player-statistics";
 import { createClient } from "./supabase/server";
 import { isMiddelichResse, normalizeClubName } from "./club-name";
+import { isPlayingProfile } from "./player-role";
 
 type MatchRow = {
   id: string;
@@ -31,6 +32,8 @@ type PlayerRow = {
   last_name: string;
   slug: string;
   image_url: string | null;
+  squad: string;
+  position: string;
 };
 
 type ClubRow = {
@@ -136,7 +139,7 @@ export async function getClubStatisticsPro(requestedSeason?: string) {
         .order("minute", { ascending: true }),
       supabase
         .from("players")
-        .select("id,first_name,last_name,slug,image_url"),
+        .select("id,first_name,last_name,slug,image_url,squad,position"),
       supabase.from("clubs").select("name,logo_url"),
       getPlayerSeasonStats(season),
     ]);
@@ -144,7 +147,7 @@ export async function getClubStatisticsPro(requestedSeason?: string) {
   const allMatches = (matchesResult.data ?? []) as MatchRow[];
   const seasonMatches = allMatches.filter((match) => match.season === season);
   const events = (eventsResult.data ?? []) as EventRow[];
-  const players = (playersResult.data ?? []) as PlayerRow[];
+  const players = ((playersResult.data ?? []) as PlayerRow[]).filter(isPlayingProfile);
   const clubs = (clubsResult.data ?? []) as ClubRow[];
   const playerMap = new Map(players.map((player) => [player.id, player]));
   const clubLogoMap = new Map(
