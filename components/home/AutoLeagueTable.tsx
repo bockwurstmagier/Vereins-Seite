@@ -1,10 +1,9 @@
-import { ChevronRight, Database, Trophy } from "lucide-react";
+import { ChevronRight, Trophy } from "lucide-react";
 import FussballWidget from "../fussball/FussballWidget";
 import LeagueTableFromSupabase from "./LeagueTableFromSupabase";
 
 const COMPETITION = "Kreisliga B 2";
 const SEASON = "2026/27";
-const STAFFEL_ID = "031BHFIC0G000004VS5489BUVUR5FS5A-G";
 
 export default function AutoLeagueTable() {
   const widgetId =
@@ -29,7 +28,7 @@ export default function AutoLeagueTable() {
                 className="text-club-light-red"
                 aria-hidden="true"
               />
-              <p className="club-eyebrow">Automatisch von FUSSBALL.DE</p>
+              <p className="club-eyebrow">Saison {SEASON}</p>
             </div>
             <h2 className="club-heading mt-2">Tabelle</h2>
           </div>
@@ -41,13 +40,9 @@ export default function AutoLeagueTable() {
         <FussballWidget
           widgetId={widgetId}
           widgetType="table"
-          title={`Offizielle ${COMPETITION}-Tabelle ${SEASON}`}
+          title={`Tabelle – ${COMPETITION}`}
         />
 
-        <div className="mt-3 flex items-center gap-2 text-[11px] text-zinc-500">
-          <Database size={14} aria-hidden="true" />
-          Staffel {STAFFEL_ID}
-        </div>
 
         <a href="/tabelle" className="club-button-secondary mt-4 w-full">
           Komplette Tabelle
