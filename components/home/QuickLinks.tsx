@@ -1,4 +1,16 @@
-import { BarChart3, CalendarDays, FileText, Mail, Radio, BadgeCheck, Table2 } from "lucide-react";
+import {
+  BarChart3,
+  CalendarDays,
+  ExternalLink,
+  FileText,
+  Mail,
+  Radio,
+  BadgeCheck,
+  ShoppingBag,
+  Table2,
+} from "lucide-react";
+
+const SHOP_URL = "https://spvgg-middelich-resse.fan12.de";
 
 const links = [
   { t: "Offizielle Spiele", h: "/fussball", i: BadgeCheck },
@@ -16,7 +28,30 @@ export default function QuickLinks() {
       <div className="club-container">
         <p className="club-eyebrow">Mehr entdecken</p>
         <h2 className="club-heading mt-2">Vereinszentrale</h2>
-        <div className="mt-6 grid grid-cols-2 gap-3">
+
+        <a
+          href={SHOP_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="club-card group mt-6 flex min-h-28 items-center justify-between gap-4 p-5"
+          aria-label="Offiziellen Fanshop von SpVgg Middelich-Resse öffnen"
+        >
+          <div className="flex min-w-0 items-center gap-4">
+            <div className="club-icon-box shrink-0">
+              <ShoppingBag size={22} />
+            </div>
+            <div className="min-w-0">
+              <p className="text-xs font-black uppercase tracking-[0.18em] text-red-300">
+                Offizieller Fanshop
+              </p>
+              <p className="mt-1 text-base font-black uppercase text-white">Middelich-Resse Shop</p>
+              <p className="mt-1 text-xs text-white/60">Trikots, Shirts, Fanartikel & mehr</p>
+            </div>
+          </div>
+          <ExternalLink className="shrink-0 text-red-300 transition-transform group-hover:translate-x-0.5" size={20} />
+        </a>
+
+        <div className="mt-3 grid grid-cols-2 gap-3">
           {links.map((link) => {
             const Icon = link.i;
             return (
