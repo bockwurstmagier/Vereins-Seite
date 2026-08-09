@@ -1,7 +1,7 @@
 import Hero from "../components/home/Hero";
 import CountdownFromSupabase from "../components/home/CountdownFromSupabase";
 import LastMatchFromSupabase from "../components/home/LastMatchFromSupabase";
-import LeagueTableFromSupabase from "../components/home/LeagueTableFromSupabase";
+import AutoLeagueTable from "../components/home/AutoLeagueTable";
 import NewsFromSupabase from "../components/home/NewsFromSupabase";
 import GallerySection from "../components/home/GallerySection";
 import SponsorFromSupabase from "../components/home/SponsorFromSupabase";
@@ -27,7 +27,7 @@ export default function Home() {
           <CountdownFromSupabase />
           <NextMatchFromSupabase />
           <LastMatchFromSupabase />
-          <LeagueTableFromSupabase />
+          <AutoLeagueTable />
           <NewsFromSupabase />
           <UpcomingEvents />
           <GallerySection />

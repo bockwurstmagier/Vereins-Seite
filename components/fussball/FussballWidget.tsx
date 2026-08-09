@@ -1,7 +1,7 @@
 "use client";
 
 import Script from "next/script";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ExternalLink, ShieldCheck } from "lucide-react";
 
 const FUSSBALL_WIDGET_SCRIPT_URL = "https://www.fussball.de/widgets.js";
@@ -23,6 +23,23 @@ export default function FussballWidget({
   const [loaded, setLoaded] = useState(false);
   const [failed, setFailed] = useState(false);
 
+  useEffect(() => {
+    try {
+      setAllowed(window.localStorage.getItem("huja-fussballde-consent") === "1");
+    } catch {
+      // Storage kann im privaten Browsermodus blockiert sein.
+    }
+  }, []);
+
+  function allowOfficialData() {
+    try {
+      window.localStorage.setItem("huja-fussballde-consent", "1");
+    } catch {
+      // Das Widget darf auch ohne persistierbaren Storage geladen werden.
+    }
+    setAllowed(true);
+  }
+
   if (!allowed) {
     return (
       <div className={`club-card p-5 text-center ${className}`}>
@@ -39,7 +56,7 @@ export default function FussballWidget({
 
         <button
           type="button"
-          onClick={() => setAllowed(true)}
+          onClick={allowOfficialData}
           className="club-button-primary mt-5"
         >
           <ExternalLink size={17} aria-hidden="true" />
