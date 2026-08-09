@@ -2,8 +2,7 @@ import "server-only";
 
 import { getAvailableSeasons, getPlayerSeasonStats } from "./player-statistics";
 import { createClient } from "./supabase/server";
-
-const CLUB_NAME = "middelich-resse";
+import { isMiddelichResse, normalizeClubName } from "./club-name";
 
 type MatchRow = {
   id: string;
@@ -61,17 +60,11 @@ export type ResultRecord = {
 };
 
 function normalize(value: string) {
-  return value
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/\p{Diacritic}/gu, "")
-    .replace(/[^a-z0-9]+/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
+  return normalizeClubName(value);
 }
 
 function isClub(name: string) {
-  return normalize(name).includes(CLUB_NAME);
+  return isMiddelichResse(name);
 }
 
 function opponent(match: MatchRow) {

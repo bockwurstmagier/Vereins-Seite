@@ -1,5 +1,6 @@
 import { getAvailableSeasons, getPlayerSeasonStats } from "./player-statistics";
 import { createClient } from "./supabase/server";
+import { isMiddelichResse } from "./club-name";
 
 export type TrainingSessionRow = {
   id: string;
@@ -110,7 +111,7 @@ export async function getTrainerCockpitData(season?: string) {
 
   const finished = finishedResult.data ?? [];
   const wins = finished.filter((match) => {
-    const homeIsClub = match.home_team.toLowerCase().includes("middelich-resse");
+    const homeIsClub = isMiddelichResse(match.home_team);
     const ourScore = homeIsClub ? match.home_score ?? 0 : match.away_score ?? 0;
     const opponentScore = homeIsClub ? match.away_score ?? 0 : match.home_score ?? 0;
     return ourScore > opponentScore;

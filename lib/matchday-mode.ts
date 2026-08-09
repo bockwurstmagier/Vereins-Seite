@@ -1,6 +1,7 @@
 import "server-only";
 
 import { createClient } from "./supabase/server";
+import { isMiddelichResse } from "./club-name";
 
 type MatchRow = {
   id: string;
@@ -59,10 +60,8 @@ type StandingRow = {
   is_club: boolean;
 };
 
-const CLUB_MARKER = "middelich-resse";
-
 function isClub(name: string) {
-  return name.toLowerCase().includes(CLUB_MARKER);
+  return isMiddelichResse(name);
 }
 
 export async function getMatchdayModeData() {

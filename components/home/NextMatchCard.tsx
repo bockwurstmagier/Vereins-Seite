@@ -12,6 +12,7 @@ import {
 
 import vereinsLogo from "@/app/logo.png";
 import type { DatabaseMatch } from "../../lib/matches";
+import { isMiddelichResse } from "../../lib/club-name";
 
 type NextMatchCardProps = {
   match: DatabaseMatch | null;
@@ -153,7 +154,7 @@ type TeamBlockProps = {
 };
 
 function TeamBlock({ name, label, logoUrl }: TeamBlockProps) {
-  const ours = name.toLowerCase().includes("middelich-resse");
+  const ours = isMiddelichResse(name);
   return (
     <div className="min-w-0">
       <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-3xl border border-white/10 bg-black/40 p-3">

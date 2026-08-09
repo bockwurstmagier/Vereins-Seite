@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { Goal, Trophy } from "lucide-react";
 import vereinsLogo from "@/app/logo.png";
 import type { PublicMatch } from "../../lib/public-content";
+import { isMiddelichResse } from "../../lib/club-name";
 
 type DynamicLastMatchCardProps = {
   match: PublicMatch | null;
@@ -140,7 +141,7 @@ export default function DynamicLastMatchCard({
 }
 
 function isOurClub(team: string) {
-  return team.toLowerCase().includes("middelich-resse");
+  return isMiddelichResse(team);
 }
 
 function Team({

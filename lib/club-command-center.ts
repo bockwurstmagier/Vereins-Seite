@@ -1,8 +1,7 @@
 import "server-only";
 
 import { createClient } from "./supabase/server";
-
-const CLUB_MARKER = "middelich-resse";
+import { isMiddelichResse } from "./club-name";
 
 type FinishedMatch = {
   id: string;
@@ -182,7 +181,7 @@ export async function getClubCommandCenterData() {
   const clubStanding =
     standings.find((row) => row.is_club) ??
     standings.find((row) =>
-      row.team_name.toLowerCase().includes(CLUB_MARKER),
+      isMiddelichResse(row.team_name),
     ) ??
     null;
 
@@ -194,7 +193,7 @@ export async function getClubCommandCenterData() {
 
   const recentResults = ((recentResultsResult.data ?? []) as FinishedMatch[]).map(
     (match) => {
-      const isHome = match.home_team.toLowerCase().includes(CLUB_MARKER);
+      const isHome = isMiddelichResse(match.home_team);
       const own = isHome ? match.home_score ?? 0 : match.away_score ?? 0;
       const opponent = isHome ? match.away_score ?? 0 : match.home_score ?? 0;
 

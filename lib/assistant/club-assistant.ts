@@ -2,8 +2,7 @@ import "server-only";
 
 import { getAvailableSeasons, getPlayerSeasonStats } from "../player-statistics";
 import { createClient } from "../supabase/server";
-
-const CLUB_TERM = "middelich-resse";
+import { isMiddelichResse } from "../club-name";
 
 type MatchRow = {
   id: string;
@@ -54,7 +53,7 @@ function normalize(value: string) {
 }
 
 function isClub(team: string) {
-  return normalize(team).includes(CLUB_TERM);
+  return isMiddelichResse(team);
 }
 
 function formatDate(value: string) {

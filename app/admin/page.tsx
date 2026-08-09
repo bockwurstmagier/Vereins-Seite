@@ -2,6 +2,7 @@ import PersonalDashboard from "../../components/admin/PersonalDashboard";
 import { canAccess, type AdminArea } from "../../lib/auth/permissions";
 import { requireActiveProfile, ROLE_LABELS } from "../../lib/auth/roles";
 import { createClient } from "../../lib/supabase/server";
+import { isMiddelichResse } from "../../lib/club-name";
 
 type ActivityRow = {
   id: number;
@@ -143,7 +144,6 @@ function calculateSeasonStats(
     away_score: number | null;
   }>,
 ) {
-  const clubName = "middelich-resse";
   let wins = 0;
   let draws = 0;
   let losses = 0;
@@ -152,7 +152,7 @@ function calculateSeasonStats(
 
   for (const match of matches) {
     if (match.home_score === null || match.away_score === null) continue;
-    const isHome = match.home_team.toLowerCase().includes(clubName);
+    const isHome = isMiddelichResse(match.home_team);
     const own = isHome ? match.home_score : match.away_score;
     const opponent = isHome ? match.away_score : match.home_score;
 
