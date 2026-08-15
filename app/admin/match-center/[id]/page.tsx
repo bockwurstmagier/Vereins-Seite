@@ -10,6 +10,8 @@ import {
   Save,
   Trash2,
   Users,
+  Trophy,
+  BarChart3,
 } from "lucide-react";
 import { getPublicMatchCenterMatch } from "../../../../lib/match-center";
 import FormationEditor from "../../../../components/match-center/FormationEditor";
@@ -21,16 +23,21 @@ import {
   updateMatchCenter,
 } from "../actions";
 import { finalizeMatchDay } from "../finalize-actions";
+import { closePlayerOfMatchPoll, startPlayerOfMatchPoll } from "../fan-actions";
+import { getFanPollForMatch } from "../../../../lib/fan-experience";
 
 type PageProps = {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ saved?: string; event?: string; deleted?: string; corrected?: string; squad?: string; quick?: string; tactics?: string }>;
+  searchParams: Promise<{ saved?: string; event?: string; deleted?: string; corrected?: string; squad?: string; quick?: string; tactics?: string; fanvote?: string }>;
 };
 
 export default async function AdminMatchCenterDetailPage({ params, searchParams }: PageProps) {
   const { id } = await params;
   const notices = await searchParams;
-  const data = await getPublicMatchCenterMatch(id);
+  const [data, fanPoll] = await Promise.all([
+    getPublicMatchCenterMatch(id),
+    getFanPollForMatch(id).catch(() => null),
+  ]);
 
   if (!data) notFound();
 
@@ -38,6 +45,10 @@ export default async function AdminMatchCenterDetailPage({ params, searchParams 
   const playerMap = new Map(players.map((player) => [player.id, player]));
   const starters = new Set(squad.filter((entry) => entry.role === "starter").map((entry) => entry.player_id));
   const bench = new Set(squad.filter((entry) => entry.role === "bench").map((entry) => entry.player_id));
+  const eligibleFanPlayers = squad.length
+    ? players.filter((player) => starters.has(player.id) || bench.has(player.id))
+    : players;
+  const winnerPlayer = fanPoll?.winnerPlayerId ? playerMap.get(fanPoll.winnerPlayerId) : null;
 
   return (
     <div className="mx-auto max-w-6xl">
@@ -53,7 +64,7 @@ export default async function AdminMatchCenterDetailPage({ params, searchParams 
         </h1>
       </div>
 
-      {(notices.saved || notices.event || notices.deleted || notices.corrected || notices.squad || notices.quick || notices.tactics) && (
+      {(notices.saved || notices.event || notices.deleted || notices.corrected || notices.squad || notices.quick || notices.tactics || notices.fanvote) && (
         <div className="mt-6 rounded-2xl border border-emerald-500/25 bg-emerald-950/30 px-4 py-3 text-sm text-emerald-300">
           Änderungen wurden erfolgreich gespeichert.
         </div>
@@ -126,6 +137,96 @@ export default async function AdminMatchCenterDetailPage({ params, searchParams 
           </form>
         </div>
       </section>
+
+      {match.status === "finished" && (
+        <section className="mt-6 rounded-[2rem] border border-club-light-red/20 bg-gradient-to-br from-club-red/[0.10] via-black/55 to-black p-5 shadow-[0_0_50px_rgba(193,18,31,0.12)] sm:p-6">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+              <div className="flex items-center gap-3">
+                <div className="club-icon-box"><Trophy size={19} /></div>
+                <div><p className="club-eyebrow">HUJA Fan Experience</p><h2 className="mt-1 text-xl font-black uppercase text-white">Spieler des Spiels</h2></div>
+              </div>
+              <p className="mt-3 max-w-2xl text-sm leading-6 text-zinc-400">Wähle 2 bis 6 Kandidaten aus. Das Voting erscheint danach automatisch auf der Startseite und der Gewinner wird nach Ende als Spieler des Spiels übernommen.</p>
+            </div>
+            {fanPoll?.status === "closed" && (
+              <a href={`/admin/grafikstudio?match=${match.id}`} className="club-button-primary shrink-0">
+                <Sparkles size={17} /> Gewinner-Grafik erstellen
+              </a>
+            )}
+          </div>
+
+          {!fanPoll && (
+            <form action={startPlayerOfMatchPoll} className="mt-6">
+              <input type="hidden" name="match_id" value={match.id} />
+              {eligibleFanPlayers.length >= 2 ? (
+                <>
+                  <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                    {eligibleFanPlayers.map((player) => (
+                      <label key={player.id} className="flex cursor-pointer items-center gap-3 rounded-2xl border border-white/10 bg-black/25 p-3 hover:border-club-light-red/25">
+                        <input type="checkbox" name="candidate_ids" value={player.id} className="h-4 w-4 accent-red-600" />
+                        <div>
+                          <p className="text-sm font-black text-white">{player.first_name} {player.last_name}</p>
+                          <p className="mt-1 text-[10px] font-bold uppercase tracking-wider text-zinc-600">#{player.shirt_number ?? "–"} · {player.position}</p>
+                        </div>
+                      </label>
+                    ))}
+                  </div>
+                  <div className="mt-4 grid gap-3 sm:grid-cols-[1fr_auto] sm:items-end">
+                    <Field label="Abstimmungsdauer">
+                      <select name="ends_in_hours" defaultValue="6" className="admin-input">
+                        <option value="1">1 Stunde</option>
+                        <option value="3">3 Stunden</option>
+                        <option value="6">6 Stunden</option>
+                        <option value="12">12 Stunden</option>
+                        <option value="24">24 Stunden</option>
+                      </select>
+                    </Field>
+                    <button type="submit" className="club-button-primary min-h-12"><Trophy size={17} /> Voting starten</button>
+                  </div>
+                </>
+              ) : (
+                <p className="rounded-2xl border border-dashed border-white/10 p-5 text-sm text-zinc-500">Für das Voting müssen mindestens zwei Spieler im Spieltagskader stehen.</p>
+              )}
+            </form>
+          )}
+
+          {fanPoll?.status === "open" && (
+            <div className="mt-6">
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                {fanPoll.candidates.map((candidate) => {
+                  const percent = fanPoll.totalVotes ? Math.round((candidate.votes / fanPoll.totalVotes) * 100) : 0;
+                  return (
+                    <div key={candidate.playerId} className="rounded-2xl border border-white/10 bg-black/25 p-4">
+                      <div className="flex items-center justify-between gap-3"><p className="font-black text-white">{candidate.firstName} {candidate.lastName}</p><span className="text-xs font-black text-club-light-red">{candidate.votes}</span></div>
+                      <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-white/5"><div className="h-full rounded-full bg-club-light-red" style={{ width: `${percent}%` }} /></div>
+                      <p className="mt-2 text-[10px] text-zinc-600">{percent}% der Stimmen</p>
+                    </div>
+                  );
+                })}
+              </div>
+              <div className="mt-4 flex flex-col gap-3 rounded-2xl border border-white/10 bg-white/[0.025] p-4 sm:flex-row sm:items-center sm:justify-between">
+                <div><p className="text-sm font-black text-white">{fanPoll.totalVotes} Stimmen</p><p className="mt-1 text-xs text-zinc-500">Ende: {new Date(fanPoll.endsAt).toLocaleString("de-DE")}</p></div>
+                <form action={closePlayerOfMatchPoll}>
+                  <input type="hidden" name="match_id" value={match.id} />
+                  <input type="hidden" name="poll_id" value={fanPoll.id} />
+                  <button type="submit" className="club-button-secondary">Abstimmung jetzt beenden</button>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {fanPoll?.status === "closed" && (
+            <div className="mt-6 grid gap-4 lg:grid-cols-[1fr_auto] lg:items-center">
+              <div className="rounded-[1.75rem] border border-club-light-red/25 bg-club-red/10 p-5">
+                <p className="club-eyebrow">Gewinner</p>
+                <p className="mt-2 text-2xl font-black uppercase text-white">{winnerPlayer ? `${winnerPlayer.first_name} ${winnerPlayer.last_name}` : "Auswertung abgeschlossen"}</p>
+                <p className="mt-2 text-sm text-zinc-400">{fanPoll.totalVotes} Stimmen insgesamt · automatisch in die Spielerstatistik übernommen.</p>
+              </div>
+              <a href="/admin/news" className="club-button-secondary"><BarChart3 size={17} /> News vorbereiten</a>
+            </div>
+          )}
+        </section>
+      )}
 
       <div className="mt-8 grid gap-6 xl:grid-cols-2">
         <section className="club-card p-5 sm:p-6">

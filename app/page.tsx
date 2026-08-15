@@ -13,6 +13,7 @@ import QuickLinks from "../components/home/QuickLinks";
 import FussballNextMatchSection from "../components/home/FussballNextMatchSection";
 import UpcomingEvents from "../components/calendar/UpcomingEvents";
 import HomeAtmosphere from "../components/home/HomeAtmosphere";
+import PlayerOfMatchVoting from "../components/home/PlayerOfMatchVoting";
 
 export default function Home() {
   return (
@@ -27,6 +28,7 @@ export default function Home() {
           <CountdownFromSupabase />
           <NextMatchFromSupabase />
           <LastMatchFromSupabase />
+          <PlayerOfMatchVoting />
           <AutoLeagueTable />
           <NewsFromSupabase />
           <UpcomingEvents />

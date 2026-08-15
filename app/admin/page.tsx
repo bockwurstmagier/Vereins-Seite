@@ -3,6 +3,7 @@ import { canAccess, type AdminArea } from "../../lib/auth/permissions";
 import { requireActiveProfile, ROLE_LABELS } from "../../lib/auth/roles";
 import { createClient } from "../../lib/supabase/server";
 import { isMiddelichResse } from "../../lib/club-name";
+import { getFanAnalyticsSummary } from "../../lib/fan-experience";
 
 type ActivityRow = {
   id: number;
@@ -28,6 +29,7 @@ export default async function AdminDashboard() {
     upcomingEventsResult,
     activityResult,
     finishedMatchesResult,
+    fanAnalytics,
   ] = await Promise.all([
     supabase
       .from("matches")
@@ -74,6 +76,7 @@ export default async function AdminDashboard() {
       .or("home_team.ilike.%Middelich-Resse%,away_team.ilike.%Middelich-Resse%")
       .not("home_score", "is", null)
       .not("away_score", "is", null),
+    getFanAnalyticsSummary().catch(() => ({ onlineNow: 0, visitorsToday: 0, pageViewsToday: 0, liveCenterNow: 0, votesToday: 0, topSections: [] })),
   ]);
 
   const allAreas: AdminArea[] = [
@@ -131,6 +134,7 @@ export default async function AdminDashboard() {
         recentNews: recentNewsResult.data ?? [],
         upcomingEvents: upcomingEventsResult.data ?? [],
         activities: (activityResult.data ?? []) as ActivityRow[],
+        fanAnalytics,
       }}
     />
   );

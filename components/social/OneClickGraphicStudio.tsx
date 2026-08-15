@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   CheckCircle2,
   Copy,
@@ -138,6 +138,12 @@ export default function OneClickGraphicStudio({
     () => players.find((player) => player.id === playerId) ?? players[0] ?? null,
     [players, playerId],
   );
+
+  useEffect(() => {
+    if (selectedMatch?.player_of_match_id) {
+      setPlayerId(selectedMatch.player_of_match_id);
+    }
+  }, [selectedMatch?.id, selectedMatch?.player_of_match_id]);
 
   const selectedGoals = useMemo(
     () => goals.filter((goal) => goal.match_id === selectedMatch?.id),

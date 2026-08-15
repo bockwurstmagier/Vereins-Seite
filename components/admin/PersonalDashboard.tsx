@@ -102,6 +102,14 @@ type DashboardData = {
   upcomingEvents: EventRow[];
   activities: ActivityRow[];
   accessibleAreas: AdminArea[];
+  fanAnalytics: {
+    onlineNow: number;
+    visitorsToday: number;
+    pageViewsToday: number;
+    liveCenterNow: number;
+    votesToday: number;
+    topSections: Array<{ label: string; views: number }>;
+  };
 };
 
 type WidgetId =
@@ -349,6 +357,32 @@ export default function PersonalDashboard({ data }: { data: DashboardData }) {
             );
           })}
         </div>
+      </section>
+
+      <section className="mt-5 rounded-[2rem] border border-club-light-red/15 bg-gradient-to-br from-club-red/[0.08] via-white/[0.03] to-black/30 p-5 sm:p-6">
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <p className="club-eyebrow">HUJA Live Analytics</p>
+            <h2 className="mt-1 text-xl font-black uppercase text-white">Was passiert gerade in der App?</h2>
+          </div>
+          <Activity size={20} className="text-club-light-red" />
+        </div>
+        <div className="mt-5 grid grid-cols-2 gap-3 lg:grid-cols-5">
+          <AnalyticsMetric label="Jetzt online" value={data.fanAnalytics.onlineNow} live />
+          <AnalyticsMetric label="Besucher heute" value={data.fanAnalytics.visitorsToday} />
+          <AnalyticsMetric label="Aufrufe heute" value={data.fanAnalytics.pageViewsToday} />
+          <AnalyticsMetric label="LiveCenter jetzt" value={data.fanAnalytics.liveCenterNow} />
+          <AnalyticsMetric label="Votes heute" value={data.fanAnalytics.votesToday} />
+        </div>
+        {data.fanAnalytics.topSections.length > 0 && (
+          <div className="mt-4 flex flex-wrap gap-2">
+            {data.fanAnalytics.topSections.map((section) => (
+              <span key={section.label} className="rounded-full border border-white/10 bg-black/25 px-3 py-1.5 text-[10px] font-black uppercase tracking-wider text-zinc-400">
+                {section.label} · {section.views}
+              </span>
+            ))}
+          </div>
+        )}
       </section>
 
       {editing && (
@@ -1284,6 +1318,18 @@ function getQuickActions(role: AppRole) {
   };
 
   return roleActions[role];
+}
+
+function AnalyticsMetric({ label, value, live = false }: { label: string; value: number; live?: boolean }) {
+  return (
+    <div className="rounded-2xl border border-white/[0.07] bg-black/20 p-4">
+      <div className="flex items-center gap-2">
+        {live && <span className="h-2 w-2 animate-pulse rounded-full bg-emerald-400" />}
+        <p className="text-[9px] font-black uppercase tracking-[0.15em] text-zinc-500">{label}</p>
+      </div>
+      <p className="mt-2 text-2xl font-black tabular-nums text-white">{value}</p>
+    </div>
+  );
 }
 
 function PanelHeader({

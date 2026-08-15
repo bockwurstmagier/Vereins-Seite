@@ -23,7 +23,7 @@ export async function getSocialStudioData() {
     supabase
       .from("matches")
       .select(
-        "id, competition, home_team, away_team, match_date, location, home_score, away_score, status",
+        "id, competition, home_team, away_team, match_date, location, home_score, away_score, status, player_of_match_id",
       )
       .or("home_team.ilike.%Middelich-Resse%,away_team.ilike.%Middelich-Resse%")
       .order("match_date", { ascending: false })

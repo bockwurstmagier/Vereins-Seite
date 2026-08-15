@@ -20,6 +20,7 @@ export type SocialMatch = {
   home_score: number | null;
   away_score: number | null;
   status: string;
+  player_of_match_id?: string | null;
   home_logo_url?: string | null;
   away_logo_url?: string | null;
 };
