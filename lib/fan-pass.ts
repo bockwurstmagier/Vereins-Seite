@@ -3,10 +3,12 @@ import { createAdminClient } from "./supabase/admin";
 import { hashAnonymousId } from "./fan-experience";
 
 export type FanBadge = { key:string; icon:string; title:string; description:string; unlocked:boolean };
+export type FanLeaderboardEntry = { rank:number; displayName:string; points:number; levelName:string; isMe:boolean };
 export type FanPassData = {
   displayName:string; points:number; level:number; levelName:string; nextLevelPoints:number;
   tips:number; exactTips:number; tendencyTips:number; votes:number; reactionMatches:number;
   badges:FanBadge[];
+  rank:number; totalFans:number; leaderboard:FanLeaderboardEntry[];
 };
 
 const levels = [
@@ -41,7 +43,27 @@ export async function getFanPass(deviceId:string):Promise<FanPassData>{
     {key:"live",icon:"🔥",title:"Live dabei",description:"Während eines Live-Spiels reagiert.",unlocked:reactionMatches>=1},
     {key:"regular",icon:"🔴",title:"Stammgast",description:"50 HUJA-Fanpunkte gesammelt.",unlocked:points>=50},
   ];
-  return {displayName:profile?.display_name??"HUJA-Fan",points,level:levelIndex+1,levelName:levels[levelIndex].name,nextLevelPoints:next,tips:allTips.length,exactTips,tendencyTips,votes:votesCount,reactionMatches,badges};
+  const { data: profiles } = await supabase.from("fan_profiles").select("fan_hash,display_name");
+  const [{data:allPredictions},{data:allVotes},{data:allReactions}] = await Promise.all([
+    supabase.from("match_predictions").select("fan_hash,points,settled_at"),
+    supabase.from("fan_poll_votes").select("fan_hash"),
+    supabase.from("match_reactions").select("fan_hash,match_id"),
+  ]);
+  const score=new Map<string,number>();
+  for(const x of allPredictions??[]){ if(!x.fan_hash) continue; score.set(x.fan_hash,(score.get(x.fan_hash)??0)+1+(x.settled_at?Number(x.points??0):0)); }
+  for(const x of allVotes??[]){ if(x.fan_hash) score.set(x.fan_hash,(score.get(x.fan_hash)??0)+3); }
+  const reactionDays=new Map<string,Set<string>>();
+  for(const x of allReactions??[]){ if(!x.fan_hash) continue; if(!reactionDays.has(x.fan_hash)) reactionDays.set(x.fan_hash,new Set()); reactionDays.get(x.fan_hash)!.add(x.match_id); }
+  for(const [h,matches] of reactionDays) score.set(h,(score.get(h)??0)+matches.size*2);
+  const nameMap=new Map((profiles??[]).map(x=>[x.fan_hash,x.display_name||"HUJA-Fan"]));
+  if(!nameMap.has(hash)) nameMap.set(hash,profile?.display_name??"HUJA-Fan");
+  const board=[...nameMap.keys()].map(h=>({hash:h,displayName:nameMap.get(h)!,points:score.get(h)??0}))
+    .sort((a,b)=>b.points-a.points || a.displayName.localeCompare(b.displayName,"de"));
+  const levelFor=(p:number)=>{let n=levels[0].name;for(const l of levels)if(p>=l.min)n=l.name;return n};
+  const myIndex=Math.max(0,board.findIndex(x=>x.hash===hash));
+  const leaderboard=board.slice(0,10).map((x,i)=>({rank:i+1,displayName:x.displayName,points:x.points,levelName:levelFor(x.points),isMe:x.hash===hash}));
+  const rank=myIndex+1;
+  return {displayName:profile?.display_name??"HUJA-Fan",points,level:levelIndex+1,levelName:levels[levelIndex].name,nextLevelPoints:next,tips:allTips.length,exactTips,tendencyTips,votes:votesCount,reactionMatches,badges,rank,totalFans:board.length,leaderboard};
 }
 
 export async function saveFanName(deviceId:string,displayName:string){
