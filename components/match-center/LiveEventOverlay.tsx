@@ -50,7 +50,21 @@ export default function LiveEventOverlay({events,players,homeTeam,awayTeam,score
 
   const isGoal=visibleEvent?.event_type==="goal";
   const scorer=visibleEvent?.player_id?playerMap.get(visibleEvent.player_id):null;
+  const scorerPlayer=visibleEvent?.player_id?players.find(p=>p.id===visibleEvent.player_id):null;
   const assist=visibleEvent?.secondary_player_id?playerMap.get(visibleEvent.secondary_player_id):null;
+  const [homeScore,awayScore]=score.split(":").map(Number);
+  const middelichHome=/middelich|resse/i.test(homeTeam);
+  const ourScore=middelichHome?homeScore:awayScore;
+  const theirScore=middelichHome?awayScore:homeScore;
+  const goalHeadline=visibleEvent?.moment_type==="penalty"
+    ?"ELFMETERTOR!"
+    : visibleEvent && visibleEvent.minute>=85
+      ?"LAST-MINUTE!"
+      : ourScore===theirScore
+        ?"AUSGLEICH!"
+        : ourScore===theirScore+1
+          ?"FÜHRUNG!"
+          :"TOOOOR!";
 
   return <>
     <PushNotificationControl />
@@ -70,7 +84,11 @@ export default function LiveEventOverlay({events,players,homeTeam,awayTeam,score
       <div className="relative w-full max-w-xl text-center animate-[liveEventIn_.35s_ease-out]">
         <div className="mx-auto grid h-20 w-20 place-items-center rounded-[1.7rem] border border-white/20 bg-club-red shadow-[0_0_80px_rgba(220,38,38,.55)]"><Goal size={42}/></div>
         <p className="mt-6 text-xs font-black uppercase tracking-[.45em] text-red-300">HUJA · {visibleEvent.minute}. Minute</p>
-        <h2 className="mt-2 text-6xl font-black italic tracking-tight text-white sm:text-8xl">TOOOOR!</h2>
+        <h2 className="mt-2 text-5xl font-black italic tracking-tight text-white sm:text-8xl">{goalHeadline}</h2>
+        {scorerPlayer?.image_url&&<div className="relative mx-auto mt-5 h-52 w-44 overflow-hidden rounded-[2rem] border border-white/20 bg-black/30 shadow-[0_0_70px_rgba(220,38,38,.35)] sm:h-64 sm:w-52">
+          <img src={scorerPlayer.image_url} alt="" className="h-full w-full object-cover object-top" />
+          <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-black to-transparent"/>
+        </div>}
         <p className="mt-5 text-3xl font-black uppercase text-white">{scorer||visibleEvent.description||"Middelich-Resse"}</p>
         {assist&&<p className="mt-2 text-sm font-bold uppercase tracking-wider text-zinc-400">Vorlage: {assist}</p>}
         <div className="mx-auto mt-7 inline-flex rounded-2xl border border-white/15 bg-black/45 px-5 py-3 text-lg font-black">{homeTeam} <span className="mx-3 text-club-light-red">{score}</span> {awayTeam}</div>
