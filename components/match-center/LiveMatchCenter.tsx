@@ -17,6 +17,7 @@ import LiveClock from "./LiveClock";
 import LiveEventOverlay from "./LiveEventOverlay";
 import FormationDisplay from "./FormationDisplay";
 import MatchStory from "./MatchStory";
+import MatchHighlights from "./MatchHighlights";
 
 import type {
   MatchCenterEvent,
@@ -83,7 +84,7 @@ export default function LiveMatchCenter({
     const { data } = await supabase
       .from("match_events")
       .select(
-        "id, match_id, event_type, minute, player_id, secondary_player_id, description, moment_type, video_url, video_path, created_at",
+        "id, match_id, event_type, minute, player_id, secondary_player_id, description, moment_type, video_url, video_path, is_highlight, created_at",
       )
       .eq("match_id", initialMatch.id)
       .order("minute", { ascending: false })
@@ -353,6 +354,7 @@ export default function LiveMatchCenter({
           </div>
         </div>
 
+        <MatchHighlights events={events} status={match.status} />
         <MatchStory
           events={events}
           players={players}

@@ -53,6 +53,7 @@ export type MatchCenterEvent = {
   moment_type: "penalty" | "moment" | null;
   video_url: string | null;
   video_path: string | null;
+  is_highlight: boolean;
   created_at: string;
 };
 
@@ -116,7 +117,7 @@ export async function getPublicMatchCenterMatch(id: string) {
       supabase
         .from("match_events")
         .select(
-          "id, match_id, event_type, minute, player_id, secondary_player_id, description, moment_type, video_url, video_path, created_at",
+          "id, match_id, event_type, minute, player_id, secondary_player_id, description, moment_type, video_url, video_path, is_highlight, created_at",
         )
         .eq("match_id", id)
         .order("minute", { ascending: false })

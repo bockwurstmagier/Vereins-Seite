@@ -491,3 +491,15 @@ export async function undoLastEvent(formData: FormData) {
   refresh(matchId);
   redirect(`/admin/live/${matchId}?undone=1`);
 }
+
+export async function toggleVideoHighlight(formData: FormData) {
+  const { supabase } = await authorizedClient();
+  const matchId = required(formData, "match_id");
+  const eventId = required(formData, "event_id");
+  const nextValue = required(formData, "next_value") === "true";
+  const { data: event, error: readError } = await supabase.from("match_events").select("id, video_url").eq("id", eventId).eq("match_id", matchId).maybeSingle();
+  if (readError || !event?.video_url) throw new Error("Video-Moment wurde nicht gefunden.");
+  const { error } = await supabase.from("match_events").update({ is_highlight: nextValue }).eq("id", eventId).eq("match_id", matchId);
+  if (error) throw new Error(`Highlight konnte nicht geändert werden: ${error.message}`);
+  refresh(matchId);
+}

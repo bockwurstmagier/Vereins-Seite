@@ -34,6 +34,7 @@ import {
   setExactMinute,
   setLivePhase,
   undoLastEvent,
+  toggleVideoHighlight,
 } from "../actions";
 import { finalizeMatchDay } from "../../match-center/finalize-actions";
 
@@ -50,7 +51,7 @@ export default async function MobileLiveControlPage({ params, searchParams }: Pa
   if (!data) notFound();
 
   const { match, players, events } = data;
-  const recentEvents = events.slice(0, 5);
+  const recentEvents = events.slice(0, 8);
   const playerName = new Map(players.map((player) => [player.id, `${player.first_name} ${player.last_name}`]));
 
   return (
@@ -255,12 +256,15 @@ export default async function MobileLiveControlPage({ params, searchParams }: Pa
         </div>
         <div className="mt-5 space-y-3">
           {recentEvents.length ? recentEvents.map((event) => (
-            <div key={event.id} className="flex items-center gap-3 rounded-2xl border border-white/[0.08] bg-black/25 p-3">
-              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-club-red/10 text-xs font-black text-club-light-red">{event.minute}'</span>
-              <div className="min-w-0">
-                <p className="text-[9px] font-black uppercase tracking-wider text-club-light-red">{eventLabel(event.event_type, event.moment_type)}</p>
-                <p className="mt-1 truncate text-sm font-bold text-white">{event.player_id ? playerName.get(event.player_id) : event.description || "Vereinsereignis"}</p>
+            <div key={event.id} className="rounded-2xl border border-white/[0.08] bg-black/25 p-3">
+              <div className="flex items-center gap-3">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-club-red/10 text-xs font-black text-club-light-red">{event.minute}'</span>
+                <div className="min-w-0"><p className="text-[9px] font-black uppercase tracking-wider text-club-light-red">{eventLabel(event.event_type, event.moment_type)}</p><p className="mt-1 truncate text-sm font-bold text-white">{event.player_id ? playerName.get(event.player_id) : event.description || "Vereinsereignis"}</p></div>
               </div>
+              {event.video_url && <form action={toggleVideoHighlight} className="mt-3">
+                <input type="hidden" name="match_id" value={match.id}/><input type="hidden" name="event_id" value={event.id}/><input type="hidden" name="next_value" value={event.is_highlight ? "false" : "true"}/>
+                <button type="submit" className={event.is_highlight ? "club-button-primary min-h-11 w-full" : "club-button-secondary min-h-11 w-full"}>{event.is_highlight ? "★ Top-Moment markiert" : "☆ Als Top-Moment markieren"}</button>
+              </form>}
             </div>
           )) : <p className="text-sm text-zinc-500">Noch keine Ereignisse vorhanden.</p>}
         </div>
