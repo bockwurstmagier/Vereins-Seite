@@ -1,7 +1,7 @@
 export const HUJA_BRANDING = {
   productName: "HUJA™",
   productSubtitle: "Club Management System",
-  version: "21.2.0",
+  version: "21.2.1",
   copyrightYear: "2026",
   developer: "Timo Creutzburg",
   clubName: "SpVgg Middelich-Resse 71/81",

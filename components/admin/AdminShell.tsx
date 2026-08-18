@@ -1,9 +1,11 @@
 "use client";
 
 import Image, { type StaticImageData } from "next/image";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import {
   Bell,
+  House,
   ChevronLeft,
   ChevronRight,
   LogOut,
@@ -101,6 +103,15 @@ export default function AdminShell({
             </div>
           )}
 
+          <Link
+            href="/"
+            title="Zur Startseite"
+            className={`mb-2 flex h-12 w-full items-center justify-center gap-2 rounded-2xl border border-club-light-red/20 bg-club-red/10 text-xs font-black uppercase tracking-wider text-club-light-red transition hover:border-club-light-red/40 hover:bg-club-red/20 hover:text-white ${collapsed ? "px-0" : "px-4"}`}
+          >
+            <House size={18} aria-hidden="true" />
+            {!collapsed && "Zur App"}
+          </Link>
+
           <div className={`flex gap-2 ${collapsed ? "flex-col" : ""}`}>
             <form action={logout} className="flex-1">
               <button
@@ -180,7 +191,15 @@ export default function AdminShell({
         <div className="border-t border-white/[0.07] p-4">
           <p className="truncate text-sm font-black">{profile.displayName}</p>
           <p className="mt-1 text-xs text-zinc-500">{profile.roleLabel}</p>
-          <form action={logout} className="mt-4">
+          <Link
+            href="/"
+            onClick={() => setMobileOpen(false)}
+            className="club-button-primary mt-4 w-full"
+          >
+            <House size={17} aria-hidden="true" />
+            Zur App
+          </Link>
+          <form action={logout} className="mt-2">
             <button type="submit" className="club-button-secondary w-full">
               <LogOut size={17} aria-hidden="true" />
               Abmelden
@@ -219,6 +238,15 @@ export default function AdminShell({
             </div>
 
             <div className="ml-auto flex items-center gap-2">
+              <Link
+                href="/"
+                aria-label="Zur Startseite"
+                title="Zur Startseite"
+                className="flex h-11 items-center justify-center gap-2 rounded-2xl border border-club-light-red/20 bg-club-red/10 px-3 text-xs font-black uppercase tracking-wider text-club-light-red transition hover:border-club-light-red/40 hover:bg-club-red/20 hover:text-white"
+              >
+                <House size={18} aria-hidden="true" />
+                <span className="hidden md:inline">Zur App</span>
+              </Link>
               <button
                 type="button"
                 aria-label="Benachrichtigungen"
