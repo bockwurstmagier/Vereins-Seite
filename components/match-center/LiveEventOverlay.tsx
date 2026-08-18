@@ -18,21 +18,23 @@ type Props = {
 export default function LiveEventOverlay({events,players,homeTeam,awayTeam,score,status,clockPhase}:Props) {
   const [visibleEvent,setVisibleEvent]=useState<MatchCenterEvent|null>(null);
   const [phaseMessage,setPhaseMessage]=useState<string|null>(null);
+  const [goalSoundUrl,setGoalSoundUrl]=useState("/sounds/goal.wav");
   const previousId=useRef(events[0]?.id??null);
   const previousPhase=useRef(clockPhase);
   const previousStatus=useRef(status);
   const playerMap=useMemo(()=>new Map(players.map(p=>[p.id,`${p.first_name} ${p.last_name}`])),[players]);
 
+  useEffect(()=>{ fetch("/api/match-experience",{cache:"no-store"}).then(r=>r.json()).then(x=>{if(x.goalSoundUrl)setGoalSoundUrl(x.goalSoundUrl)}).catch(()=>{}); },[]);
   useEffect(()=>{
     const latest=events[0];
     if(!latest||latest.id===previousId.current)return;
     previousId.current=latest.id; setVisibleEvent(latest);
     const timer=window.setTimeout(()=>setVisibleEvent(null), latest.event_type==="goal"?6200:4200);
     if(latest.event_type==="goal"&&window.localStorage.getItem("huja-live-sound")==="true"){
-      const audio=new Audio("/sounds/goal.wav"); audio.volume=.85; void audio.play().catch(()=>{});
+      const audio=new Audio(goalSoundUrl); audio.volume=.85; void audio.play().catch(()=>{});
     }
     return()=>window.clearTimeout(timer);
-  },[events]);
+  },[events,goalSoundUrl]);
 
   useEffect(()=>{
     let message:string|null=null;
