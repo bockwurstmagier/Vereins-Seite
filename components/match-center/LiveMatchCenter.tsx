@@ -110,56 +110,41 @@ export default function LiveMatchCenter({
   }, [refreshEvents, refreshMatch, refreshSquad]);
 
   useEffect(() => {
-    const channel = supabase
-      .channel(`live-match-${initialMatch.id}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "UPDATE",
-          schema: "public",
-          table: "matches",
-          filter: `id=eq.${initialMatch.id}`,
-        },
-        (payload) => {
-          setMatch((current) => ({
-            ...(payload.new as MatchCenterMatch),
-            home_logo_url: current.home_logo_url,
-            away_logo_url: current.away_logo_url,
-          }));
-        },
-      )
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "match_events",
-          filter: `match_id=eq.${initialMatch.id}`,
-        },
-        () => {
-          void refreshEvents();
-        },
-      )
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "match_squad",
-          filter: `match_id=eq.${initialMatch.id}`,
-        },
-        () => {
-          void refreshSquad();
-        },
-      )
-      .subscribe((status) => {
-        setConnected(status === "SUBSCRIBED");
-      });
+    let channel: ReturnType<typeof supabase.channel> | null = null;
 
-    return () => {
+    const disconnect = () => {
+      if (!channel) return;
       void supabase.removeChannel(channel);
+      channel = null;
+      setConnected(false);
     };
-  }, [initialMatch.id, refreshEvents, refreshSquad, supabase]);
+
+    const connect = () => {
+      if (channel || document.visibilityState !== "visible") return;
+      channel = supabase
+        .channel(`live-match-${initialMatch.id}`)
+        .on("postgres_changes", { event: "UPDATE", schema: "public", table: "matches", filter: `id=eq.${initialMatch.id}` }, (payload) => {
+          setMatch((current) => ({ ...(payload.new as MatchCenterMatch), home_logo_url: current.home_logo_url, away_logo_url: current.away_logo_url }));
+        })
+        .on("postgres_changes", { event: "*", schema: "public", table: "match_events", filter: `match_id=eq.${initialMatch.id}` }, () => { void refreshEvents(); })
+        .on("postgres_changes", { event: "*", schema: "public", table: "match_squad", filter: `match_id=eq.${initialMatch.id}` }, () => { void refreshSquad(); })
+        .subscribe((status) => setConnected(status === "SUBSCRIBED"));
+    };
+
+    const onVisibility = () => {
+      if (document.visibilityState === "visible") {
+        void refreshAll();
+        connect();
+      } else disconnect();
+    };
+
+    connect();
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => {
+      document.removeEventListener("visibilitychange", onVisibility);
+      disconnect();
+    };
+  }, [initialMatch.id, refreshAll, refreshEvents, refreshSquad, supabase]);
 
   const starters = squad.filter((entry) => entry.role === "starter");
   const bench = squad.filter((entry) => entry.role === "bench");

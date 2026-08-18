@@ -105,14 +105,33 @@ export default function MatchdayMode(props: Props) {
   const [now, setNow] = useState(Date.now());
 
   useEffect(() => {
-    const timer = window.setInterval(() => setNow(Date.now()), 1000);
-    return () => window.clearInterval(timer);
+    let timer: number | null = null;
+    const tick = () => setNow(Date.now());
+    const start = () => {
+      if (timer !== null || document.visibilityState !== "visible") return;
+      tick();
+      timer = window.setInterval(tick, 15_000);
+    };
+    const stop = () => { if (timer !== null) window.clearInterval(timer); timer = null; };
+    const onVisibility = () => document.visibilityState === "visible" ? start() : stop();
+    start(); document.addEventListener("visibilitychange", onVisibility);
+    return () => { stop(); document.removeEventListener("visibilitychange", onVisibility); };
   }, []);
 
   useEffect(() => {
     if (!["live", "halftime"].includes(props.mode)) return;
-    const timer = window.setInterval(() => window.location.reload(), 30_000);
-    return () => window.clearInterval(timer);
+    let timer: number | null = null;
+    const start = () => {
+      if (timer !== null || document.visibilityState !== "visible") return;
+      timer = window.setInterval(() => window.location.reload(), 60_000);
+    };
+    const stop = () => { if (timer !== null) window.clearInterval(timer); timer = null; };
+    const onVisibility = () => {
+      if (document.visibilityState === "visible") { window.location.reload(); start(); }
+      else stop();
+    };
+    start(); document.addEventListener("visibilitychange", onVisibility);
+    return () => { stop(); document.removeEventListener("visibilitychange", onVisibility); };
   }, [props.mode]);
 
   if (!props.match) {

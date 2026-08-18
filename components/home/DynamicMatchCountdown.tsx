@@ -55,10 +55,16 @@ export default function DynamicMatchCountdown({
       setTimeLeft(calculateTimeLeft(matchDate));
     };
 
-    updateCountdown();
-    const intervalId = window.setInterval(updateCountdown, 1000);
-
-    return () => window.clearInterval(intervalId);
+    let intervalId: number | null = null;
+    const start = () => {
+      if (intervalId !== null || document.visibilityState !== "visible") return;
+      updateCountdown();
+      intervalId = window.setInterval(updateCountdown, 1000);
+    };
+    const stop = () => { if (intervalId !== null) window.clearInterval(intervalId); intervalId = null; };
+    const onVisibility = () => document.visibilityState === "visible" ? start() : stop();
+    start(); document.addEventListener("visibilitychange", onVisibility);
+    return () => { stop(); document.removeEventListener("visibilitychange", onVisibility); };
   }, [matchDate]);
 
   return (

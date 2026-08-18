@@ -35,17 +35,32 @@ export default function AppAnalyticsTracker() {
   const lastPath = useRef<string | null>(null);
 
   useEffect(() => {
+    const excluded = pathname.startsWith("/admin") || pathname.startsWith("/login") || pathname.startsWith("/registrieren");
+    if (excluded) return;
+
     const pageView = lastPath.current !== pathname;
     lastPath.current = pathname;
     void send(pathname, pageView);
 
-    const interval = window.setInterval(() => void send(pathname, false), 45_000);
-    const onVisibility = () => {
-      if (document.visibilityState === "visible") void send(pathname, false);
+    let interval: number | null = null;
+    const start = () => {
+      if (interval !== null || document.visibilityState !== "visible") return;
+      interval = window.setInterval(() => void send(pathname, false), 60_000);
     };
+    const stop = () => {
+      if (interval !== null) window.clearInterval(interval);
+      interval = null;
+    };
+    const onVisibility = () => {
+      if (document.visibilityState === "visible") {
+        void send(pathname, false);
+        start();
+      } else stop();
+    };
+    start();
     document.addEventListener("visibilitychange", onVisibility);
     return () => {
-      window.clearInterval(interval);
+      stop();
       document.removeEventListener("visibilitychange", onVisibility);
     };
   }, [pathname]);

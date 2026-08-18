@@ -917,8 +917,16 @@ function SmartCountdownWidget({ nextItem }: { nextItem: CountdownItem }) {
   const [now, setNow] = useState(() => Date.now());
 
   useEffect(() => {
-    const timer = window.setInterval(() => setNow(Date.now()), 1000);
-    return () => window.clearInterval(timer);
+    let timer: number | null = null;
+    const start = () => {
+      if (timer !== null || document.visibilityState !== "visible") return;
+      setNow(Date.now());
+      timer = window.setInterval(() => setNow(Date.now()), 15_000);
+    };
+    const stop = () => { if (timer !== null) window.clearInterval(timer); timer = null; };
+    const onVisibility = () => document.visibilityState === "visible" ? start() : stop();
+    start(); document.addEventListener("visibilitychange", onVisibility);
+    return () => { stop(); document.removeEventListener("visibilitychange", onVisibility); };
   }, []);
 
   if (!nextItem) {
