@@ -16,6 +16,7 @@ import {
 import LiveClock from "./LiveClock";
 import LiveEventOverlay from "./LiveEventOverlay";
 import FormationDisplay from "./FormationDisplay";
+import MatchStory from "./MatchStory";
 
 import type {
   MatchCenterEvent,
@@ -174,6 +175,8 @@ export default function LiveMatchCenter({
         homeTeam={match.home_team}
         awayTeam={match.away_team}
         score={`${match.home_score ?? 0}:${match.away_score ?? 0}`}
+        status={match.status}
+        clockPhase={match.clock_phase}
       />
       <div className="mx-auto max-w-5xl">
         <div className="flex items-center justify-between gap-3">
@@ -364,6 +367,15 @@ export default function LiveMatchCenter({
             />
           </div>
         </div>
+
+        <MatchStory
+          events={events}
+          players={players}
+          status={match.status}
+          homeTeam={match.home_team}
+          awayTeam={match.away_team}
+          score={`${match.home_score ?? 0}:${match.away_score ?? 0}`}
+        />
 
         {(match.report || playerOfMatch) && (
           <section className="club-card mt-6 p-5 sm:p-6">
