@@ -1,4 +1,4 @@
-// HUJA – Push-only Service Worker (v21.1.0 HUJA Fan Experience)
+// HUJA – Push-only Service Worker (v21.2.0 HUJA Fanpass & Challenges)
 //
 // Wichtig: Der Service Worker cached absichtlich KEINE Next.js-Seiten oder
 // JavaScript-Bundles mehr. Dadurch kann eine alte PWA-Shell kein neues

@@ -46,10 +46,12 @@ export async function POST(request: Request) {
     }
 
     const voterHash = hashAnonymousId(deviceId, `vote:${pollId}`);
+    const fanHash = hashAnonymousId(deviceId, "fanpass:v1");
     const { error } = await supabase.from("fan_poll_votes").insert({
       poll_id: pollId,
       candidate_player_id: candidateId,
       voter_hash: voterHash,
+      fan_hash: fanHash,
     });
 
     if (error) {

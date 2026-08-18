@@ -9,7 +9,8 @@ export async function POST(request: Request) {
     const supabase=createAdminClient(); const {data:match}=await supabase.from("matches").select("status").eq("id",matchId).maybeSingle();
     if(!match || match.status!=="live") return NextResponse.json({error:"Reaktionen sind nur während des Live-Spiels möglich."},{status:409});
     const voterHash=hashAnonymousId(deviceId,`reaction:${matchId}:${reaction}`);
-    const {error}=await supabase.from("match_reactions").insert({match_id:matchId,voter_hash:voterHash,reaction});
+    const fanHash=hashAnonymousId(deviceId,"fanpass:v1");
+    const {error}=await supabase.from("match_reactions").insert({match_id:matchId,voter_hash:voterHash,fan_hash:fanHash,reaction});
     if(error?.code==="23505") return NextResponse.json({error:"Diese Reaktion hast du bereits gesendet."},{status:409});
     if(error) throw error;
     const {data}=await supabase.from("match_reactions").select("reaction").eq("match_id",matchId); const counts:Record<string,number>={}; for(const r of data??[]) counts[r.reaction]=(counts[r.reaction]??0)+1;
