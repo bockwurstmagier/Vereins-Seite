@@ -2,7 +2,7 @@
 
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Film, LoaderCircle, PlayCircle, Upload, X } from "lucide-react";
+import { Camera, Film, LoaderCircle, PlayCircle, Upload, X } from "lucide-react";
 
 import { addLiveMoment } from "../../app/admin/live/actions";
 import { createClient } from "../../lib/supabase/client";
@@ -18,6 +18,7 @@ export default function LiveMomentUploader({
 }) {
   const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
   const [file, setFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [minute, setMinute] = useState(defaultMinute);
@@ -48,6 +49,7 @@ export default function LiveMomentUploader({
     setFile(null);
     setPreviewUrl(null);
     if (inputRef.current) inputRef.current.value = "";
+    if (cameraInputRef.current) cameraInputRef.current.value = "";
   }
 
   async function upload() {
@@ -148,15 +150,28 @@ export default function LiveMomentUploader({
       </label>
 
       {!file ? (
-        <button
-          type="button"
-          onClick={() => inputRef.current?.click()}
-          className="club-button-secondary min-h-20 w-full flex-col"
-          disabled={busy}
-        >
-          <Upload size={23} />
-          Video vom Handy auswählen
-        </button>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <button
+            type="button"
+            onClick={() => cameraInputRef.current?.click()}
+            className="club-button-primary min-h-24 w-full flex-col"
+            disabled={busy}
+          >
+            <Camera size={26} />
+            Direkt mit Kamera aufnehmen
+            <span className="text-[10px] font-bold normal-case tracking-normal opacity-75">Handykamera öffnen</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => inputRef.current?.click()}
+            className="club-button-secondary min-h-24 w-full flex-col"
+            disabled={busy}
+          >
+            <Upload size={23} />
+            Vorhandenes Video auswählen
+            <span className="text-[10px] font-bold normal-case tracking-normal opacity-75">Aus Galerie / Dateien</span>
+          </button>
+        </div>
       ) : (
         <div className="overflow-hidden rounded-3xl border border-white/10 bg-black/30">
           {previewUrl && <video src={previewUrl} controls playsInline className="max-h-80 w-full bg-black object-contain" />}
@@ -171,6 +186,15 @@ export default function LiveMomentUploader({
           </div>
         </div>
       )}
+
+      <input
+        ref={cameraInputRef}
+        type="file"
+        accept="video/*"
+        capture="environment"
+        className="hidden"
+        onChange={(event) => chooseFile(event.target.files?.[0])}
+      />
 
       <input
         ref={inputRef}
@@ -203,7 +227,7 @@ export default function LiveMomentUploader({
 
       <p className="flex items-start gap-2 text-xs leading-5 text-zinc-500">
         <Film size={15} className="mt-0.5 shrink-0" />
-        Kurze Clips bis 35 MB. Der Upload läuft direkt zu Supabase und nicht über den App-Server.
+        Kurze Clips bis 35 MB. „Direkt aufnehmen“ öffnet auf unterstützten Smartphones sofort die rückseitige Kamera. Danach kannst du den Clip vorhören/ansehen und wie gewohnt veröffentlichen. Der Upload läuft direkt zu Supabase und nicht über den App-Server.
       </p>
     </div>
   );
