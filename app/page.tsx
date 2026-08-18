@@ -14,6 +14,7 @@ import FussballNextMatchSection from "../components/home/FussballNextMatchSectio
 import UpcomingEvents from "../components/calendar/UpcomingEvents";
 import HomeAtmosphere from "../components/home/HomeAtmosphere";
 import PlayerOfMatchVoting from "../components/home/PlayerOfMatchVoting";
+import MatchdayHub from "../components/home/MatchdayHub";
 
 export default function Home() {
   return (
@@ -23,6 +24,7 @@ export default function Home() {
       <div className="huja-home-content relative isolate overflow-hidden">
         <HomeAtmosphere />
         <div className="relative z-10">
+          <MatchdayHub />
           <FeaturedMatchCenter />
           <FussballNextMatchSection />
           <CountdownFromSupabase />
