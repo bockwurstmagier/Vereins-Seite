@@ -5,6 +5,7 @@ import {
   Trash2,
   UserPlus,
   Users,
+  RefreshCw,
 } from "lucide-react";
 
 import DirectPlayerImageUploader from "../../../components/team/DirectPlayerImageUploader";
@@ -46,10 +47,16 @@ export default async function TeamAdminPage({
           </p>
         </div>
 
-        <a href="#new-player" className="club-button-primary">
-          <UserPlus size={18} aria-hidden="true" />
-          Spieler hinzufügen
-        </a>
+        <div className="flex flex-wrap gap-2">
+          <a href="/admin/team/player-sync" className="club-button-secondary">
+            <RefreshCw size={18} aria-hidden="true" />
+            FUSSBALL.DE Player Sync
+          </a>
+          <a href="#new-player" className="club-button-primary">
+            <UserPlus size={18} aria-hidden="true" />
+            Spieler hinzufügen
+          </a>
+        </div>
       </div>
 
       {params.created && <Notice text="Der Spieler wurde gespeichert." />}

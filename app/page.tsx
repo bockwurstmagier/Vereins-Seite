@@ -16,6 +16,7 @@ import HomeAtmosphere from "../components/home/HomeAtmosphere";
 import PlayerOfMatchVoting from "../components/home/PlayerOfMatchVoting";
 import MatchdayHub from "../components/home/MatchdayHub";
 import FanPassCard from "../components/fan/FanPassCard";
+import BirthdaySpotlight from "../components/home/BirthdaySpotlight";
 
 export default function Home() {
   return (
@@ -26,6 +27,7 @@ export default function Home() {
         <HomeAtmosphere />
         <div className="relative z-10">
           <MatchdayHub />
+          <BirthdaySpotlight />
           <FanPassCard />
           <FeaturedMatchCenter />
           <FussballNextMatchSection />
