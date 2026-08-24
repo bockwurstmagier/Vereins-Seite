@@ -1,10 +1,13 @@
 import { NextResponse } from "next/server";
+import { guardPublicMutation } from "../../../../lib/security";
 import { createAdminClient } from "../../../../lib/supabase/admin";
 import { hashAnonymousId } from "../../../../lib/fan-experience";
 
 const BLOCKED_PREFIXES = ["/admin", "/login", "/registrieren"];
 
 export async function POST(request: Request) {
+  const blocked = await guardPublicMutation(request, { action: "analytics", limit: 80, maxBodyBytes: 8192 });
+  if (blocked) return blocked;
   try {
     const body = (await request.json()) as {
       deviceId?: string;

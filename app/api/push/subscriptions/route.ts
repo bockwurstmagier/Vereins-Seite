@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { guardPublicMutation } from "../../../../lib/security";
 import { createClient } from "@supabase/supabase-js";
 
 type SubscriptionBody = {
@@ -38,6 +39,8 @@ function adminClient() {
 }
 
 export async function POST(request: Request) {
+  const blocked = await guardPublicMutation(request, { action: "push-subscription", limit: 20, maxBodyBytes: 32768 });
+  if (blocked) return blocked;
   try {
     const body = (await request.json()) as SubscriptionBody;
     const endpoint = body.subscription?.endpoint;
@@ -75,7 +78,7 @@ export async function POST(request: Request) {
     );
 
     if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      return NextResponse.json({ error: "Push-Subscription konnte nicht gespeichert werden." }, { status: 500 });
     }
 
     return NextResponse.json({ ok: true });
@@ -83,9 +86,7 @@ export async function POST(request: Request) {
     return NextResponse.json(
       {
         error:
-          error instanceof Error
-            ? error.message
-            : "Push-Subscription konnte nicht gespeichert werden.",
+          "Push-Subscription konnte nicht gespeichert werden.",
       },
       { status: 500 },
     );
@@ -93,6 +94,8 @@ export async function POST(request: Request) {
 }
 
 export async function DELETE(request: Request) {
+  const blocked = await guardPublicMutation(request, { action: "push-delete", limit: 20, maxBodyBytes: 8192 });
+  if (blocked) return blocked;
   try {
     const body = (await request.json()) as { deviceToken?: string };
     if (!body.deviceToken) {
@@ -112,7 +115,7 @@ export async function DELETE(request: Request) {
       .eq("device_token", body.deviceToken);
 
     if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      return NextResponse.json({ error: "Push-Subscription konnte nicht deaktiviert werden." }, { status: 500 });
     }
 
     return NextResponse.json({ ok: true });
@@ -120,9 +123,7 @@ export async function DELETE(request: Request) {
     return NextResponse.json(
       {
         error:
-          error instanceof Error
-            ? error.message
-            : "Push-Subscription konnte nicht deaktiviert werden.",
+          "Push-Subscription konnte nicht deaktiviert werden.",
       },
       { status: 500 },
     );

@@ -1,8 +1,11 @@
 import { NextResponse } from "next/server";
+import { guardPublicMutation } from "../../../lib/security";
 import { createAdminClient } from "../../../lib/supabase/admin";
 import { finalizeFanPoll, hashAnonymousId } from "../../../lib/fan-experience";
 
 export async function POST(request: Request) {
+  const blocked = await guardPublicMutation(request, { action: "fan-vote", limit: 20, maxBodyBytes: 8192 });
+  if (blocked) return blocked;
   try {
     const body = (await request.json()) as {
       pollId?: string;

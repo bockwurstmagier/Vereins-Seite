@@ -1,8 +1,11 @@
 import { NextResponse } from "next/server";
+import { guardPublicMutation } from "../../../../lib/security";
 import { createAdminClient } from "../../../../lib/supabase/admin";
 import { hashAnonymousId } from "../../../../lib/fan-experience";
 const allowed = new Set(["🔥","❤️","👏","⚽"]);
 export async function POST(request: Request) {
+  const blocked = await guardPublicMutation(request, { action: "reaction", limit: 40, maxBodyBytes: 8192 });
+  if (blocked) return blocked;
   try {
     const body = await request.json(); const matchId=String(body.matchId??""); const deviceId=String(body.deviceId??""); const reaction=String(body.reaction??"");
     if(!matchId || deviceId.length<12 || !allowed.has(reaction)) return NextResponse.json({error:"Ungültige Reaktion."},{status:400});

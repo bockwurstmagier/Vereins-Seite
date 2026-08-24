@@ -1,7 +1,10 @@
 import { NextResponse } from "next/server";
+import { guardPublicMutation } from "../../../lib/security";
 import { getFanPass, saveFanName } from "../../../lib/fan-pass";
 function valid(id:string){return id.length>=12&&id.length<=160}
 export async function POST(request:Request){
+  const blocked = await guardPublicMutation(request, { action: "fan-pass", limit: 40, maxBodyBytes: 16384 });
+  if (blocked) return blocked;
  try{
   const body=await request.json(); const deviceId=String(body.deviceId??"");
   if(!valid(deviceId)) return NextResponse.json({error:"Ungültiger Fanpass."},{status:400});

@@ -28,7 +28,8 @@ export type AdminArea =
   | "benutzer"
   | "aktivitaeten"
   | "einstellungen"
-  | "impressum";
+  | "impressum"
+  | "security";
 
 const permissions: Record<AppRole, AdminArea[]> = {
   administrator: [
@@ -60,6 +61,7 @@ const permissions: Record<AppRole, AdminArea[]> = {
     "mediencenter",
     "autographics",
     "impressum",
+    "security",
 ],
   vorstand: [
     "vereinszentrale",
