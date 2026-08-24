@@ -19,22 +19,42 @@ export default function LiveEventOverlay({events,players,homeTeam,awayTeam,score
   const [visibleEvent,setVisibleEvent]=useState<MatchCenterEvent|null>(null);
   const [phaseMessage,setPhaseMessage]=useState<string|null>(null);
   const [goalSoundUrl,setGoalSoundUrl]=useState("/sounds/goal.wav");
+  const [goalSoundStart,setGoalSoundStart]=useState(0);
+  const [goalSoundEnd,setGoalSoundEnd]=useState<number|null>(null);
+  const goalAudioRef=useRef<HTMLAudioElement|null>(null);
+  const goalStopTimerRef=useRef<number|null>(null);
   const previousId=useRef(events[0]?.id??null);
   const previousPhase=useRef(clockPhase);
   const previousStatus=useRef(status);
   const playerMap=useMemo(()=>new Map(players.map(p=>[p.id,`${p.first_name} ${p.last_name}`])),[players]);
 
-  useEffect(()=>{ fetch("/api/match-experience",{cache:"no-store"}).then(r=>r.json()).then(x=>{if(x.goalSoundUrl)setGoalSoundUrl(x.goalSoundUrl)}).catch(()=>{}); },[]);
+  useEffect(()=>{ fetch("/api/match-experience",{cache:"no-store"}).then(r=>r.json()).then(x=>{if(x.goalSoundUrl)setGoalSoundUrl(x.goalSoundUrl);setGoalSoundStart(Number(x.goalSoundStart??0));setGoalSoundEnd(x.goalSoundEnd==null?null:Number(x.goalSoundEnd));}).catch(()=>{}); },[]);
   useEffect(()=>{
     const latest=events[0];
     if(!latest||latest.id===previousId.current)return;
     previousId.current=latest.id; setVisibleEvent(latest);
     const timer=window.setTimeout(()=>setVisibleEvent(null), latest.event_type==="goal"?6200:4200);
     if(latest.event_type==="goal"&&window.localStorage.getItem("huja-live-sound")==="true"){
-      const audio=new Audio(goalSoundUrl); audio.volume=.85; void audio.play().catch(()=>{});
+      void (async()=>{
+        let url=goalSoundUrl,start=goalSoundStart,end=goalSoundEnd;
+        try{
+          const fresh=await fetch(`/api/match-experience?t=${Date.now()}`,{cache:"no-store"}).then(r=>r.json());
+          if(fresh.goalSoundUrl)url=fresh.goalSoundUrl;
+          start=Number(fresh.goalSoundStart??0);
+          end=fresh.goalSoundEnd==null?null:Number(fresh.goalSoundEnd);
+          setGoalSoundUrl(url);setGoalSoundStart(start);setGoalSoundEnd(end);
+        }catch{}
+        if(goalStopTimerRef.current)window.clearTimeout(goalStopTimerRef.current);
+        goalAudioRef.current?.pause();
+        const audio=new Audio(url);
+        goalAudioRef.current=audio;
+        audio.preload="auto";audio.volume=.9;
+        const play=()=>{try{audio.currentTime=Math.max(0,start)}catch{};void audio.play().catch(()=>{});if(end!==null&&end>start)goalStopTimerRef.current=window.setTimeout(()=>{audio.pause();audio.currentTime=Math.max(0,start)},(end-start)*1000)};
+        if(audio.readyState>=1)play();else audio.addEventListener("loadedmetadata",play,{once:true});
+      })();
     }
     return()=>window.clearTimeout(timer);
-  },[events,goalSoundUrl]);
+  },[events,goalSoundUrl,goalSoundStart,goalSoundEnd]);
 
   useEffect(()=>{
     let message:string|null=null;

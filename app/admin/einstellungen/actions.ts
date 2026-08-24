@@ -17,7 +17,7 @@ export async function saveGoalSound(formData:FormData){
  if(uploadError) throw new Error(`Sound konnte nicht hochgeladen werden: ${uploadError.message}`);
  const {data:pub}=supabase.storage.from("match-sounds").getPublicUrl(path);
  const {data:old}=await supabase.from("app_settings").select("value").eq("key","goal_sound").maybeSingle();
- const {error}=await supabase.from("app_settings").upsert({key:"goal_sound",value:{url:pub.publicUrl,path,name:file.name},updated_at:new Date().toISOString()},{onConflict:"key"});
+ const {error}=await supabase.from("app_settings").upsert({key:"goal_sound",value:{url:pub.publicUrl,path,name:file.name,start_seconds:0,end_seconds:null},updated_at:new Date().toISOString()},{onConflict:"key"});
  if(error){await supabase.storage.from("match-sounds").remove([path]);throw new Error(`Sound konnte nicht gespeichert werden: ${error.message}`);}
  const oldPath=old?.value?.path; if(oldPath&&oldPath!==path) await supabase.storage.from("match-sounds").remove([oldPath]);
  revalidatePath("/admin/einstellungen"); redirect("/admin/einstellungen?sound=updated");
@@ -28,4 +28,19 @@ export async function resetGoalSound(){
  await supabase.from("app_settings").delete().eq("key","goal_sound");
  if(old?.value?.path) await supabase.storage.from("match-sounds").remove([old.value.path]);
  revalidatePath("/admin/einstellungen"); redirect("/admin/einstellungen?sound=reset");
+}
+
+export async function saveGoalSoundTrim(formData:FormData){
+ await requireRole([...ROLES]); const supabase=await createClient();
+ const start=Math.max(0,Number(formData.get("start_seconds")||0));
+ const rawEnd=String(formData.get("end_seconds")||"").trim();
+ const end=rawEnd?Math.max(0,Number(rawEnd)):null;
+ if(!Number.isFinite(start)||(end!==null&&!Number.isFinite(end))) throw new Error("Ungültiger Sound-Ausschnitt.");
+ if(end!==null&&end<=start) throw new Error("Das Ende muss hinter dem Start liegen.");
+ const {data:current,error:readError}=await supabase.from("app_settings").select("value").eq("key","goal_sound").maybeSingle();
+ if(readError||!current?.value?.url) throw new Error("Bitte zuerst einen eigenen Tor-Sound hochladen.");
+ const next={...current.value,start_seconds:start,end_seconds:end};
+ const {error}=await supabase.from("app_settings").upsert({key:"goal_sound",value:next,updated_at:new Date().toISOString()},{onConflict:"key"});
+ if(error) throw new Error(`Ausschnitt konnte nicht gespeichert werden: ${error.message}`);
+ revalidatePath("/admin/einstellungen"); redirect("/admin/einstellungen?sound=trimmed");
 }

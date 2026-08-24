@@ -5,6 +5,10 @@ export async function GET(){
  try{
   const supabase=createAdminClient();
   const {data}=await supabase.from("app_settings").select("value").eq("key","goal_sound").maybeSingle();
-  return NextResponse.json({goalSoundUrl:data?.value?.url??"/sounds/goal.wav"},{headers:{"Cache-Control":"no-store"}});
- }catch{return NextResponse.json({goalSoundUrl:"/sounds/goal.wav"});}
+  return NextResponse.json({
+    goalSoundUrl:data?.value?.url??"/sounds/goal.wav",
+    goalSoundStart:Number(data?.value?.start_seconds??0),
+    goalSoundEnd:data?.value?.end_seconds!=null?Number(data.value.end_seconds):null,
+  },{headers:{"Cache-Control":"no-store, max-age=0"}});
+ }catch{return NextResponse.json({goalSoundUrl:"/sounds/goal.wav",goalSoundStart:0,goalSoundEnd:null});}
 }
