@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 
 import { requireRole } from "../../../lib/auth/roles";
 import { calculateLiveMinute } from "../../../lib/live-clock";
-import { sendLivePush, sendMatchLivePush } from "../../../lib/push/server";
+import { sendHalftimePush, sendLivePush, sendMatchLivePush } from "../../../lib/push/server";
 import { createClient } from "../../../lib/supabase/server";
 
 const ALLOWED_ROLES = ["administrator", "trainer", "betreuer"] as const;
@@ -263,6 +263,13 @@ export async function setLivePhase(formData: FormData) {
     !(match.status === "live" && match.clock_phase === "first_half")
   ) {
     await sendMatchLivePush(matchId);
+  }
+
+  if (
+    phase === "halftime" &&
+    match.clock_phase !== "halftime"
+  ) {
+    await sendHalftimePush(matchId);
   }
 
   refresh(matchId);

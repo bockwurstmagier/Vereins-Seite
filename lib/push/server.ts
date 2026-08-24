@@ -190,6 +190,39 @@ export async function sendMatchLivePush(matchId: string) {
   }
 }
 
+export async function sendHalftimePush(matchId: string) {
+  try {
+    const claimed = await claimPushEvent(`match-halftime:${matchId}`);
+    if (!claimed) return;
+
+    const supabase = getAdminClient();
+    const { data: match } = await supabase
+      .from("matches")
+      .select("home_team, away_team, home_score, away_score")
+      .eq("id", matchId)
+      .maybeSingle();
+
+    if (!match) return;
+
+    await sendPushToSubscriptions({
+      preferenceColumn: "live_starts_enabled",
+      urgency: "normal",
+      ttl: 45 * 60,
+      payload: {
+        title: "⏸️ HALBZEIT",
+        body: `${match.home_team} ${match.home_score ?? 0}:${match.away_score ?? 0} ${match.away_team}`,
+        url: `/match-center/${matchId}`,
+        tag: `match-${matchId}-halftime`,
+        eventType: "halftime",
+        vibrate: [180, 80, 180],
+      },
+    });
+  } catch (error) {
+    // Eine Push-Störung darf den Halbzeitwechsel niemals blockieren.
+    console.error("Halbzeit-Push wurde übersprungen:", error);
+  }
+}
+
 export async function sendNewsPush(newsId: string) {
   try {
     const claimed = await claimPushEvent(`news-published:${newsId}`);

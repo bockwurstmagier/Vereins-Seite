@@ -51,6 +51,10 @@ export default async function MobileLiveControlPage({ params, searchParams }: Pa
   if (!data) notFound();
 
   const { match, players, events } = data;
+  const sortedPlayers = [...players].sort((a, b) => {
+    const byLastName = a.last_name.localeCompare(b.last_name, "de", { sensitivity: "base" });
+    return byLastName || a.first_name.localeCompare(b.first_name, "de", { sensitivity: "base" });
+  });
   const recentEvents = events.slice(0, 8);
   const playerName = new Map(players.map((player) => [player.id, `${player.first_name} ${player.last_name}`]));
 
@@ -176,13 +180,13 @@ export default async function MobileLiveControlPage({ params, searchParams }: Pa
           <Field label="Torschütze">
             <select name="player_id" defaultValue="" className="admin-input">
               <option value="">Kein Spieler / Gegner</option>
-              {players.map((player) => <option key={player.id} value={player.id}>{player.shirt_number !== null ? `#${player.shirt_number} ` : ""}{player.first_name} {player.last_name}</option>)}
+              {sortedPlayers.map((player) => <option key={player.id} value={player.id}>{player.shirt_number !== null ? `#${player.shirt_number} ` : ""}{player.first_name} {player.last_name}</option>)}
             </select>
           </Field>
           <Field label="Vorlage">
             <select name="secondary_player_id" defaultValue="" className="admin-input">
               <option value="">Keine Vorlage</option>
-              {players.map((player) => <option key={player.id} value={player.id}>{player.first_name} {player.last_name}</option>)}
+              {sortedPlayers.map((player) => <option key={player.id} value={player.id}>{player.first_name} {player.last_name}</option>)}
             </select>
           </Field>
           <Field label="Notiz">
@@ -206,7 +210,7 @@ export default async function MobileLiveControlPage({ params, searchParams }: Pa
           <Field label="Spieler">
             <select name="player_id" defaultValue="" className="admin-input">
               <option value="">Kein Spieler / Gegner</option>
-              {players.map((player) => <option key={player.id} value={player.id}>{player.first_name} {player.last_name}</option>)}
+              {sortedPlayers.map((player) => <option key={player.id} value={player.id}>{player.first_name} {player.last_name}</option>)}
             </select>
           </Field>
           <Field label="Notiz" className="sm:col-span-2">
@@ -224,13 +228,13 @@ export default async function MobileLiveControlPage({ params, searchParams }: Pa
           <Field label="Kommt rein">
             <select name="player_id" required className="admin-input">
               <option value="">Spieler auswählen</option>
-              {players.map((player) => <option key={player.id} value={player.id}>{player.first_name} {player.last_name}</option>)}
+              {sortedPlayers.map((player) => <option key={player.id} value={player.id}>{player.first_name} {player.last_name}</option>)}
             </select>
           </Field>
           <Field label="Geht raus">
             <select name="secondary_player_id" required className="admin-input">
               <option value="">Spieler auswählen</option>
-              {players.map((player) => <option key={player.id} value={player.id}>{player.first_name} {player.last_name}</option>)}
+              {sortedPlayers.map((player) => <option key={player.id} value={player.id}>{player.first_name} {player.last_name}</option>)}
             </select>
           </Field>
           <button type="submit" className="club-button-primary min-h-16 sm:col-span-2"><RefreshCcw size={20} /> Wechsel speichern</button>
