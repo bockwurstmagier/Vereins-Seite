@@ -55,7 +55,7 @@ export function calculateLiveMinute(
 
   const baseMinute =
     clock.clock_base_minute ??
-    (clock.clock_phase === "second_half" ? 46 : 1);
+    (clock.clock_phase === "second_half" ? 45 : 1);
 
   return Math.min(130, Math.max(0, baseMinute + elapsedMinutes));
 }

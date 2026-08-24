@@ -7,7 +7,7 @@ import { Camera, Film, LoaderCircle, PlayCircle, Upload, X } from "lucide-react"
 import { addLiveMoment } from "../../app/admin/live/actions";
 import { createClient } from "../../lib/supabase/client";
 
-const MAX_VIDEO_SIZE = 35 * 1024 * 1024;
+const MAX_VIDEO_SIZE = 100 * 1024 * 1024;
 
 export default function LiveMomentUploader({
   matchId,
@@ -36,7 +36,7 @@ export default function LiveMomentUploader({
       return;
     }
     if (selected.size > MAX_VIDEO_SIZE) {
-      setMessage("Das Video ist zu groß. Maximal 35 MB pro Live-Moment.");
+      setMessage("Das Video ist zu groß. Maximal 100 MB pro Live-Moment.");
       return;
     }
     if (previewUrl) URL.revokeObjectURL(previewUrl);
@@ -227,7 +227,7 @@ export default function LiveMomentUploader({
 
       <p className="flex items-start gap-2 text-xs leading-5 text-zinc-500">
         <Film size={15} className="mt-0.5 shrink-0" />
-        Kurze Clips bis 35 MB. „Direkt aufnehmen“ öffnet auf unterstützten Smartphones sofort die rückseitige Kamera. Danach kannst du den Clip vorhören/ansehen und wie gewohnt veröffentlichen. Der Upload läuft direkt zu Supabase und nicht über den App-Server.
+        Clips bis 100 MB. „Direkt aufnehmen“ öffnet die rückseitige Handykamera. HUJA lädt die von der Kamera erzeugte Originaldatei ohne zusätzliche Kompression direkt zu Supabase hoch. Wähle in der Kamera möglichst HD/1080p; die tatsächlich verfügbare Qualität bestimmt iOS/Android.
       </p>
     </div>
   );

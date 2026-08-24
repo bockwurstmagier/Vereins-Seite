@@ -201,7 +201,8 @@ export async function setLivePhase(formData: FormData) {
     },
     second_half: {
       status: "live" as const,
-      minute: Math.max(46, liveMinute),
+      // Die zweite Halbzeit beginnt immer exakt bei 45:00.
+      minute: 45,
       clockPhase: "second_half",
       clockStartedAt: now.toISOString(),
       label: "Anpfiff zur zweiten Halbzeit",
