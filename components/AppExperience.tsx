@@ -50,7 +50,7 @@ export default function AppExperience({ children }: { children: React.ReactNode 
     if (!alreadyShown && window.matchMedia("(display-mode: standalone)").matches) {
       setShowSplash(true);
       window.sessionStorage.setItem("huja-splash-seen", "1");
-      const timer = window.setTimeout(() => setShowSplash(false), 1450);
+      const timer = window.setTimeout(() => setShowSplash(false), 420);
       return () => window.clearTimeout(timer);
     }
   }, []);
@@ -174,20 +174,19 @@ export default function AppExperience({ children }: { children: React.ReactNode 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[200] flex items-center justify-center bg-[#050505]"
+            transition={{ duration: 0.16, ease: "easeOut" }}
+            className="pointer-events-none fixed inset-0 z-[200] flex items-center justify-center bg-[#050505]"
           >
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(193,18,31,0.28),transparent_55%)]" />
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(193,18,31,0.18),transparent_48%)]" />
             <motion.div
-              initial={{ scale: 0.82, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ type: "spring", damping: 18, stiffness: 160 }}
-              className="relative text-center"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.12, ease: "easeOut" }}
+              className="relative"
             >
-              <div className="mx-auto flex h-36 w-36 items-center justify-center rounded-[2.2rem] border border-white/10 bg-black/45 p-5 shadow-[0_0_70px_rgba(193,18,31,0.35)]">
+              <div className="flex h-28 w-28 items-center justify-center rounded-[1.8rem] border border-white/10 bg-black/35 p-4 shadow-[0_0_45px_rgba(193,18,31,0.24)]">
                 <Image src={clubLogo} alt="SpVgg Middelich-Resse" priority className="h-auto max-h-full w-auto" />
               </div>
-              <p className="mt-6 text-xs font-black uppercase tracking-[0.42em] text-club-light-red">HUJA</p>
-              <p className="mt-2 text-sm font-black uppercase tracking-[0.16em] text-white">Middelich-Resse</p>
             </motion.div>
           </motion.div>
         )}
