@@ -12,13 +12,21 @@ export default function MatchStory({events,players,status,homeTeam,awayTeam,scor
    <p className="mt-2 text-sm text-zinc-400">{homeTeam} <b className="text-white">{score}</b> {awayTeam} · automatisch aus dem LiveCenter</p>
   </div>
   <div className="relative p-5 sm:p-6"><div className="absolute bottom-7 left-[42px] top-7 w-px bg-gradient-to-b from-club-light-red/60 via-white/10 to-transparent"/>
-   <div className="space-y-4">{chronological.map((e,i)=>{const player=e.player_id?names.get(e.player_id):null;const second=e.secondary_player_id?names.get(e.secondary_player_id):null;return <article key={e.id} className="relative flex gap-4">
+   <div className="space-y-4">{chronological.map((e,i)=>{
+    const player=e.player_id?names.get(e.player_id):null;
+    const second=e.secondary_player_id?names.get(e.secondary_player_id):null;
+    const linkedGoal=e.video_url&&e.event_type==="note"
+      ? [...chronological].filter(x=>x.event_type==="goal"&&x.minute<=e.minute&&e.minute-x.minute<=3).pop()
+      : null;
+    const linkedScorer=linkedGoal?.player_id?names.get(linkedGoal.player_id):null;
+    return <article key={e.id} className="relative flex gap-4">
     <div className={`relative z-10 grid h-11 w-11 shrink-0 place-items-center rounded-2xl border ${e.event_type==="goal"?"border-club-light-red/40 bg-club-red text-white":"border-white/10 bg-zinc-950 text-zinc-400"}`}>{icon(e.event_type)}</div>
     <div className="min-w-0 flex-1 rounded-2xl border border-white/[.07] bg-black/25 p-4">
      <div className="flex items-center justify-between gap-3"><p className="text-[10px] font-black uppercase tracking-wider text-club-light-red">{e.minute}. Minute · {label(e.event_type,e.moment_type)}</p>{i===chronological.length-1&&status==="live"&&<span className="h-2 w-2 animate-pulse rounded-full bg-red-500"/>}</div>
      <p className="mt-1 font-black text-white">{player||e.description||"Spielereignis"}</p>
      {second&&<p className="mt-1 text-xs text-zinc-500">{e.event_type==="goal"?"Vorlage":"für"}: {second}</p>}
      {player&&e.description&&<p className="mt-1 text-xs text-zinc-500">{e.description}</p>}
+     {linkedGoal&&<p className="mt-2 rounded-xl border border-club-light-red/20 bg-club-red/10 px-3 py-2 text-xs font-black text-club-light-red">🎥 Automatisch erkannt: Video zum Tor {linkedScorer?`von ${linkedScorer}`:""} in der {linkedGoal.minute}. Minute</p>}
      {e.video_url&&<video src={e.video_url} controls playsInline preload="metadata" className="mt-3 max-h-72 w-full rounded-xl bg-black object-contain"/>}
     </div>
    </article>})}</div>

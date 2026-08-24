@@ -20,3 +20,21 @@ export async function POST(request: Request) {
     return NextResponse.json({ok:true,counts});
   } catch(error){console.error("Matchday-Reaktion:",error);return NextResponse.json({error:"Reaktion konnte nicht gespeichert werden."},{status:500});}
 }
+
+
+export async function GET(request: Request) {
+  try {
+    const url = new URL(request.url);
+    const matchId = String(url.searchParams.get("matchId") ?? "");
+    if (!matchId) return NextResponse.json({ error: "Spiel fehlt." }, { status: 400 });
+    const supabase = createAdminClient();
+    const { data, error } = await supabase.from("match_reactions").select("reaction").eq("match_id", matchId);
+    if (error) throw error;
+    const counts: Record<string, number> = {};
+    for (const row of data ?? []) counts[row.reaction] = (counts[row.reaction] ?? 0) + 1;
+    return NextResponse.json({ counts }, { headers: { "Cache-Control": "no-store" } });
+  } catch (error) {
+    console.error("Matchday-Reaktionen laden:", error);
+    return NextResponse.json({ error: "Reaktionen konnten nicht geladen werden." }, { status: 500 });
+  }
+}

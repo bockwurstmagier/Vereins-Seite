@@ -76,15 +76,28 @@ export default function LiveEventOverlay({events,players,homeTeam,awayTeam,score
   const middelichHome=/middelich|resse/i.test(homeTeam);
   const ourScore=middelichHome?homeScore:awayScore;
   const theirScore=middelichHome?awayScore:homeScore;
-  const goalHeadline=visibleEvent?.moment_type==="penalty"
-    ?"ELFMETERTOR!"
-    : visibleEvent && visibleEvent.minute>=85
-      ?"LAST-MINUTE!"
-      : ourScore===theirScore
-        ?"AUSGLEICH!"
-        : ourScore===theirScore+1
-          ?"FÜHRUNG!"
-          :"TOOOOR!";
+  const scorerGoalCount=visibleEvent?.player_id
+    ? events.filter(e=>e.event_type==="goal"&&e.player_id===visibleEvent.player_id).length
+    : 0;
+  const latestIsOurGoal=Boolean(visibleEvent?.player_id);
+  const previousOurScore=latestIsOurGoal?Math.max(0,ourScore-1):ourScore;
+  const wasBehindBefore=latestIsOurGoal&&previousOurScore<theirScore;
+  const comebackLead=wasBehindBefore&&ourScore>theirScore;
+  const goalHeadline=scorerGoalCount>=3
+    ?"HATTRICK!"
+    : scorerGoalCount===2
+      ?"DOPPELPACK!"
+      : comebackLead
+        ?"COMEBACK!"
+        : visibleEvent?.moment_type==="penalty"
+          ?"ELFMETERTOR!"
+          : visibleEvent && visibleEvent.minute>=85
+            ?"LAST-MINUTE!"
+            : ourScore===theirScore
+              ?"AUSGLEICH!"
+              : ourScore===theirScore+1
+                ?"FÜHRUNG!"
+                :"TOOOOR!";
 
   return <>
     <PushNotificationControl />
@@ -110,6 +123,7 @@ export default function LiveEventOverlay({events,players,homeTeam,awayTeam,score
           <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-black to-transparent"/>
         </div>}
         <p className="mt-5 text-3xl font-black uppercase text-white">{scorer||visibleEvent.description||"Middelich-Resse"}</p>
+        {scorerGoalCount>=2&&<p className="mt-2 text-xs font-black uppercase tracking-[.24em] text-red-300">{scorerGoalCount}. Tor dieses Spielers in diesem Spiel 🔥</p>}
         {assist&&<p className="mt-2 text-sm font-bold uppercase tracking-wider text-zinc-400">Vorlage: {assist}</p>}
         <div className="mx-auto mt-7 inline-flex rounded-2xl border border-white/15 bg-black/45 px-5 py-3 text-lg font-black">{homeTeam} <span className="mx-3 text-club-light-red">{score}</span> {awayTeam}</div>
       </div>

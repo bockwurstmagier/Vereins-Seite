@@ -18,6 +18,7 @@ import LiveEventOverlay from "./LiveEventOverlay";
 import FormationDisplay from "./FormationDisplay";
 import MatchStory from "./MatchStory";
 import MatchHighlights from "./MatchHighlights";
+import LiveReactionBar from "./LiveReactionBar";
 
 import type {
   MatchCenterEvent,
@@ -354,6 +355,7 @@ export default function LiveMatchCenter({
           </div>
         </div>
 
+        <LiveReactionBar matchId={match.id} status={match.status} />
         <MatchHighlights events={events} status={match.status} />
         <MatchStory
           events={events}
