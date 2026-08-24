@@ -1,12 +1,10 @@
 "use client";
 
-import Image from "next/image";
 import { AnimatePresence, motion } from "framer-motion";
 import { RefreshCw, Sparkles, WifiOff, X } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 
-import clubLogo from "../app/logo.png";
 import { HUJA_BRANDING } from "../lib/branding";
 
 const UPDATE_CHECK_INTERVAL_MS = 5 * 60 * 1000;
@@ -39,21 +37,10 @@ function isNewerVersion(remoteVersion: string, localVersion: string) {
 
 export default function AppExperience({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const [showSplash, setShowSplash] = useState(false);
   const [online, setOnline] = useState(true);
   const [updateReady, setUpdateReady] = useState(false);
   const [availableVersion, setAvailableVersion] = useState<string | null>(null);
   const [installingUpdate, setInstallingUpdate] = useState(false);
-
-  useEffect(() => {
-    const alreadyShown = window.sessionStorage.getItem("huja-splash-seen");
-    if (!alreadyShown && window.matchMedia("(display-mode: standalone)").matches) {
-      setShowSplash(true);
-      window.sessionStorage.setItem("huja-splash-seen", "1");
-      const timer = window.setTimeout(() => setShowSplash(false), 420);
-      return () => window.clearTimeout(timer);
-    }
-  }, []);
 
   useEffect(() => {
     const sync = () => setOnline(navigator.onLine);
@@ -166,30 +153,6 @@ export default function AppExperience({ children }: { children: React.ReactNode 
         >
           {children}
         </motion.div>
-      </AnimatePresence>
-
-      <AnimatePresence>
-        {showSplash && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.16, ease: "easeOut" }}
-            className="pointer-events-none fixed inset-0 z-[200] flex items-center justify-center bg-[#050505]"
-          >
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(193,18,31,0.18),transparent_48%)]" />
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.12, ease: "easeOut" }}
-              className="relative"
-            >
-              <div className="flex h-28 w-28 items-center justify-center rounded-[1.8rem] border border-white/10 bg-black/35 p-4 shadow-[0_0_45px_rgba(193,18,31,0.24)]">
-                <Image src={clubLogo} alt="SpVgg Middelich-Resse" priority className="h-auto max-h-full w-auto" />
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
       </AnimatePresence>
 
       <AnimatePresence>
