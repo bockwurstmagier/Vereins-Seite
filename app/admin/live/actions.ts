@@ -45,6 +45,7 @@ function refresh(matchId: string) {
   revalidatePath(`/match-center/${matchId}`);
   revalidatePath("/admin");
   revalidatePath("/admin/live");
+  revalidatePath("/admin/spieltags-assistent");
   revalidatePath(`/admin/live/${matchId}`);
   revalidatePath("/admin/match-center");
   revalidatePath(`/admin/match-center/${matchId}`);

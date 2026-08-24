@@ -257,6 +257,7 @@ export async function finalizeMatchDay(formData: FormData) {
       "/admin/statistiken",
       "/admin/trainer",
       "/admin/match-center",
+      "/admin/spieltags-assistent",
       `/admin/match-center/${matchId}`,
       `/admin/match-center/${matchId}/abschluss`,
       "/admin/grafikstudio",

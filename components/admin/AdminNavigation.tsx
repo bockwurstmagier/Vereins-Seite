@@ -60,6 +60,7 @@ const sections: Array<{
       { label: "Spiele", href: "/admin/spiele", icon: CalendarDays, area: "spiele" },
       { label: "Saisonimport", href: "/admin/saisonimport", icon: FileSpreadsheet, area: "saisonimport" },
       { label: "Match-Center", href: "/admin/match-center", icon: Radio, area: "match_center" },
+      { label: "Spieltags-Assistent", href: "/admin/spieltags-assistent", icon: Sparkles, area: "match_center" },
       { label: "Live-Steuerung", href: "/admin/live", icon: Smartphone, area: "live_admin" },
       { label: "Trainercockpit", href: "/admin/trainer", icon: ClipboardList, area: "trainer_cockpit" },
       { label: "Statistiken", href: "/admin/statistiken", icon: BarChart3, area: "statistiken" },
