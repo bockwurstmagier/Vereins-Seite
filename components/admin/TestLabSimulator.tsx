@@ -14,7 +14,7 @@ export default function TestLabSimulator({players}:{players:Player[]}){
  function opponent(){setAway(v=>v+1);setEvents(v=>[{id:crypto.randomUUID(),type:"goal",minute},...v])}
  function reset(){setMinute(0);setPhase("Bereit");setHome(0);setAway(0);setEvents([])}
  function scenario(kind:string){
-  if(kind==="hattrick"){const p=scorer;setHome(3);setAway(0);setMinute(67);setPhase("2. Halbzeit");setEvents([12,38,67].reverse().map(m=>({id:crypto.randomUUID(),type:"goal" as const,minute:m,player:p}))}
+  if(kind==="hattrick"){const p=scorer;setHome(3);setAway(0);setMinute(67);setPhase("2. Halbzeit");setEvents([12,38,67].reverse().map(m=>({id:crypto.randomUUID(),type:"goal" as const,minute:m,player:p})));}
   if(kind==="comeback"){setHome(3);setAway(2);setMinute(82);setPhase("2. Halbzeit");setEvents([{id:crypto.randomUUID(),type:"goal",minute:82,player:scorer},{id:crypto.randomUUID(),type:"goal",minute:74,player:scorer},{id:crypto.randomUUID(),type:"goal",minute:61,player:scorer},{id:crypto.randomUUID(),type:"goal",minute:49},{id:crypto.randomUUID(),type:"goal",minute:31}])}
   if(kind==="last"){setHome(2);setAway(1);setMinute(89);setPhase("2. Halbzeit");setEvents([{id:crypto.randomUUID(),type:"goal",minute:89,player:scorer},{id:crypto.randomUUID(),type:"goal",minute:53},{id:crypto.randomUUID(),type:"goal",minute:18,player:scorer}])}
  }
