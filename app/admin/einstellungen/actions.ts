@@ -44,3 +44,30 @@ export async function saveGoalSoundTrim(formData:FormData){
  if(error) throw new Error(`Ausschnitt konnte nicht gespeichert werden: ${error.message}`);
  revalidatePath("/admin/einstellungen"); redirect("/admin/einstellungen?sound=trimmed");
 }
+
+
+export async function saveRefereeWhistle(formData:FormData){
+ await requireRole([...ROLES]); const supabase=await createClient();
+ const file=formData.get("referee_whistle");
+ if(!(file instanceof File)||!file.size) throw new Error("Bitte eine Pfeifen-Sounddatei auswählen.");
+ const allowed=["audio/mpeg","audio/wav","audio/x-wav","audio/ogg","audio/mp4","audio/aac"];
+ if(!allowed.includes(file.type)&&!/\.(mp3|wav|ogg|m4a|aac)$/i.test(file.name)) throw new Error("Erlaubt sind MP3, WAV, OGG, M4A oder AAC.");
+ if(file.size>4*1024*1024) throw new Error("Der Pfeifen-Sound darf maximal 4 MB groß sein.");
+ const ext=(file.name.split(".").pop()||"mp3").replace(/[^a-z0-9]/gi,"").toLowerCase();
+ const path=`whistle/${crypto.randomUUID()}.${ext}`;
+ const {error:uploadError}=await supabase.storage.from("match-sounds").upload(path,file,{contentType:file.type||"audio/mpeg",cacheControl:"3600",upsert:false});
+ if(uploadError) throw new Error(`Pfeifen-Sound konnte nicht hochgeladen werden: ${uploadError.message}`);
+ const {data:pub}=supabase.storage.from("match-sounds").getPublicUrl(path);
+ const {data:old}=await supabase.from("app_settings").select("value").eq("key","referee_whistle").maybeSingle();
+ const {error}=await supabase.from("app_settings").upsert({key:"referee_whistle",value:{url:pub.publicUrl,path,name:file.name,enabled:true},updated_at:new Date().toISOString()},{onConflict:"key"});
+ if(error){await supabase.storage.from("match-sounds").remove([path]);throw new Error(`Pfeifen-Sound konnte nicht gespeichert werden: ${error.message}`);}
+ if(old?.value?.path&&old.value.path!==path) await supabase.storage.from("match-sounds").remove([old.value.path]);
+ revalidatePath("/admin/einstellungen"); redirect("/admin/einstellungen?whistle=updated");
+}
+export async function resetRefereeWhistle(){
+ await requireRole([...ROLES]); const supabase=await createClient();
+ const {data:old}=await supabase.from("app_settings").select("value").eq("key","referee_whistle").maybeSingle();
+ await supabase.from("app_settings").delete().eq("key","referee_whistle");
+ if(old?.value?.path) await supabase.storage.from("match-sounds").remove([old.value.path]);
+ revalidatePath("/admin/einstellungen"); redirect("/admin/einstellungen?whistle=reset");
+}

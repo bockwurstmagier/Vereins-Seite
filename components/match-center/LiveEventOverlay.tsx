@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Goal, RefreshCcw, ShieldAlert, Sparkles } from "lucide-react";
 import PushNotificationControl from "./PushNotificationControl";
+import StadiumWhistle from "./StadiumWhistle";
 import type { MatchCenterEvent, MatchCenterPlayer } from "../../lib/match-center";
 
 type Props = {
@@ -60,6 +61,7 @@ export default function LiveEventOverlay({events,players,homeTeam,awayTeam,score
     let message:string|null=null;
     if(previousStatus.current!=="finished"&&status==="finished") message="ABPFIFF";
     else if(previousPhase.current!=="halftime"&&clockPhase==="halftime") message="HALBZEIT";
+    else if(previousPhase.current==="halftime"&&clockPhase==="second_half") message="2. HALBZEIT";
     else if(previousStatus.current==="scheduled"&&status==="live") message="ANPFIFF";
     previousPhase.current=clockPhase; previousStatus.current=status;
     if(!message)return;
@@ -101,6 +103,7 @@ export default function LiveEventOverlay({events,players,homeTeam,awayTeam,score
 
   return <>
     <PushNotificationControl />
+    <StadiumWhistle status={status} clockPhase={clockPhase} />
     {phaseMessage&&<div className="pointer-events-none fixed inset-0 z-[90] grid place-items-center overflow-hidden bg-black/90 backdrop-blur-xl">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(127,29,29,.55),transparent_60%)]"/>
       <div className="relative text-center">

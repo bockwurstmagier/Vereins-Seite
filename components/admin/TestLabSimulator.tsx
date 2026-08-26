@@ -16,6 +16,7 @@ import {
   Volume2,
   X,
 } from "lucide-react";
+import { playStadiumWhistle } from "../match-center/StadiumWhistle";
 
 type Player={
   id:string;
@@ -162,6 +163,8 @@ export default function TestLabSimulator({players}:{players:Player[]}){
   }
 
   function setPhaseAndPreview(nextPhase:string,nextMinute:number,headline:string){
+    const count=headline==="HALBZEIT"?2:headline==="ABPFIFF"?3:1;
+    void playStadiumWhistle(count);
     setPhase(nextPhase);
     setMinute(nextMinute);
     showOverlay({kind:"phase",headline,score:`${home}:${away}`});
@@ -285,6 +288,23 @@ export default function TestLabSimulator({players}:{players:Player[]}){
             <p className="mt-2 text-xs font-black text-club-light-red">{minute}' · {phase}</p>
           </div>
           <b>Testgegner</b>
+        </div>
+      </div>
+    </section>
+
+    <section className="club-card p-5">
+      <div className="flex items-center justify-between"><div><p className="club-eyebrow">📱 Fan-Handy Vorschau</p><h2 className="mt-1 text-lg font-black uppercase">So sieht es der Fan</h2></div><span className="rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-1 text-[10px] font-black uppercase text-emerald-300">Nur Vorschau</span></div>
+      <div className="mx-auto mt-5 max-w-[360px] overflow-hidden rounded-[2.5rem] border-[7px] border-zinc-800 bg-black shadow-2xl">
+        <div className="mx-auto mt-2 h-5 w-24 rounded-full bg-zinc-900"/>
+        <div className="p-4">
+          <div className="rounded-3xl border border-white/10 bg-gradient-to-b from-red-950/70 to-zinc-950 p-5 text-center">
+            <p className="text-[9px] font-black uppercase tracking-[.25em] text-red-400">HUJA LIVE</p>
+            <p className="mt-3 text-xs font-black text-zinc-300">Middelich-Resse</p>
+            <p className="my-2 text-4xl font-black text-white">{home}<span className="mx-2 text-red-500">:</span>{away}</p>
+            <p className="text-xs font-black text-zinc-300">Testgegner</p>
+            <p className="mt-3 text-[10px] font-black uppercase text-red-400">{minute}' · {phase}</p>
+          </div>
+          <div className="mt-3 space-y-2">{events.slice(0,3).map(e=><div key={e.id} className="rounded-2xl border border-white/10 bg-white/[.04] p-3 text-xs"><b className="text-red-400">{e.minute}'</b> {e.type==="goal"?"⚽":e.type==="yellow"?"🟨":"🔄"} {e.player?name(e.player):e.type==="goal"?"Testgegner":"Live-Ereignis"}</div>)}</div>
         </div>
       </div>
     </section>
