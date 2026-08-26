@@ -116,7 +116,7 @@ export default function LiveEventOverlay({events,players,homeTeam,awayTeam,score
       <div className="relative text-center">
         <Sparkles className="mx-auto text-club-light-red" size={42}/>
         <p className="mt-5 text-xs font-black uppercase tracking-[.45em] text-club-light-red">HUJA Match Experience</p>
-        <p className="mt-3 text-5xl font-black italic text-white sm:text-7xl">{phaseMessage==="ABPFIFF"?fulltimeHeadline:phaseMessage}</p>
+        <p className="mx-auto mt-3 max-w-[92vw] break-words px-2 text-[clamp(2rem,10vw,4.5rem)] font-black italic leading-[.92] tracking-tight text-white">{phaseMessage==="ABPFIFF"?fulltimeHeadline:phaseMessage}</p>
         {phaseMessage==="ABPFIFF"&&<p className="mt-2 text-sm font-black uppercase tracking-[.3em] text-zinc-500">ABPFIFF</p>}
         <p className="mt-4 text-xl font-black text-zinc-300">{homeTeam} <span className="inline-block animate-pulse text-club-light-red">{score}</span> {awayTeam}</p>
       </div>
