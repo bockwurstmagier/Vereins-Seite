@@ -180,8 +180,16 @@ export default function TestLabSimulator({players}:{players:Player[]}){
     audioRef.current?.pause();
   }
 
-  function scenario(kind:"hattrick"|"comeback"|"last"){
+  function scenario(kind:"normal"|"lead"|"equalizer"|"double"|"hattrick"|"comeback"|"last"|"ninety"|"win"|"draw"|"loss"){
     const p=scorer;
+    if(kind==="normal"){setHome(2);setAway(0);setMinute(34);setPhase("1. Halbzeit");setEvents([{id:crypto.randomUUID(),type:"goal",minute:34,player:p||undefined}]);playGoalSound();showOverlay({kind:"goal",headline:"TOOOOR!",minute:34,player:p||undefined,score:"2:0"},6200);return;}
+    if(kind==="lead"){setHome(2);setAway(1);setMinute(58);setPhase("2. Halbzeit");setEvents([{id:crypto.randomUUID(),type:"goal",minute:58,player:p||undefined}]);playGoalSound();showOverlay({kind:"goal",headline:"FÜHRUNG!",minute:58,player:p||undefined,score:"2:1"},6200);return;}
+    if(kind==="equalizer"){setHome(2);setAway(2);setMinute(71);setPhase("2. Halbzeit");setEvents([{id:crypto.randomUUID(),type:"goal",minute:71,player:p||undefined}]);playGoalSound();showOverlay({kind:"goal",headline:"AUSGLEICH!",minute:71,player:p||undefined,score:"2:2"},6200);return;}
+    if(kind==="double"){setHome(2);setAway(0);setMinute(63);setPhase("2. Halbzeit");setEvents([{id:crypto.randomUUID(),type:"goal",minute:63,player:p||undefined},{id:crypto.randomUUID(),type:"goal",minute:22,player:p||undefined}]);playGoalSound();showOverlay({kind:"goal",headline:"DOPPELPACK!",minute:63,player:p||undefined,score:"2:0"},6200);return;}
+    if(kind==="ninety"){setHome(3);setAway(2);setMinute(92);setPhase("Nachspielzeit");setEvents([{id:crypto.randomUUID(),type:"goal",minute:92,player:p||undefined}]);playGoalSound();showOverlay({kind:"goal",headline:"90+ WAHNSINN!",minute:92,player:p||undefined,score:"3:2"},6200);return;}
+    if(kind==="win"){setHome(3);setAway(1);setMinute(90);setPhase("Abpfiff");void playStadiumWhistle(3);showOverlay({kind:"phase",headline:"HEIMSIEG!",score:"3:1"},5200);return;}
+    if(kind==="draw"){setHome(2);setAway(2);setMinute(90);setPhase("Abpfiff");void playStadiumWhistle(3);showOverlay({kind:"phase",headline:"UNENTSCHIEDEN",score:"2:2"},5200);return;}
+    if(kind==="loss"){setHome(1);setAway(3);setMinute(90);setPhase("Abpfiff");void playStadiumWhistle(3);showOverlay({kind:"phase",headline:"GEMEINSAM WEITER.",score:"1:3"},5200);return;}
     if(kind==="hattrick"){
       const generated=[67,38,12].map(m=>({
         id:crypto.randomUUID(),
@@ -356,10 +364,18 @@ export default function TestLabSimulator({players}:{players:Player[]}){
           <h2 className="text-lg font-black uppercase">Live-Regie testen</h2>
         </div>
       </div>
-      <div className="mt-4 grid gap-3 sm:grid-cols-3">
-        <button onClick={()=>scenario("hattrick")} className="club-button-secondary min-h-14">🔥 Hattrick + Animation</button>
-        <button onClick={()=>scenario("comeback")} className="club-button-secondary min-h-14">⚡ Comeback + Animation</button>
-        <button onClick={()=>scenario("last")} className="club-button-secondary min-h-14">⏱️ Last-Minute + Animation</button>
+      <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
+        <button onClick={()=>scenario("normal")} className="club-button-secondary min-h-14">⚽ Normales Tor</button>
+        <button onClick={()=>scenario("lead")} className="club-button-secondary min-h-14">🔥 Führung</button>
+        <button onClick={()=>scenario("equalizer")} className="club-button-secondary min-h-14">⚡ Ausgleich</button>
+        <button onClick={()=>scenario("double")} className="club-button-secondary min-h-14">🔥 Doppelpack</button>
+        <button onClick={()=>scenario("hattrick")} className="club-button-secondary min-h-14">🎩 Hattrick</button>
+        <button onClick={()=>scenario("comeback")} className="club-button-secondary min-h-14">⚡ Comeback</button>
+        <button onClick={()=>scenario("last")} className="club-button-secondary min-h-14">⏱️ 85+ Last-Minute</button>
+        <button onClick={()=>scenario("ninety")} className="club-button-secondary min-h-14">🤯 90+ Wahnsinn</button>
+        <button onClick={()=>scenario("win")} className="club-button-secondary min-h-14">🏆 Sieg</button>
+        <button onClick={()=>scenario("draw")} className="club-button-secondary min-h-14">🤝 Unentschieden</button>
+        <button onClick={()=>scenario("loss")} className="club-button-secondary min-h-14">🔴 Niederlage</button>
       </div>
       <div className="mt-3 grid gap-3 sm:grid-cols-3">
         <button onClick={playGoalSound} className="club-button-secondary min-h-14"><Volume2 size={17}/>Tor-Sound testen</button>
@@ -410,7 +426,8 @@ export default function TestLabSimulator({players}:{players:Player[]}){
         <Sparkles className="mx-auto text-club-light-red" size={42}/>
         <p className="mt-5 text-xs font-black uppercase tracking-[.45em] text-club-light-red">HUJA Match Experience</p>
         <p className="mt-3 text-5xl font-black italic text-white sm:text-7xl">{overlay.headline}</p>
-        <p className="mt-4 text-xl font-black text-zinc-300">Middelich-Resse <span className="text-club-light-red">{overlay.score}</span> Testgegner</p>
+        {["HEIMSIEG!","AUSWÄRTSSIEG!","UNENTSCHIEDEN","GEMEINSAM WEITER."].includes(overlay.headline)&&<p className="mt-2 text-sm font-black uppercase tracking-[.3em] text-zinc-500">ABPFIFF</p>}
+        <p className="mt-4 text-xl font-black text-zinc-300">Middelich-Resse <span className="inline-block animate-pulse text-2xl text-club-light-red">{overlay.score}</span> Testgegner</p>
         <p className="mt-5 text-[10px] font-black uppercase tracking-[.3em] text-amber-300">🧪 Test-Vorschau · nicht öffentlich</p>
       </div>
     </div>}

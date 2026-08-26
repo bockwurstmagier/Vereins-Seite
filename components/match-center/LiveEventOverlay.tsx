@@ -93,13 +93,20 @@ export default function LiveEventOverlay({events,players,homeTeam,awayTeam,score
         ?"COMEBACK!"
         : visibleEvent?.moment_type==="penalty"
           ?"ELFMETERTOR!"
-          : visibleEvent && visibleEvent.minute>=85
-            ?"LAST-MINUTE!"
-            : ourScore===theirScore
-              ?"AUSGLEICH!"
-              : ourScore===theirScore+1
-                ?"FÜHRUNG!"
-                :"TOOOOR!";
+          : visibleEvent && visibleEvent.minute>=90
+            ?"90+ WAHNSINN!"
+            : visibleEvent && visibleEvent.minute>=85
+              ?"LAST-MINUTE!"
+              : ourScore===theirScore
+                ?"AUSGLEICH!"
+                : ourScore===theirScore+1
+                  ?"FÜHRUNG!"
+                  :"TOOOOR!";
+  const fulltimeHeadline=ourScore>theirScore
+    ?(middelichHome?"HEIMSIEG!":"AUSWÄRTSSIEG!")
+    :ourScore===theirScore
+      ?"UNENTSCHIEDEN"
+      :"GEMEINSAM WEITER.";
 
   return <>
     <PushNotificationControl />
@@ -109,8 +116,9 @@ export default function LiveEventOverlay({events,players,homeTeam,awayTeam,score
       <div className="relative text-center">
         <Sparkles className="mx-auto text-club-light-red" size={42}/>
         <p className="mt-5 text-xs font-black uppercase tracking-[.45em] text-club-light-red">HUJA Match Experience</p>
-        <p className="mt-3 text-5xl font-black italic text-white sm:text-7xl">{phaseMessage}</p>
-        <p className="mt-4 text-xl font-black text-zinc-300">{homeTeam} <span className="text-club-light-red">{score}</span> {awayTeam}</p>
+        <p className="mt-3 text-5xl font-black italic text-white sm:text-7xl">{phaseMessage==="ABPFIFF"?fulltimeHeadline:phaseMessage}</p>
+        {phaseMessage==="ABPFIFF"&&<p className="mt-2 text-sm font-black uppercase tracking-[.3em] text-zinc-500">ABPFIFF</p>}
+        <p className="mt-4 text-xl font-black text-zinc-300">{homeTeam} <span className="inline-block animate-pulse text-club-light-red">{score}</span> {awayTeam}</p>
       </div>
     </div>}
     {visibleEvent&&isGoal&&<div className="pointer-events-none fixed inset-0 z-[95] grid place-items-center overflow-hidden bg-black/95 px-5 backdrop-blur-2xl">
@@ -128,7 +136,7 @@ export default function LiveEventOverlay({events,players,homeTeam,awayTeam,score
         <p className="mt-5 text-3xl font-black uppercase text-white">{scorer||visibleEvent.description||"Middelich-Resse"}</p>
         {scorerGoalCount>=2&&<p className="mt-2 text-xs font-black uppercase tracking-[.24em] text-red-300">{scorerGoalCount}. Tor dieses Spielers in diesem Spiel 🔥</p>}
         {assist&&<p className="mt-2 text-sm font-bold uppercase tracking-wider text-zinc-400">Vorlage: {assist}</p>}
-        <div className="mx-auto mt-7 inline-flex rounded-2xl border border-white/15 bg-black/45 px-5 py-3 text-lg font-black">{homeTeam} <span className="mx-3 text-club-light-red">{score}</span> {awayTeam}</div>
+        <div className="mx-auto mt-7 inline-flex animate-[liveEventIn_.3s_ease-out] rounded-2xl border border-white/15 bg-black/45 px-5 py-3 text-lg font-black">{homeTeam} <span className="mx-3 inline-block animate-pulse text-2xl text-club-light-red">{score}</span> {awayTeam}</div>
       </div>
     </div>}
     {visibleEvent&&!isGoal&&<div className="pointer-events-none fixed inset-x-4 top-20 z-[70] mx-auto max-w-md animate-[liveEventIn_.35s_ease-out] rounded-[2rem] border border-club-light-red/30 bg-black/90 p-5 text-center shadow-[0_0_60px_rgba(220,38,38,.45)] backdrop-blur-2xl">
