@@ -28,6 +28,7 @@ import {
   Smartphone,
   ClipboardList,
   Sparkles,
+  FlaskConical,
   Table2,
   UserCog,
   UserRoundCog,
@@ -45,6 +46,7 @@ const sections: Array<{
     href: string;
     icon: typeof Home;
     area: AdminArea;
+    roles?: AppRole[];
   }>;
 }> = [
   {
@@ -62,6 +64,7 @@ const sections: Array<{
       { label: "Match-Center", href: "/admin/match-center", icon: Radio, area: "match_center" },
       { label: "Spieltags-Assistent", href: "/admin/spieltags-assistent", icon: Sparkles, area: "match_center" },
       { label: "Live-Steuerung", href: "/admin/live", icon: Smartphone, area: "live_admin" },
+      { label: "Test-Labor", href: "/admin/test-labor", icon: FlaskConical, area: "dashboard", roles: ["administrator"] },
       { label: "Trainercockpit", href: "/admin/trainer", icon: ClipboardList, area: "trainer_cockpit" },
       { label: "Statistiken", href: "/admin/statistiken", icon: BarChart3, area: "statistiken" },
       { label: "Tabelle", href: "/admin/tabelle", icon: Table2, area: "tabelle" },
@@ -114,7 +117,7 @@ export default function AdminNavigation({
   return (
     <nav className="space-y-5">
       {sections.map((section) => {
-        const items = section.items.filter((item) => canAccess(role, item.area));
+        const items = section.items.filter((item) => canAccess(role, item.area) && (!item.roles || item.roles.includes(role)));
 
         if (!items.length) return null;
 
