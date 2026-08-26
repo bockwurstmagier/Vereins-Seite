@@ -18,8 +18,8 @@ export function playSyntheticWhistle(count:number){
 export async function playStadiumWhistle(count:number){
  let url:string|null=null;
  try{const r=await fetch(`/api/match-experience?t=${Date.now()}`,{cache:"no-store"});const x=await r.json();url=x.refereeWhistleUrl??null}catch{}
- if(!url){playSyntheticWhistle(count);return}
- for(let i=0;i<count;i++)window.setTimeout(()=>{const a=new Audio(url!);a.volume=.8;void a.play().catch(()=>playSyntheticWhistle(1))},i*520);
+ const source=url||"/sounds/referee-whistle.wav";
+ for(let i=0;i<count;i++)window.setTimeout(()=>{const a=new Audio(source);a.volume=.9;void a.play().catch(()=>playSyntheticWhistle(1))},i*620);
 }
 export default function StadiumWhistle({status,clockPhase}:{status:"scheduled"|"live"|"finished";clockPhase:string|null}){
  const prevStatus=useRef(status),prevPhase=useRef(clockPhase);
