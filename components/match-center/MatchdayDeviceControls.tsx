@@ -15,10 +15,19 @@ export default function MatchdayDeviceControls() {
   }, []);
 
   useEffect(() => {
+    const restore = async () => {
+      if (document.visibilityState === "visible" && wakeLockActive && "wakeLock" in navigator && !wakeLockRef.current) {
+        try {
+          wakeLockRef.current = await navigator.wakeLock.request("screen");
+        } catch {}
+      }
+    };
+    document.addEventListener("visibilitychange", restore);
     return () => {
+      document.removeEventListener("visibilitychange", restore);
       void wakeLockRef.current?.release();
     };
-  }, []);
+  }, [wakeLockActive]);
 
   const vibrate = () => navigator.vibrate?.(18);
 

@@ -22,6 +22,8 @@ import {
 import LiveClock from "../../../../components/match-center/LiveClock";
 import LiveMomentUploader from "../../../../components/match-center/LiveMomentUploader";
 import MatchdayDeviceControls from "../../../../components/match-center/MatchdayDeviceControls";
+import LiveCenterProControls from "../../../../components/admin/LiveCenterProControls";
+import LivePhaseControls from "../../../../components/admin/LivePhaseControls";
 import { requireRole } from "../../../../lib/auth/roles";
 import { getPublicMatchCenterMatch } from "../../../../lib/match-center";
 import {
@@ -68,7 +70,10 @@ export default async function MobileLiveControlPage({ params, searchParams }: Pa
 
       {(notices.goal || notices.card || notices.substitution || notices.undone || notices.paused || notices.resumed || notices.minute) && (
         <div className="mt-5 rounded-2xl border border-emerald-500/20 bg-emerald-950/30 px-4 py-3 text-sm text-emerald-300">
-          Änderung wurde live übernommen.
+          <div className="flex items-center justify-between gap-3">
+            <span>{notices.goal ? "⚽ Tor wurde live gespeichert." : notices.undone ? "↩️ Letzte Aktion wurde rückgängig gemacht." : "Änderung wurde live übernommen."}</span>
+            {notices.goal && <form action={undoLastEvent}><input type="hidden" name="match_id" value={match.id}/><button className="rounded-xl border border-emerald-400/20 px-3 py-2 text-[10px] font-black uppercase">Rückgängig</button></form>}
+          </div>
         </div>
       )}
 
@@ -117,12 +122,19 @@ export default async function MobileLiveControlPage({ params, searchParams }: Pa
         </div>
       </section>
 
-      <section className="mt-5 grid grid-cols-2 gap-3">
-        <PhaseButton matchId={match.id} phase="kickoff" label="Anpfiff" icon={<Play size={19} />} />
-        <PhaseButton matchId={match.id} phase="halftime" label="Halbzeit" icon={<Pause size={19} />} />
-        <PhaseButton matchId={match.id} phase="second_half" label="2. Halbzeit" icon={<Redo2 size={19} />} />
-        <PhaseButton matchId={match.id} phase="fulltime" label="Abpfiff" icon={<Flag size={19} />} danger />
-      </section>
+      <LiveCenterProControls
+        matchId={match.id}
+        homeTeam={match.home_team}
+        awayTeam={match.away_team}
+        players={sortedPlayers}
+        defaultMinute={match.current_minute}
+      />
+
+      <LivePhaseControls
+        matchId={match.id}
+        score={`${match.home_team} ${match.home_score ?? 0}:${match.away_score ?? 0} ${match.away_team}`}
+        events={events.length}
+      />
 
       <form action={finalizeMatchDay} className="mt-3">
         <input type="hidden" name="match_id" value={match.id} />
