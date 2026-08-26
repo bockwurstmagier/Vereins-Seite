@@ -312,7 +312,7 @@ export default function TestLabSimulator({players}:{players:Player[]}){
     <section className="grid grid-cols-2 gap-3 sm:grid-cols-4">
       <button onClick={()=>setPhaseAndPreview("1. Halbzeit",1,"ANPFIFF")} className="club-button-primary min-h-16"><Play size={18}/>Anpfiff</button>
       <button onClick={()=>setPhaseAndPreview("Halbzeit",45,"HALBZEIT")} className="club-button-secondary min-h-16"><Pause size={18}/>Halbzeit</button>
-      <button onClick={()=>setPhaseAndPreview("2. Halbzeit",46,"2. HALBZEIT")} className="club-button-secondary min-h-16"><Redo2 size={18}/>2. Halbzeit</button>
+      <button onClick={()=>setPhaseAndPreview("2. Halbzeit",45,"2. HALBZEIT")} className="club-button-secondary min-h-16"><Redo2 size={18}/>2. Halbzeit</button>
       <button onClick={()=>setPhaseAndPreview("Abpfiff",90,"ABPFIFF")} className="club-button-secondary min-h-16"><Flag size={18}/>Abpfiff</button>
     </section>
 

@@ -201,7 +201,7 @@ export async function quickLiveAction(formData: FormData) {
     halftime: { status: "live", minute: 45, description: "Halbzeit" },
     second_half: {
       status: "live",
-      minute: 46,
+      minute: 45,
       description: "Anpfiff zur zweiten Halbzeit",
     },
     fulltime: { status: "finished", minute: 90, description: "Abpfiff" },
