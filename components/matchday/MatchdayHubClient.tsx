@@ -179,7 +179,7 @@ export default function MatchdayHubClient({ data }: { data: MatchdayHubData }) {
               </div>
             )}
 
-            {phase === "finished" && <div className="mt-7 text-center"><Trophy className="mx-auto text-club-light-red" /><p className="mt-3 font-black uppercase text-white">Spiel beendet</p><p className="mt-2 text-sm text-zinc-400">Jetzt Spieler des Spiels wählen und den Matchday abschließen.</p></div>}
+            {phase === "finished" && <div className="mt-7 text-center"><Trophy className="mx-auto text-club-light-red" /><p className="mt-3 font-black uppercase text-white">Spiel beendet</p><p className="mt-2 text-sm text-zinc-400">Das nächste Spiel wird angezeigt, sobald es im Spielplan angesetzt ist.</p></div>}
             {phase !== "scheduled" && message && <p className="mt-4 text-sm font-bold text-club-light-red">{message}</p>}
             {data.leaderboard.length > 0 && (
               <div className="mt-7 border-t border-white/10 pt-5"><p className="text-xs font-black uppercase tracking-wider text-zinc-400">🏆 HUJA Tipprangliste</p><div className="mt-3 space-y-2">{data.leaderboard.map((entry, index) => <div key={`${entry.name}-${index}`} className="flex justify-between rounded-xl bg-white/[0.04] px-3 py-2 text-sm"><span className="font-bold text-white">{index + 1}. {entry.name}</span><span className="font-black text-club-light-red">{entry.points} Pkt.</span></div>)}</div></div>

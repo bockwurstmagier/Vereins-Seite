@@ -16,11 +16,11 @@ export async function getMatchdayHubData(): Promise<MatchdayHubData | null> {
   const now = Date.now();
   const recentFinished = matches.find((item) => item.status === "finished" && now - new Date(item.match_date).getTime() < 18 * 60 * 60 * 1000);
   const nextScheduled = [...matches].filter((item) => item.status === "scheduled" && new Date(item.match_date).getTime() > now).sort((a,b)=>new Date(a.match_date).getTime()-new Date(b.match_date).getTime())[0];
-  const match = matches.find((item) => item.status === "live") ?? recentFinished ?? nextScheduled ?? matches.find((item)=>item.status === "finished") ?? null;
+  const match = matches.find((item) => item.status === "live") ?? nextScheduled ?? recentFinished ?? matches.find((item)=>item.status === "finished") ?? null;
   if (!match) return null;
   const supabase = createAdminClient();
-  if (match.status === "finished" && match.home_score != null && match.away_score != null) {
-    await settlePredictions(match.id, match.home_score, match.away_score);
+  if (recentFinished?.home_score != null && recentFinished.away_score != null) {
+    await settlePredictions(recentFinished.id, recentFinished.home_score, recentFinished.away_score);
   }
   const [predictions, reactions, leaderboard] = await Promise.all([
     supabase.from("match_predictions").select("id", { count: "exact", head: true }).eq("match_id", match.id),
