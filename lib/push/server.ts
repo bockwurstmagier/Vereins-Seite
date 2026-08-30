@@ -367,3 +367,65 @@ export async function sendFulltimePush(matchId: string) {
     console.error("Abpfiff-Push wurde übersprungen:", error);
   }
 }
+
+
+type CountdownStage = "24h" | "3h" | "30m";
+
+export async function sendMatchCountdownPush(matchId: string, stage: CountdownStage) {
+  try {
+    const claimed = await claimPushEvent(`match-countdown:${stage}:${matchId}`);
+    if (!claimed) return false;
+
+    const supabase = getAdminClient();
+    const { data: match } = await supabase
+      .from("matches")
+      .select("home_team, away_team, match_date, status")
+      .eq("id", matchId)
+      .maybeSingle();
+
+    if (!match || match.status !== "scheduled") return false;
+
+    const clubPattern = /middelich|resse/i;
+    const isHome = clubPattern.test(match.home_team);
+    const opponent = isHome ? match.away_team : match.home_team;
+    const venue = isHome ? "🏠 Heimspiel" : "🚌 Auswärtsspiel";
+    const kickoff = new Intl.DateTimeFormat("de-DE", {
+      hour: "2-digit",
+      minute: "2-digit",
+      timeZone: "Europe/Berlin",
+    }).format(new Date(match.match_date));
+
+    const copy = {
+      "24h": {
+        title: "🔴⚫ BALD GEHT ES LOS!",
+        body: `Noch 24 Stunden! ${venue} gegen ${opponent} · Anstoß ${kickoff} Uhr · HUJA! 🔥`,
+      },
+      "3h": {
+        title: "🔥 MATCHDAY!",
+        body: `Noch 3 Stunden bis ${isHome ? "zum Heimspiel" : "zum Auswärtsspiel"} gegen ${opponent} · ${kickoff} Uhr.`,
+      },
+      "30m": {
+        title: "⚽ GLEICH GEHT'S LOS!",
+        body: `Noch 30 Minuten: Middelich-Resse gegen ${opponent} · ${venue}. HUJA! 🔴⚫`,
+      },
+    }[stage];
+
+    await sendPushToSubscriptions({
+      preferenceColumn: "live_starts_enabled",
+      urgency: stage === "30m" ? "high" : "normal",
+      ttl: stage === "24h" ? 6 * 60 * 60 : stage === "3h" ? 90 * 60 : 25 * 60,
+      payload: {
+        title: copy.title,
+        body: copy.body,
+        url: `/match-center/${matchId}`,
+        tag: `match-${matchId}-countdown-${stage}`,
+        eventType: `match_countdown_${stage}`,
+        vibrate: stage === "30m" ? [180, 80, 180] : [140, 70, 140],
+      },
+    });
+    return true;
+  } catch (error) {
+    console.error(`Countdown-Push ${stage} wurde übersprungen:`, error);
+    return false;
+  }
+}

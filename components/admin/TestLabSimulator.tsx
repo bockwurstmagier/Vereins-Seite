@@ -257,8 +257,14 @@ export default function TestLabSimulator({players}:{players:Player[]}){
     }
   }
 
-  function previewPush(kind:"halftime"|"goal"){
-    if(kind==="halftime"){
+  function previewPush(kind:"halftime"|"goal"|"24h"|"3h"|"30m"){
+    if(kind==="24h"){
+      showOverlay({kind:"push",title:"🔴⚫ BALD GEHT ES LOS!",body:"Noch 24 Stunden! 🏠 Heimspiel gegen Testgegner · Anstoß 15:00 Uhr · HUJA! 🔥"},5000);
+    }else if(kind==="3h"){
+      showOverlay({kind:"push",title:"🔥 MATCHDAY!",body:"Noch 3 Stunden bis zum Spiel gegen Testgegner · 15:00 Uhr."},5000);
+    }else if(kind==="30m"){
+      showOverlay({kind:"push",title:"⚽ GLEICH GEHT'S LOS!",body:"Noch 30 Minuten: Middelich-Resse gegen Testgegner · 🏠 Heimspiel. HUJA! 🔴⚫"},5000);
+    }else if(kind==="halftime"){
       showOverlay({
         kind:"push",
         title:"⏸️ HALBZEIT",
@@ -381,6 +387,11 @@ export default function TestLabSimulator({players}:{players:Player[]}){
         <button onClick={playGoalSound} className="club-button-secondary min-h-14"><Volume2 size={17}/>Tor-Sound testen</button>
         <button onClick={()=>previewPush("goal")} className="club-button-secondary min-h-14"><Bell size={17}/>Tor-Push Vorschau</button>
         <button onClick={()=>previewPush("halftime")} className="club-button-secondary min-h-14"><Bell size={17}/>Halbzeit-Push Vorschau</button>
+      </div>
+      <div className="mt-3 grid gap-3 sm:grid-cols-3">
+        <button onClick={()=>previewPush("24h")} className="club-button-secondary min-h-14">📅 24h Push</button>
+        <button onClick={()=>previewPush("3h")} className="club-button-secondary min-h-14">🔥 3h Push</button>
+        <button onClick={()=>previewPush("30m")} className="club-button-secondary min-h-14">⚽ 30min Push</button>
       </div>
       <p className="mt-3 text-xs text-zinc-600">Der Sound verwendet euren aktuell gespeicherten Start-/End-Ausschnitt. Push-Vorschauen werden nur auf deinem Bildschirm dargestellt und niemals versendet.</p>
     </section>

@@ -11,7 +11,9 @@ export default function LiveCenterProControls({matchId,homeTeam,awayTeam,players
  const [step,setStep]=useState<"scorer"|"assist">("scorer");
  const [scorer,setScorer]=useState("");
  const [favoriteIds,setFavoriteIds]=useState<string[]>([]);
- const ourSide=homeTeam.toLowerCase().includes("middelich")?"home":awayTeam.toLowerCase().includes("middelich")?"away":"home";
+ const clubPattern=/middelich|resse/i;
+ const ourSide=clubPattern.test(homeTeam)?"home":clubPattern.test(awayTeam)?"away":"home";
+ const opponentTeam=ourSide==="home"?awayTeam:homeTeam;
 
  useEffect(()=>{
    const sync=()=>setOnline(navigator.onLine);sync();
@@ -43,11 +45,11 @@ export default function LiveCenterProControls({matchId,homeTeam,awayTeam,players
 
    {open&&<div className="fixed inset-0 z-[220] flex items-end bg-black/80 backdrop-blur-sm sm:items-center sm:justify-center" onClick={close}>
     <div className="max-h-[88dvh] w-full overflow-y-auto rounded-t-[2rem] border border-white/10 bg-[#0b0b0b] p-5 sm:max-w-lg sm:rounded-[2rem]" onClick={e=>e.stopPropagation()}>
-      <div className="flex items-center justify-between"><div><p className="club-eyebrow">⚡ Schnell-Tor</p><h2 className="mt-1 text-xl font-black uppercase text-white">{step==="scorer"?"Wer hat getroffen?":"Wer gab die Vorlage?"}</h2></div><button type="button" onClick={close} className="club-icon-box"><X size={19}/></button></div>
+      <div className="flex items-center justify-between"><div><p className="club-eyebrow">⚡ TOR MIDDELICH · {ourSide==="home"?"🏠 HEIM":"🚌 AUSWÄRTS"}</p><h2 className="mt-1 text-xl font-black uppercase text-white">{step==="scorer"?"Wer hat für uns getroffen?":"Wer gab die Vorlage?"}</h2></div><button type="button" onClick={close} className="club-icon-box"><X size={19}/></button></div>
       {step==="scorer"?<div className="mt-5 grid gap-2">
         {ordered.map(p=><div key={p.id} className="flex gap-2"><button type="button" onClick={()=>chooseScorer(p.id)} className="flex min-h-14 flex-1 items-center rounded-2xl border border-white/10 bg-white/[.04] px-4 text-left text-sm font-black text-white">{p.shirt_number!=null?<span className="mr-3 text-club-light-red">#{p.shirt_number}</span>:null}{p.first_name} {p.last_name}</button><button type="button" onClick={()=>fav(p.id)} className={`w-14 rounded-2xl border border-white/10 ${favoriteIds.includes(p.id)?"bg-amber-400/15 text-amber-300":"bg-white/[.04] text-zinc-600"}`}><Star size={18} className="mx-auto" fill={favoriteIds.includes(p.id)?"currentColor":"none"}/></button></div>)}
         <form action={addGoal} className="mt-2"><input type="hidden" name="match_id" value={matchId}/><input type="hidden" name="minute" value={defaultMinute} data-auto-live-minute="true"/><input type="hidden" name="side" value={ourSide}/><button className="club-button-secondary min-h-14 w-full">Tor ohne Torschütze speichern</button></form>
-        <form action={addGoal}><input type="hidden" name="match_id" value={matchId}/><input type="hidden" name="minute" value={defaultMinute} data-auto-live-minute="true"/><input type="hidden" name="side" value={ourSide==="home"?"away":"home"}/><input type="hidden" name="description" value="Tor für den Gegner"/><button className="min-h-14 w-full rounded-2xl border border-red-500/20 bg-red-950/25 text-sm font-black text-red-300">⚽ Gegentor</button></form>
+        <form action={addGoal}><input type="hidden" name="match_id" value={matchId}/><input type="hidden" name="minute" value={defaultMinute} data-auto-live-minute="true"/><input type="hidden" name="side" value={ourSide==="home"?"away":"home"}/><input type="hidden" name="description" value="Tor für den Gegner"/><button className="min-h-14 w-full rounded-2xl border border-red-500/20 bg-red-950/25 text-sm font-black text-red-300">{`⚽ Gegentor · ${opponentTeam}`}</button></form>
       </div>:<div className="mt-5 grid gap-2">
         <form action={addGoal}><input type="hidden" name="match_id" value={matchId}/><input type="hidden" name="minute" value={defaultMinute} data-auto-live-minute="true"/><input type="hidden" name="side" value={ourSide}/><input type="hidden" name="player_id" value={scorer}/><button onClick={()=>navigator.vibrate?.([20,30,35])} className="club-button-primary min-h-16 w-full">Keine Vorlage · TOR SPEICHERN</button></form>
         {ordered.filter(p=>p.id!==scorer).map(p=><form action={addGoal} key={p.id}><input type="hidden" name="match_id" value={matchId}/><input type="hidden" name="minute" value={defaultMinute} data-auto-live-minute="true"/><input type="hidden" name="side" value={ourSide}/><input type="hidden" name="player_id" value={scorer}/><input type="hidden" name="secondary_player_id" value={p.id}/><button onClick={()=>navigator.vibrate?.([20,30,35])} className="min-h-14 w-full rounded-2xl border border-white/10 bg-white/[.04] px-4 text-left text-sm font-black text-white">{p.first_name} {p.last_name}</button></form>)}
