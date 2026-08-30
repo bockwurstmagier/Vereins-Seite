@@ -677,7 +677,45 @@ body {
   .huja-stadium-light-mast { left: 2.3rem; height: 17rem; }
 
   .huja-stadium-experience .club-card {
-    backdrop-filter: blur(14px);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+
+  /* Mobile Battery Mode: Atmosphäre bleibt sichtbar, läuft aber nicht dauerhaft
+     als große GPU-beschleunigte Blur-Animation über die gesamte Startseite. */
+  .huja-home-smoke {
+    animation: none !important;
+    filter: blur(16px);
+    opacity: 0.16;
+    will-change: auto;
+  }
+
+  .huja-home-smoke-b,
+  .huja-home-smoke-d,
+  .huja-home-smoke-e {
+    display: none;
+  }
+
+  .huja-home-embers,
+  .huja-stadium-sparks,
+  .huja-hero-embers,
+  .huja-hero-smoke,
+  .huja-home-crest,
+  .huja-stadium-light-bulb,
+  .huja-stadium-hero .huja-hero-crest {
+    animation: none !important;
+    will-change: auto;
+  }
+
+  .huja-stadium-sparks,
+  .huja-home-embers,
+  .huja-hero-embers {
+    opacity: 0.18;
+  }
+
+  .huja-hero-smoke {
+    filter: blur(18px);
+    opacity: 0.28;
   }
 }
 

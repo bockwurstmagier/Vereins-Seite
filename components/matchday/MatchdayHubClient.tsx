@@ -24,8 +24,24 @@ function haptic() {
 function Countdown({ date }: { date: string }) {
   const [now, setNow] = useState(Date.now());
   useEffect(() => {
-    const interval = setInterval(() => setNow(Date.now()), 1000);
-    return () => clearInterval(interval);
+    let interval: number | null = null;
+    const update = () => setNow(Date.now());
+    const start = () => {
+      if (interval !== null || document.visibilityState !== "visible") return;
+      update();
+      interval = window.setInterval(update, 1000);
+    };
+    const stop = () => {
+      if (interval !== null) window.clearInterval(interval);
+      interval = null;
+    };
+    const onVisibility = () => document.visibilityState === "visible" ? start() : stop();
+    start();
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => {
+      stop();
+      document.removeEventListener("visibilitychange", onVisibility);
+    };
   }, []);
   const difference = Math.max(0, new Date(date).getTime() - now);
   const days = Math.floor(difference / 86400000);

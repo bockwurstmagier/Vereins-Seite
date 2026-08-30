@@ -1,10 +1,12 @@
 "use client";
 
+import Image from "next/image";
 import { AnimatePresence, motion } from "framer-motion";
 import { RefreshCw, Sparkles, WifiOff, X } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 
+import clubLogo from "../app/logo.png";
 import { HUJA_BRANDING } from "../lib/branding";
 
 const UPDATE_CHECK_INTERVAL_MS = 5 * 60 * 1000;
@@ -37,10 +39,21 @@ function isNewerVersion(remoteVersion: string, localVersion: string) {
 
 export default function AppExperience({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const [showSplash, setShowSplash] = useState(false);
   const [online, setOnline] = useState(true);
   const [updateReady, setUpdateReady] = useState(false);
   const [availableVersion, setAvailableVersion] = useState<string | null>(null);
   const [installingUpdate, setInstallingUpdate] = useState(false);
+
+  useEffect(() => {
+    const alreadyShown = window.sessionStorage.getItem("huja-splash-seen");
+    if (!alreadyShown && window.matchMedia("(display-mode: standalone)").matches) {
+      setShowSplash(true);
+      window.sessionStorage.setItem("huja-splash-seen", "1");
+      const timer = window.setTimeout(() => setShowSplash(false), 1450);
+      return () => window.clearTimeout(timer);
+    }
+  }, []);
 
   useEffect(() => {
     const sync = () => setOnline(navigator.onLine);
@@ -88,22 +101,37 @@ export default function AppExperience({ children }: { children: React.ReactNode 
   }, []);
 
   useEffect(() => {
-    void checkForUpdate();
-
-    const interval = window.setInterval(
-      () => void checkForUpdate(),
-      UPDATE_CHECK_INTERVAL_MS,
-    );
-    const onFocus = () => void checkForUpdate();
-    const onVisibilityChange = () => {
+    let interval: number | null = null;
+    const start = () => {
+      if (interval !== null || document.visibilityState !== "visible") return;
+      interval = window.setInterval(
+        () => void checkForUpdate(),
+        UPDATE_CHECK_INTERVAL_MS,
+      );
+    };
+    const stop = () => {
+      if (interval !== null) window.clearInterval(interval);
+      interval = null;
+    };
+    if (document.visibilityState === "visible") {
+      void checkForUpdate();
+      start();
+    }
+    const onFocus = () => {
       if (document.visibilityState === "visible") void checkForUpdate();
+    };
+    const onVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        void checkForUpdate();
+        start();
+      } else stop();
     };
 
     window.addEventListener("focus", onFocus);
     document.addEventListener("visibilitychange", onVisibilityChange);
 
     return () => {
-      window.clearInterval(interval);
+      stop();
       window.removeEventListener("focus", onFocus);
       document.removeEventListener("visibilitychange", onVisibilityChange);
     };
@@ -153,6 +181,31 @@ export default function AppExperience({ children }: { children: React.ReactNode 
         >
           {children}
         </motion.div>
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {showSplash && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[200] flex items-center justify-center bg-[#050505]"
+          >
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(193,18,31,0.28),transparent_55%)]" />
+            <motion.div
+              initial={{ scale: 0.82, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ type: "spring", damping: 18, stiffness: 160 }}
+              className="relative text-center"
+            >
+              <div className="mx-auto flex h-36 w-36 items-center justify-center rounded-[2.2rem] border border-white/10 bg-black/45 p-5 shadow-[0_0_70px_rgba(193,18,31,0.35)]">
+                <Image src={clubLogo} alt="SpVgg Middelich-Resse" priority className="h-auto max-h-full w-auto" />
+              </div>
+              <p className="mt-6 text-xs font-black uppercase tracking-[0.42em] text-club-light-red">HUJA</p>
+              <p className="mt-2 text-sm font-black uppercase tracking-[0.16em] text-white">Middelich-Resse</p>
+            </motion.div>
+          </motion.div>
+        )}
       </AnimatePresence>
 
       <AnimatePresence>
