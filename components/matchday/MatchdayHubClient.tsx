@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { CheckCircle2, Flame, Minus, Plus, Radio, Trophy } from "lucide-react";
+import { CheckCircle2, ChevronDown, ChevronUp, Flame, Minus, Plus, Radio, Trophy } from "lucide-react";
 import { isMiddelichResse } from "../../lib/club-name";
 import type { MatchdayHubData } from "../../lib/matchday-hub";
 
@@ -89,6 +89,7 @@ export default function MatchdayHubClient({ data }: { data: MatchdayHubData }) {
   const [name, setName] = useState("");
   const [message, setMessage] = useState("");
   const [saved, setSaved] = useState(false);
+  const [tipOpen, setTipOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [counts, setCounts] = useState(data.reactions);
   const phase = match.status;
@@ -113,6 +114,7 @@ export default function MatchdayHubClient({ data }: { data: MatchdayHubData }) {
         haptic();
         setSaved(true);
         setMessage(`✅ Dein Tipp: Middelich ${clubScore}:${opponentScore} ${opponent}`);
+        setTipOpen(false);
       } else {
         setMessage(payload.error);
       }
@@ -150,21 +152,37 @@ export default function MatchdayHubClient({ data }: { data: MatchdayHubData }) {
             </div>
 
             {phase === "scheduled" && (
-              <div className="mt-7 rounded-2xl border border-white/10 bg-black/25 p-4">
-                <p className="text-sm font-black uppercase text-white">⚽ Ergebnis tippen</p>
-                <p className="mt-1 text-xs text-zinc-500">Zahlen antippen – keine Tastatur nötig.</p>
-                <input value={name} onChange={(event) => setName(event.target.value)} placeholder="Dein Fan-Name (optional)" maxLength={30} className="mt-4 min-h-14 w-full rounded-xl border border-white/10 bg-black/40 px-4 text-white outline-none placeholder:text-zinc-600 focus:border-club-light-red/40 focus:ring-2 focus:ring-club-red/15" />
-                <div className="mt-3 grid gap-3">
-                  <ScoreSelector team={match.home_team} side="Heim" isClub={clubIsHome} value={home} onChange={setHome} />
-                  <ScoreSelector team={match.away_team} side="Gast" isClub={!clubIsHome} value={away} onChange={setAway} />
-                </div>
-                <button type="button" onClick={tip} disabled={busy} className="club-button-primary mt-4 w-full disabled:cursor-wait disabled:opacity-60">{busy ? "Speichert …" : "🔥 Tipp abgeben"}</button>
+              <div className="mt-7 overflow-hidden rounded-2xl border border-white/10 bg-black/25">
+                <button
+                  type="button"
+                  onClick={() => { haptic(); setTipOpen((open) => !open); }}
+                  aria-expanded={tipOpen}
+                  aria-controls="matchday-tip-selector"
+                  className="flex min-h-16 w-full items-center justify-between gap-3 px-4 text-left transition hover:bg-white/[0.04] active:bg-white/[0.07]"
+                >
+                  <span>
+                    <span className="block text-sm font-black uppercase text-white">⚽ Jetzt tippen</span>
+                    <span className="mt-1 block text-xs text-zinc-500">Für das nächste Spiel · Zahlen einfach antippen</span>
+                  </span>
+                  {tipOpen ? <ChevronUp className="shrink-0 text-club-light-red" aria-hidden="true" /> : <ChevronDown className="shrink-0 text-club-light-red" aria-hidden="true" />}
+                </button>
+
+                {tipOpen && (
+                  <div id="matchday-tip-selector" className="border-t border-white/10 p-4">
+                    <input value={name} onChange={(event) => setName(event.target.value)} placeholder="Dein Fan-Name (optional)" maxLength={30} className="min-h-14 w-full rounded-xl border border-white/10 bg-black/40 px-4 text-white outline-none placeholder:text-zinc-600 focus:border-club-light-red/40 focus:ring-2 focus:ring-club-red/15" />
+                    <div className="mt-3 grid gap-3">
+                      <ScoreSelector team={match.home_team} side="Heim" isClub={clubIsHome} value={home} onChange={setHome} />
+                      <ScoreSelector team={match.away_team} side="Gast" isClub={!clubIsHome} value={away} onChange={setAway} />
+                    </div>
+                    <button type="button" onClick={tip} disabled={busy} className="club-button-primary mt-4 w-full disabled:cursor-wait disabled:opacity-60">{busy ? "Speichert …" : "🔥 Tipp abgeben"}</button>
+                    <p className="mt-3 text-xs text-zinc-500">5 Punkte exaktes Ergebnis · 2 Punkte richtige Tendenz · {data.predictionCount} Tipps</p>
+                  </div>
+                )}
                 {message && (
-                  <div role="status" aria-live="polite" className={`mt-4 flex items-start gap-2 rounded-xl border px-3 py-3 text-sm font-bold ${saved ? "border-emerald-400/25 bg-emerald-400/10 text-emerald-300" : "border-club-light-red/25 bg-club-red/10 text-club-light-red"}`}>
+                  <div role="status" aria-live="polite" className={`m-4 mt-0 flex items-start gap-2 rounded-xl border px-3 py-3 text-sm font-bold ${saved ? "border-emerald-400/25 bg-emerald-400/10 text-emerald-300" : "border-club-light-red/25 bg-club-red/10 text-club-light-red"}`}>
                     {saved && <CheckCircle2 className="mt-0.5 shrink-0" size={17} aria-hidden="true" />}<span>{message}</span>
                   </div>
                 )}
-                <p className="mt-3 text-xs text-zinc-500">5 Punkte exaktes Ergebnis · 2 Punkte richtige Tendenz · {data.predictionCount} Tipps</p>
               </div>
             )}
 
