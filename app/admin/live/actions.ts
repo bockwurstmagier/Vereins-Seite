@@ -67,6 +67,21 @@ async function readMatch(matchId: string) {
   return { supabase, match: data };
 }
 
+async function readEventMinute(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  matchId: string,
+) {
+  const { data, error } = await supabase
+    .from("matches")
+    .select("current_minute, clock_phase, clock_started_at, clock_base_minute, clock_resume_phase")
+    .eq("id", matchId)
+    .maybeSingle();
+
+  if (error || !data) throw new Error("Die aktuelle Spieluhr konnte nicht geladen werden.");
+  // Neu geöffnete Dialoge dürfen keinen veralteten Formularwert speichern.
+  return calculateLiveMinute(data);
+}
+
 export async function changeMinute(formData: FormData) {
   const matchId = required(formData, "match_id");
   const delta = numberValue(formData, "delta");
@@ -280,18 +295,18 @@ export async function addGoal(formData: FormData) {
   const { supabase, user } = await authorizedClient();
   const matchId = required(formData, "match_id");
   const side = required(formData, "side");
-  const minute = numberValue(formData, "minute");
   const playerId = value(formData, "player_id") || null;
   const assistId = value(formData, "secondary_player_id") || null;
   const description = value(formData, "description") || null;
 
   const { data: match, error: readError } = await supabase
     .from("matches")
-    .select("home_score, away_score")
+    .select("home_score, away_score, current_minute, clock_phase, clock_started_at, clock_base_minute, clock_resume_phase")
     .eq("id", matchId)
     .maybeSingle();
 
   if (readError || !match) throw new Error("Spielstand konnte nicht geladen werden.");
+  const minute = calculateLiveMinute(match);
 
   const scores = {
     home_score: match.home_score ?? 0,
@@ -340,7 +355,7 @@ export async function addCard(formData: FormData) {
   const { supabase, user } = await authorizedClient();
   const matchId = required(formData, "match_id");
   const card = required(formData, "card");
-  const minute = numberValue(formData, "minute");
+  const minute = await readEventMinute(supabase, matchId);
   const playerId = value(formData, "player_id") || null;
   const description = value(formData, "description") || null;
   const eventType = card === "red" ? "red_card" : "yellow_card";
@@ -375,7 +390,7 @@ export async function addCard(formData: FormData) {
 export async function addSubstitution(formData: FormData) {
   const { supabase, user } = await authorizedClient();
   const matchId = required(formData, "match_id");
-  const minute = numberValue(formData, "minute");
+  const minute = await readEventMinute(supabase, matchId);
   const playerIn = required(formData, "player_id");
   const playerOut = required(formData, "secondary_player_id");
 

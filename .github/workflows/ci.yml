@@ -45,3 +45,6 @@ jobs:
 
       - name: Anwendung bauen
         run: npm run build
+
+      - name: LiveCenter und Aufstellung testen
+        run: npm test

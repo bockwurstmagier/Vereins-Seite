@@ -4,13 +4,17 @@ import { useMemo, useRef, useState } from "react";
 import { Move, Radio, Save, Shield, UserMinus, UserPlus, Users } from "lucide-react";
 
 import { saveTacticalLineup } from "../../app/admin/match-center/actions";
-import type { MatchCenterPlayer, MatchSquadEntry } from "../../lib/match-center";
+import type { MatchCenterEvent, MatchCenterPlayer, MatchSquadEntry } from "../../lib/match-center";
+import { summarizeLineupEvents } from "../../lib/lineup-events";
+import PlayerEventBadges from "./PlayerEventBadges";
+import { useLineupEvents } from "./useLineupEvents";
 
 type FormationEditorProps = {
   matchId: string;
   players: MatchCenterPlayer[];
   initialSquad: MatchSquadEntry[];
   initialFormation: string;
+  initialEvents: MatchCenterEvent[];
 };
 
 type LineupPlayer = {
@@ -62,7 +66,9 @@ function clamp(value: number, min = 5, max = 95) {
   return Math.min(max, Math.max(min, value));
 }
 
-export default function FormationEditor({ matchId, players, initialSquad, initialFormation }: FormationEditorProps) {
+export default function FormationEditor({ matchId, players, initialSquad, initialFormation, initialEvents }: FormationEditorProps) {
+  const events = useLineupEvents(matchId, initialEvents);
+  const statuses = useMemo(() => summarizeLineupEvents(events), [events]);
   const boardRef = useRef<HTMLDivElement>(null);
   const [formation, setFormation] = useState(FORMATIONS[initialFormation] ? initialFormation : "4-4-2");
   const [selectedPlayerId, setSelectedPlayerId] = useState<string | null>(null);
@@ -172,18 +178,20 @@ export default function FormationEditor({ matchId, players, initialSquad, initia
                   onPointerUp={() => setDraggingId(null)}
                   onPointerCancel={() => setDraggingId(null)}
                   className={`absolute z-10 flex w-20 -translate-x-1/2 -translate-y-1/2 flex-col items-center transition ${selectedPlayerId === entry.playerId ? "scale-110" : ""}`}
-                  style={{ left: `${entry.x ?? 50}%`, top: `${entry.y ?? 50}%` }}
+                  style={{ left: `clamp(2.5rem, ${entry.x ?? 50}%, calc(100% - 2.5rem))`, top: `clamp(4.5rem, ${entry.y ?? 50}%, calc(100% - 4.5rem))` }}
                 >
                   <span className={`flex h-12 w-12 items-center justify-center overflow-hidden rounded-full border-2 bg-club-red text-sm font-black text-white shadow-xl ${selectedPlayerId === entry.playerId ? "border-white" : "border-club-light-red/60"}`}>
                     {player.image_url ? <img src={player.image_url} alt="" className="h-full w-full object-cover" draggable={false} /> : player.shirt_number ?? "?"}
                   </span>
                   <span className="mt-1 max-w-20 truncate rounded-lg bg-black/75 px-2 py-1 text-[9px] font-black text-white backdrop-blur">{player.last_name}</span>
                   <span className="mt-0.5 text-[8px] font-black text-white/70">{entry.positionLabel}</span>
+                  <PlayerEventBadges status={statuses.get(player.id)} />
                 </button>
               );
             })}
           </div>
           <div className="mt-3 flex items-center justify-center gap-2 text-xs text-zinc-500"><Move size={14} /> Spieler mit Finger oder Maus verschieben</div>
+          <p className="mt-2 text-center text-[10px] text-zinc-400">⚽ Tore · 🟨 Gelb · 🟥 Rot · ↗ rein · ↙ raus</p>
         </div>
 
         <aside className="border-t border-white/10 bg-black/20 p-4 sm:p-6 xl:border-l xl:border-t-0">
@@ -192,6 +200,7 @@ export default function FormationEditor({ matchId, players, initialSquad, initia
           {selected && (
             <div className="mt-4 rounded-3xl border border-club-light-red/20 bg-club-red/10 p-4">
               <p className="text-lg font-black text-white">{selected.first_name} {selected.last_name}</p>
+              <PlayerEventBadges status={statuses.get(selected.id)} />
               <p className="mt-1 text-xs text-zinc-400">{selected.position}{selected.shirt_number !== null ? ` · #${selected.shirt_number}` : ""}</p>
               <div className="mt-4 grid grid-cols-2 gap-2">
                 <button type="button" onClick={() => addStarter(selected.id)} disabled={starters.length >= 11 && !starters.some((entry) => entry.playerId === selected.id)} className="rounded-xl bg-club-red px-3 py-2 text-[10px] font-black uppercase disabled:opacity-40"><UserPlus size={14} className="mx-auto mb-1" />Startelf</button>
@@ -203,7 +212,7 @@ export default function FormationEditor({ matchId, players, initialSquad, initia
 
           <p className="mt-5 text-xs font-black uppercase tracking-wider text-zinc-500">Ersatzbank</p>
           <div className="mt-3 flex flex-wrap gap-2">
-            {bench.length ? bench.map((entry) => { const player = playerMap.get(entry.playerId); return player ? <button key={entry.playerId} type="button" onClick={() => setSelectedPlayerId(entry.playerId)} className={`rounded-xl border px-3 py-2 text-xs font-bold ${selectedPlayerId === entry.playerId ? "border-club-light-red/40 bg-club-red/15 text-white" : "border-white/10 text-zinc-300"}`}>{player.shirt_number !== null ? `#${player.shirt_number} ` : ""}{player.last_name}</button> : null; }) : <p className="text-xs text-zinc-600">Noch niemand auf der Bank.</p>}
+            {bench.length ? bench.map((entry) => { const player = playerMap.get(entry.playerId); return player ? <button key={entry.playerId} type="button" onClick={() => setSelectedPlayerId(entry.playerId)} className={`rounded-xl border px-3 py-2 text-xs font-bold ${selectedPlayerId === entry.playerId ? "border-club-light-red/40 bg-club-red/15 text-white" : "border-white/10 text-zinc-300"}`}>{player.shirt_number !== null ? `#${player.shirt_number} ` : ""}{player.last_name}<PlayerEventBadges status={statuses.get(player.id)} /></button> : null; }) : <p className="text-xs text-zinc-600">Noch niemand auf der Bank.</p>}
           </div>
 
           <p className="mt-5 text-xs font-black uppercase tracking-wider text-zinc-500">Verfügbare Spieler</p>

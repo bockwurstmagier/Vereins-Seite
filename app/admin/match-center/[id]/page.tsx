@@ -377,6 +377,7 @@ export default async function AdminMatchCenterDetailPage({ params, searchParams 
       </div>
 
       <FormationEditor
+        initialEvents={events}
         matchId={match.id}
         players={players}
         initialSquad={squad}

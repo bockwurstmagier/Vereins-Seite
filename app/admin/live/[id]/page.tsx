@@ -127,7 +127,6 @@ export default async function MobileLiveControlPage({ params, searchParams }: Pa
         homeTeam={match.home_team}
         awayTeam={match.away_team}
         players={sortedPlayers}
-        defaultMinute={match.current_minute}
       />
 
       <LivePhaseControls
@@ -182,7 +181,6 @@ export default async function MobileLiveControlPage({ params, searchParams }: Pa
         <SectionTitle icon={<Goal size={20} />} title="Tor eintragen" />
         <form action={addGoal} className="mt-5 grid gap-4 sm:grid-cols-2">
           <input type="hidden" name="match_id" value={match.id} />
-          <input type="hidden" name="minute" defaultValue={match.current_minute} data-auto-live-minute="true" />
           <Field label="Mannschaft">
             <select name="side" defaultValue="home" className="admin-input">
               <option value="home">{match.home_team}</option>
@@ -212,7 +210,6 @@ export default async function MobileLiveControlPage({ params, searchParams }: Pa
         <SectionTitle icon={<ShieldAlert size={20} />} title="Karte eintragen" />
         <form action={addCard} className="mt-5 grid gap-4 sm:grid-cols-2">
           <input type="hidden" name="match_id" value={match.id} />
-          <input type="hidden" name="minute" defaultValue={match.current_minute} data-auto-live-minute="true" />
           <Field label="Karte">
             <select name="card" defaultValue="yellow" className="admin-input">
               <option value="yellow">Gelbe Karte</option>
@@ -236,7 +233,6 @@ export default async function MobileLiveControlPage({ params, searchParams }: Pa
         <SectionTitle icon={<UsersRound size={20} />} title="Wechsel eintragen" />
         <form action={addSubstitution} className="mt-5 grid gap-4 sm:grid-cols-2">
           <input type="hidden" name="match_id" value={match.id} />
-          <input type="hidden" name="minute" defaultValue={match.current_minute} data-auto-live-minute="true" />
           <Field label="Kommt rein">
             <select name="player_id" required className="admin-input">
               <option value="">Spieler auswählen</option>

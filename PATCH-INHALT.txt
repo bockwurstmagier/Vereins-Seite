@@ -1,17 +1,31 @@
-HUJA v20.6.0 – Smart Update System
+HUJA v23.7.0 – Live-Aufstellung
 
-Patch-Basis: v20.5.0 – HUJA Stadium Experience
+Patch-Basis: hochgeladener Stand v23.6.3.
 
-Geänderte/neue Dateien:
+Dateien direkt im bestehenden Projektordner ersetzen/ergänzen:
+- .github/workflows/ci.yml
+- CHANGELOG.md
+- INSTALLATION-V23.7.0-LIVE-LINEUP.md
+- PATCH-INHALT.txt
+- PRUEFUNG-V23.7.0.md
 - VERSION
-- package.json
-- package-lock.json
+- app/admin/live/[id]/page.tsx
+- app/admin/live/actions.ts
+- app/admin/match-center/[id]/page.tsx
+- components/admin/LiveCenterProControls.tsx
+- components/match-center/FormationDisplay.tsx
+- components/match-center/FormationEditor.tsx
+- components/match-center/LiveMatchCenter.tsx
+- components/match-center/PlayerEventBadges.tsx
+- components/match-center/useLineupEvents.ts
 - lib/branding.ts
-- public/sw.js
-- components/PWARegister.tsx
-- components/AppExperience.tsx
-- app/api/version/route.ts
-- INSTALLATION-V20.6.0-HUJA-SMART-UPDATE-SYSTEM.md
+- lib/lineup-events.ts
+- package-lock.json
+- package.json
+- tests/live-lineup.test.cjs
 
-Keine Supabase-SQL-Datei erforderlich.
-Login/Auth/Rollen/Push-Logik/LiveCenter wurden nicht verändert.
+Keine neue SQL-Migration. Bestehende Umgebungsvariablen weiterverwenden.
+Anleitung: INSTALLATION-V23.7.0-LIVE-LINEUP.md
+Prüfergebnisse: PRUEFUNG-V23.7.0.md
+
+Nicht enthalten: node_modules, .next, .git, .vercel, .env.local, tsconfig.tsbuildinfo.

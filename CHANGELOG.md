@@ -1,5 +1,13 @@
 # Changelog
 
+## v23.7.0 – Live-Aufstellung
+
+- Aktuelle Spielminute für Live-Tore, Karten und Wechsel serverseitig berechnen.
+- Tore, Karten und Wechsel direkt an Spielern auf der öffentlichen Aufstellung und im Editor anzeigen.
+- Ereigniskorrekturen und Undo aktualisieren die Symbole; ungespeicherte Positionen im Editor bleiben erhalten.
+- 14 Regressionstests, einheitliche Versionsanzeige und reparierte Lockdatei für die vorhandenen Push-Abhängigkeiten.
+- Keine neue SQL-Migration erforderlich.
+
 ## v2.0
 
 - Projektstruktur bereinigt

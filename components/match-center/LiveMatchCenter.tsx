@@ -341,7 +341,7 @@ export default function LiveMatchCenter({
           </section>
 
           <div className="space-y-6">
-            <FormationDisplay entries={squad} players={players} formation={match.formation} />
+            <FormationDisplay entries={squad} players={players} events={events} formation={match.formation} />
             <SquadCard
               title="Startelf"
               entries={starters}
