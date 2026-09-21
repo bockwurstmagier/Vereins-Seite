@@ -12,9 +12,11 @@ const MAX_VIDEO_SIZE = 100 * 1024 * 1024;
 export default function LiveMomentUploader({
   matchId,
   defaultMinute,
+  events = [],
 }: {
   matchId: string;
   defaultMinute: number;
+  events?: { id: string; minute: number; label: string }[];
 }) {
   const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -24,6 +26,8 @@ export default function LiveMomentUploader({
   const [minute, setMinute] = useState(defaultMinute);
   const [eventType, setEventType] = useState<"penalty" | "moment">("penalty");
   const [description, setDescription] = useState("");
+  const [topMoment, setTopMoment] = useState(false);
+  const [eventId, setEventId] = useState("");
   const [busy, setBusy] = useState(false);
   const [progress, setProgress] = useState(0);
   const [message, setMessage] = useState<string | null>(null);
@@ -89,12 +93,16 @@ export default function LiveMomentUploader({
         eventType,
         description,
         videoPath: uploadedPath,
+        topMoment,
+        eventId: eventId || undefined,
       });
 
       setProgress(100);
       setMessage("Live-Moment wurde veröffentlicht.");
       clearFile();
       setDescription("");
+      setTopMoment(false);
+      setEventId("");
       router.refresh();
     } catch (error) {
       if (uploadedPath) {
@@ -111,6 +119,14 @@ export default function LiveMomentUploader({
 
   return (
     <div className="mt-5 space-y-4">
+      <label className="block text-sm text-zinc-300">Mit vorhandenem Ereignis verbinden
+        <select value={eventId} disabled={busy} onChange={event => { setEventId(event.target.value); const linked = events.find(item => item.id === event.target.value); if (linked) setMinute(linked.minute); }} className="admin-input mt-2">
+          <option value="">Eigenständiger Live-Moment</option>
+          {events.map(event => <option key={event.id} value={event.id}>{event.minute}′ · {event.label}</option>)}
+        </select>
+      </label>
+      <label className="flex min-h-12 items-center gap-3 rounded-2xl border border-amber-400/30 p-3 font-bold text-amber-300"><input type="checkbox" checked={topMoment} onChange={event => setTopMoment(event.target.checked)} disabled={busy} className="h-5 w-5" />⭐ Top Moment – nach Abpfiff auf der Startseite</label>
+      {eventId && <p className="text-sm text-zinc-400">Minute, Spieler und Ereignis werden vom ausgewählten Eintrag übernommen.</p>}
       <div className="grid gap-4 sm:grid-cols-2">
         <label className="block">
           <span className="mb-2 block text-[10px] font-black uppercase tracking-[0.16em] text-zinc-500">Art</span>
@@ -118,7 +134,7 @@ export default function LiveMomentUploader({
             className="admin-input"
             value={eventType}
             onChange={(event) => setEventType(event.target.value as "penalty" | "moment")}
-            disabled={busy}
+            disabled={busy || !!eventId}
           >
             <option value="penalty">Elfmeter</option>
             <option value="moment">Besonderer Live-Moment</option>
@@ -133,7 +149,7 @@ export default function LiveMomentUploader({
             className="admin-input"
             value={minute}
             onChange={(event) => setMinute(Number(event.target.value))}
-            disabled={busy}
+            disabled={busy || !!eventId}
           />
         </label>
       </div>
@@ -145,7 +161,7 @@ export default function LiveMomentUploader({
           value={description}
           onChange={(event) => setDescription(event.target.value)}
           placeholder={eventType === "penalty" ? "z. B. Elfmeter für Middelich-Resse" : "Was ist passiert?"}
-          disabled={busy}
+          disabled={busy || !!eventId}
         />
       </label>
 

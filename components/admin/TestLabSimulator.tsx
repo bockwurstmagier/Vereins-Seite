@@ -16,6 +16,7 @@ import {
   Volume2,
   X,
 } from "lucide-react";
+import TopHighlightLab from "./TopHighlightLab";
 import { playStadiumWhistle } from "../match-center/StadiumWhistle";
 
 type Player={
@@ -282,6 +283,7 @@ export default function TestLabSimulator({players}:{players:Player[]}){
   const selectedScorer=player(scorer);
 
   return <div className="space-y-5">
+    <TopHighlightLab goal={events.find(event => event.type === "goal") ? { id: events.find(event => event.type === "goal")!.id, minute: events.find(event => event.type === "goal")!.minute, player: name(events.find(event => event.type === "goal")!.player) || "Testspieler" } : null} finished={phase === "Abpfiff"} />
     <div className="sticky top-20 z-30 rounded-3xl border border-amber-400/25 bg-amber-950/95 p-4 shadow-2xl backdrop-blur-xl">
       <div className="flex items-center gap-3">
         <Beaker className="text-amber-300"/>

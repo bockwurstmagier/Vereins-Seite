@@ -1,5 +1,6 @@
 "use client";
 
+import { isMiddelichResse } from "../../lib/club-name";
 import { useEffect, useMemo, useState } from "react";
 import { Goal, ShieldAlert, RefreshCcw, Undo2, Wifi, WifiOff, Star, X } from "lucide-react";
 import { addGoal, undoLastEvent } from "../../app/admin/live/actions";
@@ -11,8 +12,7 @@ export default function LiveCenterProControls({matchId,homeTeam,awayTeam,players
  const [step,setStep]=useState<"scorer"|"assist">("scorer");
  const [scorer,setScorer]=useState("");
  const [favoriteIds,setFavoriteIds]=useState<string[]>([]);
- const clubPattern=/middelich|resse/i;
- const ourSide=clubPattern.test(homeTeam)?"home":clubPattern.test(awayTeam)?"away":"home";
+ const ourSide=isMiddelichResse(homeTeam)?"home":isMiddelichResse(awayTeam)?"away":"home";
  const opponentTeam=ourSide==="home"?awayTeam:homeTeam;
 
  useEffect(()=>{

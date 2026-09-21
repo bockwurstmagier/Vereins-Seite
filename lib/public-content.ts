@@ -1,3 +1,4 @@
+import { getNextMatch } from "./matches";
 import { createClient } from "./supabase/server";
 import { getClubIdentityMap } from "./clubs";
 
@@ -85,36 +86,5 @@ export async function getLastFinishedMatch(): Promise<PublicMatch | null> {
 }
 
 export async function getUpcomingMatch(): Promise<PublicMatch | null> {
-  const supabase = await createClient();
-
-  const { data, error } = await supabase
-    .from("matches")
-    .select(
-      "id, competition, matchday, home_team, away_team, match_date, location, maps_query, home_score, away_score, status, scorers",
-    )
-    .eq("status", "scheduled")
-    .or("home_team.ilike.%Middelich-Resse%,away_team.ilike.%Middelich-Resse%")
-    .gte("match_date", new Date().toISOString())
-    .order("match_date", { ascending: true })
-    .limit(1)
-    .maybeSingle();
-
-  if (error) {
-    console.error("Nächstes Spiel konnte nicht geladen werden:", error);
-    return null;
-  }
-
-  if (!data) return null;
-
-  const match = data as PublicMatch;
-  const clubMap = await getClubIdentityMap(supabase, [
-    match.home_team,
-    match.away_team,
-  ]);
-
-  return {
-    ...match,
-    home_logo_url: clubMap.get(match.home_team)?.logo_url ?? null,
-    away_logo_url: clubMap.get(match.away_team)?.logo_url ?? null,
-  };
+  return getNextMatch();
 }

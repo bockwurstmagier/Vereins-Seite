@@ -57,7 +57,7 @@ export default async function MobileLiveControlPage({ params, searchParams }: Pa
     const byLastName = a.last_name.localeCompare(b.last_name, "de", { sensitivity: "base" });
     return byLastName || a.first_name.localeCompare(b.first_name, "de", { sensitivity: "base" });
   });
-  const recentEvents = events.slice(0, 8);
+  const recentEvents = events.filter((event, index) => index < 8 || !!event.video_url);
   const playerName = new Map(players.map((player) => [player.id, `${player.first_name} ${player.last_name}`]));
 
   return (
@@ -255,7 +255,7 @@ export default async function MobileLiveControlPage({ params, searchParams }: Pa
           Elfmeter, Großchance oder besondere Szene direkt vom Handy hochladen.
           Zuschauer sehen den Clip anschließend direkt im Live-Ticker.
         </p>
-        <LiveMomentUploader matchId={match.id} defaultMinute={match.current_minute} />
+        <LiveMomentUploader matchId={match.id} defaultMinute={match.current_minute} events={events.filter(event => !event.video_url).map(event => ({ id: event.id, minute: event.minute, label: `${eventLabel(event.event_type, event.moment_type)} · ${event.player_id ? playerName.get(event.player_id) || "Spieler" : event.description || "Live-Ereignis"}` }))} />
       </section>
 
       <section className="club-card mt-5 p-5">

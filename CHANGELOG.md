@@ -1,3 +1,11 @@
+# HUJA v24.0.0 – Dynamic Home
+
+Startseitenmodule mit zentralen Schaltern und Reihenfolge, Hamburger-Schnellnavigation, getrennte Liga-/Pokalanzeige und Top Highlights aus bestehenden Video-Ereignissen. Lokaler Highlight-Test im Test-Labor. Auswärtstor-Erkennung und Undo korrigiert; bestehende Minuten-/Aufstellungsfunktionen geprüft. Sicherheitspatches: Next.js 16.3.5, sharp 0.35.4, js-yaml 4.3.2; nanoid 3.3.18.
+
+Details: INSTALLATION-V24.0.0-DYNAMIC-HOME.md und PRUEFUNG-V24.0.0.md.
+
+---
+
 # Changelog
 
 ## v23.7.0 – Live-Aufstellung

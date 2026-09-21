@@ -1,3 +1,4 @@
+import { isClubMatch, isLeagueCompetition } from "./match-selection";
 import { createClient } from "./supabase/server";
 import { getClubIdentityMap } from "./clubs";
 import { isPlayingProfile } from "./player-role";
@@ -76,7 +77,7 @@ export async function getMatchCenterOverview() {
     .select(
       "id, competition, matchday, home_team, away_team, match_date, location, home_score, away_score, status, current_minute, clock_phase, clock_started_at, clock_base_minute, clock_resume_phase, report, player_of_match_id, formation",
     )
-    .or("home_team.ilike.%Middelich-Resse%,away_team.ilike.%Middelich-Resse%")
+    .or("home_team.ilike.%middelich%,away_team.ilike.%middelich%")
     .order("match_date", { ascending: false })
     .limit(60);
 
@@ -85,7 +86,7 @@ export async function getMatchCenterOverview() {
     return [] as MatchCenterMatch[];
   }
 
-  const matches = (data ?? []) as MatchCenterMatch[];
+  const matches = ((data ?? []) as MatchCenterMatch[]).filter(isClubMatch);
   const clubMap = await getClubIdentityMap(
     supabase,
     matches.flatMap((match) => [match.home_team, match.away_team]),
@@ -150,8 +151,8 @@ export async function getPublicMatchCenterMatch(id: string) {
   };
 }
 
-export async function getFeaturedMatchCenterMatch() {
-  const matches = await getMatchCenterOverview();
+export async function getFeaturedMatchCenterMatch(leagueOnly = false) {
+  const matches = (await getMatchCenterOverview()).filter(match => !leagueOnly || isLeagueCompetition(match.competition));
 
   return (
     matches.find((match) => match.status === "live") ??

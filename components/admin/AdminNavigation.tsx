@@ -94,6 +94,7 @@ const sections: Array<{
       { label: "Anfragen", href: "/admin/anfragen", icon: Inbox, area: "anfragen" },
       { label: "Benutzer", href: "/admin/benutzer", icon: UserCog, area: "benutzer" },
       { label: "Aktivitäten", href: "/admin/aktivitaeten", icon: History, area: "aktivitaeten" },
+      { label: "Startseite verwalten", href: "/admin/startseite", icon: Settings, area: "startseite" },
       { label: "Einstellungen", href: "/admin/einstellungen", icon: Settings, area: "einstellungen" },
       { label: "Security Center", href: "/admin/security", icon: ShieldCheck, area: "security" },
       { label: "Impressum", href: "/admin/impressum", icon: FileText, area: "impressum" },

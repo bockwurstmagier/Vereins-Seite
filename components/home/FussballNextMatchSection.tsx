@@ -17,7 +17,7 @@ export default function FussballNextMatchSection() {
             />
             <p className="club-eyebrow">Matchday</p>
           </div>
-          <h2 className="club-heading mt-2">Nächstes Spiel</h2>
+          <h2 className="club-heading mt-2">Fußball.de-Spielplan</h2>
         </div>
 
         <FussballWidget

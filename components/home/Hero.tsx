@@ -1,6 +1,6 @@
 import Image from "next/image";
 
-export default function Hero() {
+export default function Hero({ matchEnabled = true }: { matchEnabled?: boolean }) {
   return (
     <section
       id="top"
@@ -56,15 +56,15 @@ export default function Hero() {
         </p>
 
         <a
-          href="#next-match"
+          href={matchEnabled ? "#home-match" : "#home-sections"}
           className="huja-hero-button mt-8 inline-flex min-h-14 items-center justify-center rounded-2xl border border-red-400/40 bg-black/45 px-8 text-xs font-black uppercase tracking-[0.16em] text-white backdrop-blur-xl transition duration-300 hover:scale-105 hover:border-red-400/70 hover:bg-red-950/60 active:scale-95"
         >
-          Nächstes Spiel
+          {matchEnabled ? "Nächstes Spiel" : "Verein entdecken"}
         </a>
 
         <a
-          href="#next-match"
-          aria-label="Nach unten zum nächsten Spiel"
+          href={matchEnabled ? "#home-match" : "#home-sections"}
+          aria-label="Zu den Vereinsbereichen"
           className="absolute bottom-7 flex h-10 w-10 animate-bounce items-center justify-center rounded-full border border-red-400/30 bg-black/45 text-xl text-white shadow-[0_0_24px_rgba(239,51,64,0.2)] backdrop-blur-md"
         >
           ↓

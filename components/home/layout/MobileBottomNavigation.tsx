@@ -31,6 +31,7 @@ type AccountSummary = {
 
 type MobileBottomNavigationProps = {
   account: AccountSummary;
+  homeModules?: string[];
 };
 
 const mainItems = [
@@ -42,6 +43,7 @@ const mainItems = [
 
 export default function MobileBottomNavigation({
   account,
+  homeModules,
 }: MobileBottomNavigationProps) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
@@ -73,7 +75,7 @@ export default function MobileBottomNavigation({
             return (
               <Link
                 key={item.label}
-                href={item.href}
+                href={homeModules && item.label !== "Home" && !homeModules.includes(item.label === "Spiele" ? "match" : item.label === "News" ? "news" : "team") ? (item.label === "Spiele" ? "/spielplan" : item.label === "News" ? "/news" : "/team") : item.href}
                 onClick={haptic}
                 aria-label={item.label}
                 className={`group flex min-h-14 flex-col items-center justify-center rounded-2xl transition duration-200 active:scale-90 ${

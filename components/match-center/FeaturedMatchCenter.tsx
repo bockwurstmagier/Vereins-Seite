@@ -11,7 +11,7 @@ const dateFormatter = new Intl.DateTimeFormat("de-DE", {
 });
 
 export default async function FeaturedMatchCenter() {
-  const match = await getFeaturedMatchCenterMatch();
+  const match = await getFeaturedMatchCenterMatch(true);
 
   if (!match) return null;
 

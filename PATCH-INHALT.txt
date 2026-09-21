@@ -1,31 +1,42 @@
-HUJA v23.7.0 – Live-Aufstellung
+HUJA v24.0.0 – Patch gegen die gelieferte Basis 23.7.0
 
-Patch-Basis: hochgeladener Stand v23.6.3.
+CHANGELOG.md
+INSTALLATION-V24.0.0-DYNAMIC-HOME.md
+PATCH-INHALT.txt
+PRUEFUNG-V24.0.0.md
+VERSION
+app/admin/live/[id]/page.tsx
+app/admin/live/actions.ts
+app/admin/startseite/actions.ts
+app/admin/startseite/page.tsx
+app/page.tsx
+components/admin/AdminNavigation.tsx
+components/admin/LiveCenterProControls.tsx
+components/admin/TestLabSimulator.tsx
+components/admin/TopHighlightLab.tsx
+components/home/CupMatch.tsx
+components/home/FussballNextMatchSection.tsx
+components/home/Hero.tsx
+components/home/HomeQuickNavigation.tsx
+components/home/TopHighlights.tsx
+components/home/layout/BottomNavigation.tsx
+components/home/layout/MobileBottomNavigation.tsx
+components/match-center/FeaturedMatchCenter.tsx
+components/match-center/LiveMomentUploader.tsx
+lib/auth/permissions.ts
+lib/branding.ts
+lib/home-modules.ts
+lib/home-settings.ts
+lib/match-center.ts
+lib/match-selection.ts
+lib/matches.ts
+lib/public-content.ts
+lib/top-highlights-server.ts
+lib/top-highlights.ts
+package-lock.json
+package.json
+sql/VERSION-24.0.0-DYNAMIC-HOME.sql
+tests/dynamic-home.test.cjs
+tests/live-lineup.test.cjs
 
-Dateien direkt im bestehenden Projektordner ersetzen/ergänzen:
-- .github/workflows/ci.yml
-- CHANGELOG.md
-- INSTALLATION-V23.7.0-LIVE-LINEUP.md
-- PATCH-INHALT.txt
-- PRUEFUNG-V23.7.0.md
-- VERSION
-- app/admin/live/[id]/page.tsx
-- app/admin/live/actions.ts
-- app/admin/match-center/[id]/page.tsx
-- components/admin/LiveCenterProControls.tsx
-- components/match-center/FormationDisplay.tsx
-- components/match-center/FormationEditor.tsx
-- components/match-center/LiveMatchCenter.tsx
-- components/match-center/PlayerEventBadges.tsx
-- components/match-center/useLineupEvents.ts
-- lib/branding.ts
-- lib/lineup-events.ts
-- package-lock.json
-- package.json
-- tests/live-lineup.test.cjs
-
-Keine neue SQL-Migration. Bestehende Umgebungsvariablen weiterverwenden.
-Anleitung: INSTALLATION-V23.7.0-LIVE-LINEUP.md
-Prüfergebnisse: PRUEFUNG-V23.7.0.md
-
-Nicht enthalten: node_modules, .next, .git, .vercel, .env.local, tsconfig.tsbuildinfo.
+Keine Quelldateien zu löschen. Ausgeschlossene Build-/Umgebungsdateien werden nicht mitgeliefert.

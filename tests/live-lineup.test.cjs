@@ -47,6 +47,7 @@ function actionHarness(match = running, readError = null) {
     'next/cache': { revalidatePath() {} },
     'next/navigation': { redirect(url) { throw new Error(`redirect:${url}`); } },
     '../../../lib/auth/roles': { requireRole: async () => {} },
+    '../../../lib/club-name': load('lib/club-name.ts'),
     '../../../lib/live-clock': { calculateLiveMinute: data => clock.calculateLiveMinute(data, now) },
     '../../../lib/push/server': { sendLivePush: async data => { pushes.push(data); } },
     '../../../lib/supabase/server': { createClient: async () => supabase },

@@ -1,3 +1,4 @@
+import { isClubMatch, isCupCompetition, isLeagueCompetition } from "./match-selection";
 import { supabase } from "./supabase";
 
 export type DatabaseMatch = {
@@ -45,24 +46,24 @@ function findLogo(clubs: ClubLogoRow[], teamName: string) {
   return match?.logo_url ?? null;
 }
 
-export async function getNextMatch(): Promise<DatabaseMatch | null> {
-  const { data, error } = await supabase
+export async function getNextMatch(kind: "league" | "cup" = "league"): Promise<DatabaseMatch | null> {
+  const { data: rows, error } = await supabase
     .from("matches")
     .select(
       "id, competition, matchday, home_team, away_team, match_date, location, maps_query, home_score, away_score, status, scorers",
     )
     .eq("status", "scheduled")
-    .or("home_team.ilike.%Middelich-Resse%,away_team.ilike.%Middelich-Resse%")
+    .or("home_team.ilike.%middelich%,away_team.ilike.%middelich%")
     .gte("match_date", new Date().toISOString())
     .order("match_date", { ascending: true })
-    .limit(1)
-    .maybeSingle();
+    .limit(500);
 
   if (error) {
     console.error("Fehler beim Laden des nächsten Spiels:", error.message);
     return null;
   }
 
+  const data = rows?.find(match => isClubMatch(match) && (kind === "cup" ? isCupCompetition(match.competition) : isLeagueCompetition(match.competition)));
   if (!data) return null;
 
   const { data: clubs, error: clubsError } = await supabase

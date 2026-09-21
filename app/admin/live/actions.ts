@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 
 import { requireRole } from "../../../lib/auth/roles";
 import { calculateLiveMinute } from "../../../lib/live-clock";
+import { isMiddelichResse } from "../../../lib/club-name";
 import { sendHalftimePush, sendLivePush, sendMatchLivePush } from "../../../lib/push/server";
 import { createClient } from "../../../lib/supabase/server";
 
@@ -301,12 +302,14 @@ export async function addGoal(formData: FormData) {
 
   const { data: match, error: readError } = await supabase
     .from("matches")
-    .select("home_score, away_score, current_minute, clock_phase, clock_started_at, clock_base_minute, clock_resume_phase")
+    .select("home_team, away_team, home_score, away_score, current_minute, clock_phase, clock_started_at, clock_base_minute, clock_resume_phase")
     .eq("id", matchId)
     .maybeSingle();
 
   if (readError || !match) throw new Error("Spielstand konnte nicht geladen werden.");
   const minute = calculateLiveMinute(match);
+  const ourSide = isMiddelichResse(match.away_team ?? "") ? "away" : "home";
+  const opponentGoal = side !== ourSide;
 
   const scores = {
     home_score: match.home_score ?? 0,
@@ -328,9 +331,9 @@ export async function addGoal(formData: FormData) {
     match_id: matchId,
     event_type: "goal",
     minute,
-    player_id: playerId,
-    secondary_player_id: assistId,
-    description: description || (side === "away" ? "Tor für den Gegner" : null),
+    player_id: opponentGoal ? null : playerId,
+    secondary_player_id: opponentGoal ? null : assistId,
+    description: opponentGoal ? "Tor für den Gegner" : description,
     created_by: user.id,
   });
 
@@ -430,6 +433,8 @@ export async function addLiveMoment(input: {
   eventType: "penalty" | "moment";
   description?: string;
   videoPath: string;
+  topMoment?: boolean;
+  eventId?: string;
 }) {
   const { supabase, user } = await authorizedClient();
   const matchId = input.matchId.trim();
@@ -446,27 +451,33 @@ export async function addLiveMoment(input: {
     .from("live-moments")
     .getPublicUrl(input.videoPath);
 
-  const { error } = await supabase.from("match_events").insert({
+  const video = { video_url: publicVideo.publicUrl, video_path: input.videoPath, is_highlight: input.topMoment === true };
+  let error;
+  if (input.eventId) {
+    // Attach to the original event: minute, scorer and event type remain authoritative.
+    const { data: linked, error: readError } = await supabase.from("match_events").select("id, video_url").eq("id", input.eventId).eq("match_id", matchId).maybeSingle();
+    if (readError || !linked || linked.video_url) throw new Error("Ereignis fehlt oder hat bereits ein Video.");
+    const result = await supabase.from("match_events").update(video).eq("id", linked.id).eq("match_id", matchId).is("video_url", null).select("id");
+    error = result.error;
+    if (!error && !result.data?.length) throw new Error("Das Ereignis wurde inzwischen geändert. Bitte neu laden.");
+  } else {
+    ({ error } = await supabase.from("match_events").insert({
     match_id: matchId,
     event_type: "note",
     minute,
     description,
     moment_type: input.eventType,
-    video_url: publicVideo.publicUrl,
-    video_path: input.videoPath,
+    ...video,
     created_by: user.id,
-  });
+    }));
+  }
 
   if (error) {
     await supabase.storage.from("live-moments").remove([input.videoPath]);
     throw new Error(`Live-Moment konnte nicht gespeichert werden: ${error.message}`);
   }
 
-  await supabase
-    .from("matches")
-    .update({ current_minute: minute, status: "live", updated_at: new Date().toISOString() })
-    .eq("id", matchId);
-
+  // Uploading a replay must not rewind the live clock or reopen a finished match.
   refresh(matchId);
   return { ok: true };
 }
@@ -477,7 +488,7 @@ export async function undoLastEvent(formData: FormData) {
 
   const { data: event, error: eventError } = await supabase
     .from("match_events")
-    .select("id, event_type, description, video_path")
+    .select("id, event_type, description, player_id, video_path")
     .eq("match_id", matchId)
     .order("created_at", { ascending: false })
     .limit(1)
@@ -488,20 +499,23 @@ export async function undoLastEvent(formData: FormData) {
   if (event.event_type === "goal") {
     const { data: match } = await supabase
       .from("matches")
-      .select("home_score, away_score")
+      .select("home_team, away_team, home_score, away_score")
       .eq("id", matchId)
       .maybeSingle();
 
     if (match) {
-      const opponentGoal = event.description === "Tor für den Gegner";
-      await supabase
+      const opponentGoal = !event.player_id && event.description === "Tor für den Gegner";
+      const ourHome = !isMiddelichResse(match.away_team ?? "");
+      const scoredHome = opponentGoal ? !ourHome : ourHome;
+      const { error: scoreError } = await supabase
         .from("matches")
         .update({
-          home_score: opponentGoal ? match.home_score : Math.max(0, (match.home_score ?? 0) - 1),
-          away_score: opponentGoal ? Math.max(0, (match.away_score ?? 0) - 1) : match.away_score,
+          home_score: scoredHome ? Math.max(0, (match.home_score ?? 0) - 1) : match.home_score,
+          away_score: scoredHome ? match.away_score : Math.max(0, (match.away_score ?? 0) - 1),
           updated_at: new Date().toISOString(),
         })
         .eq("id", matchId);
+      if (scoreError) throw new Error(`Spielstand konnte nicht zurückgenommen werden: ${scoreError.message}`);
     }
   }
 
