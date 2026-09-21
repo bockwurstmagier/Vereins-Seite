@@ -1,5 +1,6 @@
 "use server";
 
+import { parseMatchDateTime } from "../../../lib/match-datetime";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "../../../lib/supabase/server";
@@ -58,18 +59,14 @@ export async function createMatch(formData: FormData) {
     String(formData.get("maps_query") ?? "").trim() || location;
   const status = getRequiredText(formData, "status");
 
-  const matchDate = new Date(`${date}T${time}:00`);
-
-  if (Number.isNaN(matchDate.getTime())) {
-    throw new Error("Datum oder Uhrzeit ist ungültig.");
-  }
+  const matchDate = parseMatchDateTime(date, time);
 
   const { error } = await supabase.from("matches").insert({
     competition,
     matchday,
     home_team: homeTeam,
     away_team: awayTeam,
-    match_date: matchDate.toISOString(),
+    match_date: matchDate,
     location,
     maps_query: mapsQuery,
     status,
@@ -111,11 +108,7 @@ export async function updateMatch(formData: FormData) {
         .filter(Boolean)
     : [];
 
-  const matchDate = new Date(`${date}T${time}:00`);
-
-  if (Number.isNaN(matchDate.getTime())) {
-    throw new Error("Datum oder Uhrzeit ist ungültig.");
-  }
+  const matchDate = parseMatchDateTime(date, time);
 
   const { error } = await supabase
     .from("matches")
@@ -124,7 +117,7 @@ export async function updateMatch(formData: FormData) {
       matchday,
       home_team: homeTeam,
       away_team: awayTeam,
-      match_date: matchDate.toISOString(),
+      match_date: matchDate,
       location,
       maps_query: mapsQuery,
       status,
@@ -145,6 +138,10 @@ export async function updateMatch(formData: FormData) {
   revalidatePath("/admin");
   revalidatePath("/admin/spiele");
   revalidatePath(`/admin/spiele/${id}`);
+  revalidatePath(`/match-center/${id}`);
+  revalidatePath(`/admin/live/${id}`);
+  revalidatePath("/spielplan");
+  revalidatePath("/match-center");
 
   redirect("/admin/spiele?updated=1");
 }

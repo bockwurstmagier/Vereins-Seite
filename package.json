@@ -1,6 +1,6 @@
 {
   "name": "vereins-seite",
-  "version": "24.0.0",
+  "version": "24.0.1",
   "private": true,
   "scripts": {
     "dev": "next dev",
