@@ -1,3 +1,5 @@
+import CompetitionNavigation from "../../../components/match-center/CompetitionNavigation";
+import { matchGroup, selectedMatchGroup } from "../../../lib/match-selection";
 import {
   CalendarDays,
   Clock3,
@@ -11,6 +13,7 @@ import { createClient } from "../../../lib/supabase/server";
 import { createMatch, deleteMatch } from "./actions";
 
 type SearchParams = Promise<{
+  group?: string;
   created?: string;
   deleted?: string;
   updated?: string;
@@ -38,12 +41,17 @@ export default async function MatchesAdminPage({
   const params = await searchParams;
   const supabase = await createClient();
 
-  const { data: matches, error } = await supabase
+  const { data: allMatches, error } = await supabase
     .from("matches")
     .select(
       "id, competition, matchday, home_team, away_team, match_date, location, status, home_score, away_score",
     )
     .order("match_date", { ascending: true });
+
+  const group = selectedMatchGroup(params.group);
+  const matches = (allMatches ?? []).filter(match => matchGroup(match.competition) === group);
+  const counts = { league: 0, cup: 0, other: 0 };
+  for (const match of allMatches ?? []) counts[matchGroup(match.competition)]++;
 
   return (
     <div className="mx-auto max-w-6xl">
@@ -62,6 +70,8 @@ export default async function MatchesAdminPage({
           Neues Spiel
         </a>
       </div>
+
+      <CompetitionNavigation base="/admin/spiele" selected={group} counts={counts} />
 
       {params.created && (
         <Notice text="Das Spiel wurde erfolgreich gespeichert." />
@@ -91,12 +101,12 @@ export default async function MatchesAdminPage({
           </div>
         </div>
 
-        <form action={createMatch} className="mt-6 grid gap-4 md:grid-cols-2">
+        <form key={group} action={createMatch} className="mt-6 grid gap-4 md:grid-cols-2">
           <Field label="Wettbewerb">
             <input
               name="competition"
               required
-              defaultValue="Kreisliga"
+              defaultValue={group === "cup" ? "Kreispokal" : group === "other" ? "Freundschaftsspiel" : "Kreisliga"}
               className="admin-input"
             />
           </Field>
@@ -178,7 +188,7 @@ export default async function MatchesAdminPage({
           <div>
             <p className="club-eyebrow">Datenbank</p>
             <h2 className="mt-1 text-xl font-black uppercase text-white">
-              Eingetragene Spiele
+              {group === "cup" ? "Pokalspiele" : group === "other" ? "Testspiele / Sonstige" : "Ligaspiele"}
             </h2>
           </div>
         </div>
@@ -189,7 +199,7 @@ export default async function MatchesAdminPage({
           </div>
         ) : !matches?.length ? (
           <div className="club-card p-6 text-sm text-zinc-400">
-            Noch keine Spiele eingetragen.
+            In diesem Bereich sind noch keine Spiele eingetragen.
           </div>
         ) : (
           <div className="space-y-4">
@@ -253,6 +263,7 @@ export default async function MatchesAdminPage({
 
                       <form action={deleteMatch}>
                         <input type="hidden" name="id" value={match.id} />
+                        <input type="hidden" name="group" value={group} />
 
                         <button
                           type="submit"
@@ -264,6 +275,7 @@ export default async function MatchesAdminPage({
                       </form>
                     </div>
                   </div>
+                  <div className="mt-4 flex flex-wrap gap-2"><a className="club-button-secondary" href={`/admin/match-center/${match.id}`}>Match-Center</a><a className="club-button-secondary" href={`/admin/live/${match.id}`}>LiveCenter</a></div>
                 </article>
               );
             })}

@@ -31,7 +31,7 @@ test('DST boundary, nonexistent/ambiguous times and invalid dates are handled ex
 for(const action of ['createMatch','updateMatch'])test(`${action} stores Berlin 19:30 as 17:30 UTC on the server`,async()=>{
  const writes=[];
  const supabase={auth:{getUser:async()=>({data:{user:{id:'user'}}})},from(){const q={insert(value){writes.push(value);return q},update(value){writes.push(value);return q},eq(){return q},then(resolve){return Promise.resolve({error:null}).then(resolve)}};return q;}};
- const actions=load('app/admin/spiele/actions.ts',{'../../../lib/match-datetime':dates,'../../../lib/supabase/server':{createClient:async()=>supabase},'next/cache':{revalidatePath(){}},'next/navigation':{redirect(){throw Error('redirect')}}});
+ const actions=load('app/admin/spiele/actions.ts',{'../../../lib/match-selection':load('lib/match-selection.ts',{'./club-name':load('lib/club-name.ts')}),'../../../lib/match-datetime':dates,'../../../lib/supabase/server':{createClient:async()=>supabase},'next/cache':{revalidatePath(){}},'next/navigation':{redirect(){throw Error('redirect')}}});
  const form=new FormData();for(const [key,value]of Object.entries({id:'match',competition:'Kreispokal',home_team:'Middelich-Resse',away_team:'Gast',date:'2026-09-22',time:'19:30',location:'Platz',status:'scheduled'}))form.set(key,value);
  await assert.rejects(actions[action](form),/redirect/);
  assert.equal(writes[0].match_date,'2026-09-22T17:30:00.000Z');

@@ -1,5 +1,6 @@
 "use server";
 
+import { matchGroup, selectedMatchGroup } from "../../../lib/match-selection";
 import { parseMatchDateTime } from "../../../lib/match-datetime";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
@@ -79,7 +80,7 @@ export async function createMatch(formData: FormData) {
   revalidatePath("/");
   revalidatePath("/admin");
   revalidatePath("/admin/spiele");
-  redirect("/admin/spiele?created=1");
+  redirect(`/admin/spiele?group=${matchGroup(competition)}&created=1`);
 }
 
 export async function updateMatch(formData: FormData) {
@@ -143,7 +144,7 @@ export async function updateMatch(formData: FormData) {
   revalidatePath("/spielplan");
   revalidatePath("/match-center");
 
-  redirect("/admin/spiele?updated=1");
+  redirect(`/admin/spiele?group=${matchGroup(competition)}&updated=1`);
 }
 
 export async function deleteMatch(formData: FormData) {
@@ -159,5 +160,5 @@ export async function deleteMatch(formData: FormData) {
   revalidatePath("/");
   revalidatePath("/admin");
   revalidatePath("/admin/spiele");
-  redirect("/admin/spiele?deleted=1");
+  redirect(`/admin/spiele?group=${selectedMatchGroup(String(formData.get("group") ?? ""))}&deleted=1`);
 }

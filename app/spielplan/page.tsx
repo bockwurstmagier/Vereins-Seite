@@ -1,7 +1,10 @@
+import CompetitionNavigation from "../../components/match-center/CompetitionNavigation";
+import { matchGroup, selectedMatchGroup } from "../../lib/match-selection";
 import { CalendarDays, Clock3, MapPin } from "lucide-react";
 import { getMatches } from "../../lib/sport-center";
 
 type SearchParams = Promise<{
+  group?: string;
   status?: string;
   competition?: string;
 }>;
@@ -31,8 +34,12 @@ export default async function SchedulePage({
 }) {
   const params = await searchParams;
   const allMatches = await getMatches();
-  const competitions = [...new Set(allMatches.map((match) => match.competition))];
-  const matches = allMatches.filter((match) => {
+  const group = selectedMatchGroup(params.group ?? (params.competition ? matchGroup(params.competition) : undefined));
+  const counts = { league: 0, cup: 0, other: 0 };
+  for (const match of allMatches) counts[matchGroup(match.competition)]++;
+  const grouped = allMatches.filter(match => matchGroup(match.competition) === group);
+  const competitions = [...new Set(grouped.map((match) => match.competition))];
+  const matches = grouped.filter((match) => {
     const statusMatch = !params.status || params.status === match.status;
     const competitionMatch =
       !params.competition || params.competition === match.competition;
@@ -47,11 +54,13 @@ export default async function SchedulePage({
         </a>
         <h1 className="club-heading mt-4">Spielplan & Ergebnisse</h1>
         <p className="mt-3 max-w-2xl text-sm leading-6 text-zinc-400">
-          Alle eingetragenen Liga-, Pokal- und Testspiele in einer Übersicht.
+          Liga, Pokal und Testspiele findest du in getrennten Bereichen.
           Offizielle Termine findest du zusätzlich im FUSSBALL.DE-Bereich.
         </p>
 
-        <form className="club-card mt-8 grid gap-3 p-4 sm:grid-cols-[1fr_1fr_auto]">
+        <CompetitionNavigation base="/spielplan" selected={group} counts={counts} />
+        <form key={group} className="club-card mt-8 grid gap-3 p-4 sm:grid-cols-[1fr_1fr_auto]">
+          <input type="hidden" name="group" value={group} />
           <select
             name="status"
             defaultValue={params.status ?? ""}
@@ -139,6 +148,7 @@ export default async function SchedulePage({
                       text={match.location || "Spielort folgt"}
                     />
                   </div>
+                  <a className="club-button-secondary mt-4" href={`/match-center/${match.id}`}>Match-Center öffnen</a>
                 </article>
               );
             })

@@ -1,3 +1,4 @@
+import { matchGroup } from "../../../../lib/match-selection";
 import { notFound } from "next/navigation";
 import { ArrowLeft, Save } from "lucide-react";
 
@@ -43,7 +44,7 @@ export default async function EditMatchPage({ params }: PageProps) {
   return (
     <div className="mx-auto max-w-4xl">
       <a
-        href="/admin/spiele"
+        href={`/admin/spiele?group=${matchGroup(match.competition)}`}
         className="inline-flex items-center gap-2 text-xs font-black uppercase tracking-wider text-club-light-red"
       >
         <ArrowLeft size={16} aria-hidden="true" />

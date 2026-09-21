@@ -17,6 +17,40 @@ const selection = load('lib/match-selection.ts', { './club-name': clubs });
 const modules = load('lib/home-modules.ts');
 const highlight = load('lib/top-highlights.ts');
 
+test('competition views separate cup, league and friendly without changing match records', () => {
+  assert.equal(selection.matchGroup('Kreispokal'), 'cup');
+  assert.equal(selection.matchGroup('Regional CUP'), 'cup');
+  assert.equal(selection.matchGroup('Kreisliga B'), 'league');
+  assert.equal(selection.matchGroup('Freundschaftsspiel'), 'other');
+  assert.equal(selection.selectedMatchGroup('unknown'), 'league');
+});
+
+test('admin cup view excludes league games and retains edit, live and delete navigation', async () => {
+  const {renderToStaticMarkup}=require('react-dom/server');
+  const Navigation=load('components/match-center/CompetitionNavigation.tsx', {'../../lib/match-selection':selection}).default;
+  const rows=[{id:'cup-id',competition:'Kreispokal',away_team:'Pokal-Gast'},{id:'league-id',competition:'Kreisliga',away_team:'Liga-Gast'}].map(r=>({...r,home_team:'Middelich-Resse',match_date:'2026-09-25T17:30:00Z',status:'scheduled',home_score:null,away_score:null}));
+  const q={select(){return q},order:async()=>({data:rows,error:null})};
+  const Page=load('app/admin/spiele/page.tsx',{'../../../components/match-center/CompetitionNavigation':{default:Navigation,__esModule:true},'../../../lib/match-selection':selection,'../../../lib/supabase/server':{createClient:async()=>({from:()=>q})},'./actions':{createMatch:()=>{},deleteMatch:()=>{}}}).default;
+  const markup=renderToStaticMarkup(await Page({searchParams:Promise.resolve({group:'cup'})}));
+  assert.ok(markup.includes('Pokal-Gast'));assert.ok(!markup.includes('Liga-Gast'));
+  assert.ok(markup.includes('href="/admin/spiele/cup-id"'));assert.ok(markup.includes('href="/admin/live/cup-id"'));
+  assert.ok(markup.includes('name="group" value="cup"'));assert.ok(markup.includes('value="Kreispokal"'));
+});
+
+test('public schedule shows only chosen group, preserves filter and match-center link', async () => {
+  const React = require('react'); const {renderToStaticMarkup}=require('react-dom/server');
+  const Navigation=load('components/match-center/CompetitionNavigation.tsx', {'../../lib/match-selection':selection}).default;
+  const rows=[['league','Kreisliga','Liga-Gast'],['cup','Kreispokal','Pokal-Gast'],['other','Testspiel','Test-Gast']].map(([id,competition,away_team])=>({id,competition,away_team,home_team:'Middelich-Resse',match_date:'2026-09-25T17:30:00Z',status:'scheduled'}));
+  const Page=load('app/spielplan/page.tsx',{'../../components/match-center/CompetitionNavigation':{default:Navigation,__esModule:true},'../../lib/match-selection':selection,'../../lib/sport-center':{getMatches:async()=>rows}}).default;
+  for(const group of ['league','cup','other']){
+    const markup=renderToStaticMarkup(await Page({searchParams:Promise.resolve({group})}));
+    assert.ok(markup.includes(rows.find(r=>r.id===group).away_team));
+    assert.ok(rows.filter(r=>r.id!==group).every(r=>!markup.includes(r.away_team)));
+    assert.ok(markup.includes(`href="/match-center/${group}"`));
+    assert.ok(markup.includes(`name="group" value="${group}"`));
+  }
+});
+
 test('home configuration keeps defaults, excludes unknown modules and validates persisted settings', () => {
   const result = modules.normalizeHomeModules([{id:'news',enabled:false,order:0},{id:'cup',enabled:true,order:1},{id:'team',enabled:'false',order:-5},{id:'injected',enabled:true,order:0}]);
   assert.equal(result.length, modules.HOME_MODULES.length);
