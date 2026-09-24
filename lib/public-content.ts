@@ -1,6 +1,7 @@
 import { getNextMatch } from "./matches";
 import { createClient } from "./supabase/server";
 import { getClubIdentityMap } from "./clubs";
+import { scorersFromEvents } from "./match-scorers";
 
 export type PublicNewsItem = {
   id: string;
@@ -73,6 +74,21 @@ export async function getLastFinishedMatch(): Promise<PublicMatch | null> {
   if (!data) return null;
 
   const match = data as PublicMatch;
+  // LiveCenter goals are authoritative when present. No write-back or finalization is needed.
+  const { data: goals, error: goalsError } = await supabase.from("match_events")
+    .select("event_type, minute, player_id, description")
+    .eq("match_id", match.id).eq("event_type", "goal");
+  let scorers = match.scorers;
+  if (goalsError) {
+    console.error("Live-Torschützen konnten nicht geladen werden:", goalsError.message);
+  } else if (goals?.length) {
+    const playerIds = [...new Set(goals.flatMap(goal => goal.player_id ? [goal.player_id] : []))];
+    const { data: players, error: playersError } = playerIds.length
+      ? await supabase.from("players").select("id, first_name, last_name").in("id", playerIds)
+      : { data: [], error: null };
+    if (playersError) console.error("Torschützennamen konnten nicht geladen werden:", playersError.message);
+    else scorers = scorersFromEvents(goals, players ?? []);
+  }
   const clubMap = await getClubIdentityMap(supabase, [
     match.home_team,
     match.away_team,
@@ -80,6 +96,7 @@ export async function getLastFinishedMatch(): Promise<PublicMatch | null> {
 
   return {
     ...match,
+    scorers,
     home_logo_url: clubMap.get(match.home_team)?.logo_url ?? null,
     away_logo_url: clubMap.get(match.away_team)?.logo_url ?? null,
   };
