@@ -24,8 +24,9 @@ jobs:
     timeout-minutes: 15
 
     env:
-      NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
-      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY }}
+      # Build/unit checks use no production database. Integration tests need a separate environment.
+      NEXT_PUBLIC_SUPABASE_URL: http://127.0.0.1:54321
+      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: local-test-placeholder
 
     steps:
       - name: Repository auschecken
@@ -39,6 +40,9 @@ jobs:
 
       - name: Abhängigkeiten installieren
         run: npm ci
+
+      - name: Next.js-Typen erzeugen
+        run: npx next typegen
 
       - name: TypeScript prüfen
         run: npx tsc --noEmit
