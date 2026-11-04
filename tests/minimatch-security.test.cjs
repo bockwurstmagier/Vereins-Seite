@@ -1,11 +1,11 @@
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
-const { createRequire } = require('node:module');
 const { spawnSync } = require('node:child_process');
-const match = require('minimatch');
+const match = require('../tools/eslint-minimatch-compat.cjs');
 
 test('legacy ESLint matching calls use patched upstream and preserve glob behaviour', () => {
-  const upstream = createRequire(require.resolve('minimatch'))('@huja/minimatch-engine/package.json');
+  const upstream = require('minimatch/package.json');
+  assert.equal(upstream.name, 'minimatch');
   assert.equal(upstream.version, '11.0.4');
   for (const [file, pattern, expected, options] of [
     ['app/page.tsx', '**/*.tsx', true], ['app/page.ts', '**/*.tsx', false],
