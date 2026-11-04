@@ -648,6 +648,19 @@ body {
   to { transform: translate3d(0, -4%, 0); background-position: 15px -220px, -12px -170px, 20px -260px, -18px -200px, 11px -230px, -16px -190px; }
 }
 
+.huja-sponsor-track {
+  animation-duration: 24s;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+@keyframes hujaSponsorScroll {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .huja-sponsor-track { animation: none !important; }
+}
+
 @keyframes hujaHeroCrestBreath {
   from { transform: scale(0.985); filter: drop-shadow(0 0 14px rgba(239, 51, 64, 0.2)); }
   to { transform: scale(1.015); filter: drop-shadow(0 0 28px rgba(239, 51, 64, 0.38)); }

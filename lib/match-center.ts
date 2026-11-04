@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { isClubMatch, isLeagueCompetition } from "./match-selection";
 import { createClient } from "./supabase/server";
 import { getClubIdentityMap } from "./clubs";
@@ -69,7 +70,7 @@ export type MatchSquadEntry = {
   position_label: string | null;
 };
 
-export async function getMatchCenterOverview() {
+export const getMatchCenterOverview = cache(async function getMatchCenterOverview() {
   const supabase = await createClient();
 
   const { data, error } = await supabase
@@ -97,7 +98,7 @@ export async function getMatchCenterOverview() {
     home_logo_url: clubMap.get(match.home_team)?.logo_url ?? null,
     away_logo_url: clubMap.get(match.away_team)?.logo_url ?? null,
   }));
-}
+});
 
 export async function getPublicMatchCenterMatch(id: string) {
   const supabase = await createClient();

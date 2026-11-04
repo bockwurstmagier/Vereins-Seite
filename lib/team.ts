@@ -20,10 +20,10 @@ export type PublicPlayer = {
   sort_order: number;
 };
 
-export async function getActivePlayers(): Promise<PublicPlayer[]> {
+export async function getActivePlayers(limit?: number): Promise<PublicPlayer[]> {
   const supabase = await createClient();
 
-  const { data, error } = await supabase
+  let query = supabase
     .from("players")
     .select(
       "id, first_name, last_name, slug, squad, shirt_number, position, strong_foot, height_cm, birth_date, nationality, instagram_url, short_profile, favorite_club, favorite_player, image_url, sort_order",
@@ -32,6 +32,9 @@ export async function getActivePlayers(): Promise<PublicPlayer[]> {
     .order("squad", { ascending: true })
     .order("sort_order", { ascending: true })
     .order("last_name", { ascending: true });
+
+  if (limit !== undefined) query = query.limit(Math.max(1, Math.floor(limit)));
+  const { data, error } = await query;
 
   if (error) {
     console.error("Spieler konnten nicht geladen werden:", error);

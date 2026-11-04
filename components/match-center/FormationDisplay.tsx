@@ -16,7 +16,7 @@ export default function FormationDisplay({ entries, players, events, formation }
   return (
     <section className="club-card p-5 sm:p-6">
       <div className="flex items-center justify-between gap-3"><div><p className="club-eyebrow">Aufstellung</p><h2 className="mt-1 text-xl font-black uppercase">{formation || "Startelf"}</h2></div><span className="rounded-full border border-white/10 px-3 py-1 text-[9px] font-black uppercase text-zinc-400">{starters.length} Spieler</span></div>
-      <div className="relative mx-auto mt-5 aspect-[2/3] w-full max-w-[28rem] overflow-hidden rounded-[2rem] border-2 border-white/15 bg-[linear-gradient(90deg,rgba(255,255,255,.03)_50%,transparent_50%),linear-gradient(rgba(255,255,255,.03)_50%,transparent_50%)] bg-[length:12%_12%]">
+      <div data-look-fixed style={{backgroundColor:"#172d25",color:"#fff"}} className="relative mx-auto mt-5 aspect-[2/3] w-full max-w-[28rem] overflow-hidden rounded-[2rem] border-2 border-white/15 bg-[linear-gradient(90deg,rgba(255,255,255,.03)_50%,transparent_50%),linear-gradient(rgba(255,255,255,.03)_50%,transparent_50%)] bg-[length:12%_12%]">
         <div className="absolute inset-3 rounded-[1.5rem] border-2 border-white/30" /><div className="absolute left-3 right-3 top-1/2 border-t-2 border-white/30" /><div className="absolute left-1/2 top-1/2 h-20 w-20 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white/30" />
         {starters.map((entry, index) => {
           const player=map.get(entry.player_id); if(!player) return null;

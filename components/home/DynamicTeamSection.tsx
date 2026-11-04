@@ -52,6 +52,7 @@ export default function DynamicTeamSection({
               {preview.map((player, index) => (
                 <motion.a
                   key={player.id}
+                  data-look-fixed
                   href={`/team/${player.slug}`}
                   initial={{ opacity: 0, x: 35 }}
                   whileInView={{ opacity: 1, x: 0 }}
@@ -64,7 +65,7 @@ export default function DynamicTeamSection({
                   className="group relative h-80 w-[72vw] max-w-[280px] overflow-hidden rounded-[2rem] border border-white/10 bg-black"
                 >
                   {player.image_url ? (
-                    <img
+                    <img loading="lazy" decoding="async"
                       src={player.image_url}
                       alt={`${player.first_name} ${player.last_name}`}
                       className="h-full w-full object-cover object-top transition duration-500 group-hover:scale-105"

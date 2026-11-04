@@ -4,16 +4,10 @@ export default function Hero({ matchEnabled = true }: { matchEnabled?: boolean }
   return (
     <section
       id="top"
+      data-look-fixed
       className="huja-stadium-hero relative h-[100svh] min-h-[700px] w-full scroll-mt-20 overflow-hidden bg-black"
     >
-      <Image
-        src="/images/hero.png"
-        alt="Stadion der SpVgg Middelich-Resse"
-        fill
-        priority
-        sizes="100vw"
-        className="object-cover object-center"
-      />
+      <div className="appearance-hero-backdrop" aria-hidden="true" />
 
       <div className="absolute inset-0 bg-black/35" />
       <div className="absolute inset-0 bg-gradient-to-b from-black/45 via-red-950/10 to-black" />
@@ -33,6 +27,7 @@ export default function Hero({ matchEnabled = true }: { matchEnabled?: boolean }
             alt="Wappen der SpVgg Middelich-Resse"
             width={1194}
             height={1166}
+            sizes="(max-width: 639px) 205px, 235px"
             priority
             className="relative h-auto w-full object-contain"
           />

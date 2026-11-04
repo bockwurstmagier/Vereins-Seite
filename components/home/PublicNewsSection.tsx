@@ -69,9 +69,9 @@ export default function PublicNewsSection({
                   className="club-card overflow-hidden"
                 >
                   <div className="grid grid-cols-[100px_1fr] gap-4 p-4">
-                    <div className="relative min-h-32 overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-club-burgundy via-club-dark-red to-black">
+                    <div data-look-fixed className="relative min-h-32 overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-club-burgundy via-club-dark-red to-black">
                       {item.image_url ? (
-                        <img
+                        <img loading="lazy" decoding="async"
                           src={item.image_url}
                           alt=""
                           className="h-full w-full object-cover"

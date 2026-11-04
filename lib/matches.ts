@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { isClubMatch, isCupCompetition, isLeagueCompetition } from "./match-selection";
 import { supabase } from "./supabase";
 
@@ -46,7 +47,7 @@ function findLogo(clubs: ClubLogoRow[], teamName: string) {
   return match?.logo_url ?? null;
 }
 
-export async function getNextMatch(kind: "league" | "cup" = "league"): Promise<DatabaseMatch | null> {
+const getScheduledMatches = cache(async () => {
   const { data: rows, error } = await supabase
     .from("matches")
     .select(
@@ -63,8 +64,10 @@ export async function getNextMatch(kind: "league" | "cup" = "league"): Promise<D
     return null;
   }
 
-  const data = rows?.find(match => isClubMatch(match) && (kind === "cup" ? isCupCompetition(match.competition) : isLeagueCompetition(match.competition)));
-  if (!data) return null;
+  return rows;
+});
+
+const getLogoRows = cache(async () => {
 
   const { data: clubs, error: clubsError } = await supabase
     .from("clubs")
@@ -74,7 +77,14 @@ export async function getNextMatch(kind: "league" | "cup" = "league"): Promise<D
     console.error("Vereinslogos konnten nicht geladen werden:", clubsError.message);
   }
 
-  const clubRows = (clubs ?? []) as ClubLogoRow[];
+  return (clubs ?? []) as ClubLogoRow[];
+});
+
+export async function getNextMatch(kind: "league" | "cup" = "league"): Promise<DatabaseMatch | null> {
+  const rows = await getScheduledMatches();
+  const data = rows?.find(match => isClubMatch(match) && (kind === "cup" ? isCupCompetition(match.competition) : isLeagueCompetition(match.competition)));
+  if (!data) return null;
+  const clubRows = await getLogoRows();
 
   return {
     ...(data as DatabaseMatch),

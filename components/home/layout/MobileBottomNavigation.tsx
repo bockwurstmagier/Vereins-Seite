@@ -14,6 +14,7 @@ import {
   LogIn,
   LogOut,
   Menu,
+  Monitor,
   Newspaper,
   ShieldCheck,
   Trophy,
@@ -192,6 +193,7 @@ export default function MobileBottomNavigation({
                 <MenuLink href="/login" icon={LogIn} label="Admin anmelden" emphasized />
               )}
 
+              <MenuLink href="/mein-design" icon={Monitor} label="Mein Design" />
               <MenuLink href="/spielplan" icon={CalendarDays} label="Spielplan" />
               <MenuLink href="/tabelle" icon={Trophy} label="Tabelle" />
               <MenuLink href="/termine" icon={CalendarDays} label="Vereinskalender" />

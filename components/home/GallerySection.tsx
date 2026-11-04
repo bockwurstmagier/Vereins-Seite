@@ -108,11 +108,12 @@ export default async function GallerySection() {
             {visibleAlbums.map((album) => (
               <Link
                 key={album.id}
+                data-look-fixed
                 href={`/galerie/${album.slug}`}
                 className="group relative h-72 w-[78vw] max-w-[320px] overflow-hidden rounded-[2rem] border border-white/10 bg-black shadow-[0_20px_60px_rgba(0,0,0,0.4)]"
               >
                 {album.cover?.file_url ? (
-                  <img
+                  <img loading="lazy" decoding="async"
                     src={album.cover.file_url}
                     alt={album.title}
                     className="h-full w-full object-cover transition duration-500 group-hover:scale-105"

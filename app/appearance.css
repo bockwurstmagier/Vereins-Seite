@@ -1,0 +1,70 @@
+/* Personal design: fixed image/video artwork retains its own contrast. */
+:root {
+  --look-page: #09090c;
+  --look-card: #17171d;
+  --look-text: #f5f5f7;
+  --look-muted: #aaaab6;
+  --look-border: #ffffff24;
+  --look-wash: rgba(7,7,11,.84);
+  --look-image: image-set(url('/_next/image?url=%2Fimages%2Fhero.png&w=640&q=75') 1x, url('/_next/image?url=%2Fimages%2Fhero.png&w=1080&q=75') 2x);
+}
+html[data-theme="light"] {
+  --background: #f3f1f2; --foreground: #202127;
+  --look-page: #f3f1f2; --look-card: #fff;
+  --look-text: #202127; --look-muted: #5d606a; --look-border: #20212729;
+  --look-wash: rgba(248,246,247,.91);
+  color-scheme: light;
+}
+html[data-theme="dark"] { color-scheme: dark; }
+html[data-background="smoke"] { --look-image: url('/backgrounds/huja-smoke.svg'); }
+html[data-background="crest"] { --look-image: url('/branding/middelich-resse-original.png'); }
+html[data-background="plain"] { --look-image: none; }
+html[data-background] body { background: var(--look-page); color: var(--look-text); }
+.personal-background, .design-settings, .design-preview {
+  background-color: var(--look-page);
+  background-image: linear-gradient(var(--look-wash),var(--look-wash)),var(--look-image);
+  background-size: cover; background-position: center;
+}
+.personal-background { position:absolute; inset:0; pointer-events:none; }
+html[data-background="crest"] :is(.personal-background,.design-settings,.design-preview) { background-size:auto,180px; background-repeat:repeat; }
+html[data-background="plain"] :is(.personal-background,.design-settings,.design-preview) { background-image:none; }
+.appearance-hero-backdrop { position:absolute; inset:0; background-image:var(--look-image); background-size:cover; background-position:center; background-color:#10090d; }
+html[data-background="crest"] .appearance-hero-backdrop { background-size:200px; opacity:.25; }
+html[data-background] .huja-home-content { background:var(--look-page); }
+html[data-background] .huja-home-content > .home-atmosphere { display:none; }
+html[data-theme="light"] :is(main,.club-section,.design-settings) { color:var(--look-text); }
+/* Migrate legacy dark utility surfaces without recolouring photos, logos or pitches. */
+html[data-theme="light"] :is(.bg-black,.bg-club-black,.bg-club-surface,.bg-club-surface-light,.bg-zinc-950,.bg-zinc-900,[class*="bg-black/"],[class*="bg-[#0"],[class*="bg-[#1"]):not(:where([data-look-fixed],[data-look-fixed] *)) { background-color:var(--look-page) !important; }
+html[data-theme="light"] :is(.club-card,.club-card-inner,.admin-input,.admin-file-input,[role="dialog"],nav,[class*="from-club-burgundy"],[class*="bg-white/"],[class*="bg-white/["]):not(:where([data-look-fixed],[data-look-fixed] *)) {
+  background:var(--look-card) !important; color:var(--look-text); border-color:var(--look-border) !important;
+}
+html[data-theme="light"] .club-card:not(:where([data-look-fixed],[data-look-fixed] *)) { box-shadow:0 8px 28px #3510200d; backdrop-filter:none; }
+html[data-theme="light"] :is(.text-white,.text-club-white,.text-zinc-100,.text-zinc-200,.text-zinc-300,[class*="text-white/"],.club-heading):not(:where([data-look-fixed],[data-look-fixed] *)) { color:var(--look-text) !important; }
+html[data-theme="light"] :is(.text-zinc-400,.text-zinc-500,.text-zinc-600,.text-club-muted):not(:where([data-look-fixed],[data-look-fixed] *)) { color:var(--look-muted) !important; }
+html[data-theme="light"] :is(.text-club-light-red,.club-eyebrow,[class*="text-club-light-red/"]):not(:where([data-look-fixed],[data-look-fixed] *)) { color:#ae1022 !important; }
+html[data-theme="light"] :is([class*="border-white/"],.border-white):not(:where([data-look-fixed],[data-look-fixed] *)) { border-color:var(--look-border); }
+html[data-theme="light"] .club-button-secondary { background:#fff; border-color:#20212730; color:#202127; box-shadow:none; }
+html[data-theme="light"] :is(.club-button-primary,.bg-club-red,.bg-red-600,.bg-red-700,.bg-club-light-red),
+html[data-theme="light"] :is(.club-button-primary,.bg-club-red,.bg-red-600,.bg-red-700,.bg-club-light-red) * { color:white !important; }
+html[data-theme="light"] :is(.text-amber-300,.text-amber-200,.text-yellow-300):not(:where([data-look-fixed],[data-look-fixed] *)) { color:#805000 !important; }
+html[data-theme="light"] :is(.text-emerald-300,.text-emerald-400,.text-green-400):not(:where([data-look-fixed],[data-look-fixed] *)) { color:#166534 !important; }
+html[data-theme="light"] :is(.text-red-300,.text-red-400):not(:where([data-look-fixed],[data-look-fixed] *)) { color:#b91c1c !important; }
+html[data-theme="light"] :is(input,select,textarea) { color-scheme:light; }
+html[data-theme="light"] .huja-stadium-experience .club-section::before { display:none; }
+html[data-theme="light"] .huja-home-content .pointer-events-none { opacity:.15; }
+.design-option { background:var(--look-card); border-color:var(--look-border); color:var(--look-text); }
+.design-option.is-selected { border-color:#db2637; box-shadow:0 0 0 2px #db263730; }
+.design-option:focus-within { outline:2px solid #db2637; outline-offset:3px; }
+.design-swatch { height:100px; display:flex; align-items:center; justify-content:center; background-color:#15121a; }
+.design-swatch-stadium { background:radial-gradient(ellipse at 10% 0%,#fff8,transparent 40%),radial-gradient(ellipse at 90% 0%,#fff8,transparent 40%),linear-gradient(#171c2d 65%,#335342 66%,#15251f); }
+.design-swatch-smoke { background:radial-gradient(ellipse at 20% 80%,#d92049,transparent 60%),radial-gradient(ellipse at 90% 10%,#901728,transparent 65%),#170910; }
+.design-swatch-crest { background:repeating-linear-gradient(135deg,#421322 0 20px,#210b15 20px 40px); }
+.design-swatch-crest::before { content:'MR'; color:#fff9; border:2px solid #fff5; border-radius:4px 4px 25px 25px; padding:10px; margin-right:8px; font-weight:900; }
+.design-swatch-plain { background:#24242c; }
+html[data-theme="light"] .design-swatch-plain { background:#eee9ec; }
+html[data-effects="off"] { scroll-behavior:auto !important; }
+html[data-effects="off"] *, html[data-effects="off"] *::before, html[data-effects="off"] *::after {
+  animation:none !important; transition:none !important; scroll-behavior:auto !important;
+}
+html[data-effects="off"] :is(.huja-hero-smoke,.huja-hero-embers,.huja-home-smoke,.huja-home-embers,.huja-stadium-sparks) { display:none !important; }
+html[data-effects="off"] :is(.club-card,.club-button-primary,.club-button-secondary) { box-shadow:none !important; backdrop-filter:none !important; }

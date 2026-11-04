@@ -51,6 +51,7 @@ export default function HomeAtmosphere() {
           width={1194}
           height={1166}
           className="h-auto w-full"
+          sizes="(max-width: 639px) min(112vw, 496px), 640px"
           priority={false}
         />
       </div>
@@ -61,6 +62,7 @@ export default function HomeAtmosphere() {
           width={1194}
           height={1166}
           className="h-auto w-full"
+          sizes="(max-width: 639px) min(116vw, 544px), 672px"
           priority={false}
         />
       </div>
@@ -71,6 +73,7 @@ export default function HomeAtmosphere() {
           width={1194}
           height={1166}
           className="h-auto w-full"
+          sizes="(max-width: 639px) min(108vw, 480px), 608px"
           priority={false}
         />
       </div>

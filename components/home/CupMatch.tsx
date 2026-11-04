@@ -9,7 +9,7 @@ export default function CupMatch({ match }: { match: DatabaseMatch | null }) {
   const date = new Intl.DateTimeFormat("de-DE", { weekday: "short", day: "2-digit", month: "2-digit", year: "numeric", timeZone: "Europe/Berlin" }).format(kickoff);
   const time = new Intl.DateTimeFormat("de-DE", { hour: "2-digit", minute: "2-digit", timeZone: "Europe/Berlin" }).format(kickoff);
   return <section className="club-section py-10"><div className="club-container">
-    <a href={`/match-center/${match.id}`} className="group relative block overflow-hidden rounded-[2rem] border border-amber-300/50 text-white shadow-[0_12px_50px_rgba(245,158,11,0.13)] transition hover:border-amber-200 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-amber-300"
+    <a data-look-fixed href={`/match-center/${match.id}`} className="group relative block overflow-hidden rounded-[2rem] border border-amber-300/50 text-white shadow-[0_12px_50px_rgba(245,158,11,0.13)] transition hover:border-amber-200 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-amber-300"
       style={{ background: "radial-gradient(ellipse at 50% 0%, rgba(180,120,25,.3), transparent 65%), linear-gradient(150deg, #211708, #120b0b 55%, #050505)" }}>
       <div aria-hidden="true" className="absolute inset-x-10 top-0 h-px bg-gradient-to-r from-transparent via-amber-200 to-transparent" />
       <div className="border-b border-amber-300/15 px-5 pb-5 pt-6 text-center">

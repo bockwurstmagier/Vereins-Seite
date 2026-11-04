@@ -158,7 +158,7 @@ export default function FormationEditor({ matchId, players, initialSquad, initia
         <input type="hidden" name="lineup_json" value={JSON.stringify(lineup)} />
 
         <div className="p-4 sm:p-6">
-          <div ref={boardRef} className="relative mx-auto aspect-[2/3] w-full max-w-[34rem] overflow-hidden rounded-[2rem] border-2 border-white/20 bg-[linear-gradient(90deg,rgba(255,255,255,.035)_50%,transparent_50%),linear-gradient(rgba(255,255,255,.035)_50%,transparent_50%)] bg-[length:12%_12%] shadow-inner touch-none">
+          <div ref={boardRef} data-look-fixed style={{backgroundColor:"#172d25",color:"#fff"}} className="relative mx-auto aspect-[2/3] w-full max-w-[34rem] overflow-hidden rounded-[2rem] border-2 border-white/20 bg-[linear-gradient(90deg,rgba(255,255,255,.035)_50%,transparent_50%),linear-gradient(rgba(255,255,255,.035)_50%,transparent_50%)] bg-[length:12%_12%] shadow-inner touch-none">
             <div className="absolute inset-3 rounded-[1.5rem] border-2 border-white/40" />
             <div className="absolute left-3 right-3 top-1/2 border-t-2 border-white/40" />
             <div className="absolute left-1/2 top-1/2 h-24 w-24 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white/40" />
