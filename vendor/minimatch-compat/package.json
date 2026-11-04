@@ -1,0 +1,13 @@
+{
+  "name": "@huja/minimatch-compat",
+  "version": "1.0.3",
+  "private": true,
+  "description": "Legacy CommonJS facade backed by patched minimatch",
+  "main": "index.cjs",
+  "dependencies": {
+    "@huja/minimatch-engine": "npm:minimatch@11.0.4"
+  },
+  "engines": {
+    "node": "18 || 20 || >=22"
+  }
+}
